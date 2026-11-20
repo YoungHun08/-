@@ -2,21 +2,11 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F7F3ED" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0E1424" media="(prefers-color-scheme: dark)">
-<meta name="description" content="후쿠오카 여행 일정·동선·교통비를 짜 주는 플래너">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icons/favicon-64.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="후쿠오카">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>후쿠오카 여행 플래너</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800&family=Outfit:wght@500;600;700&family=Noto+Sans+JP:wght@500;700&family=Nanum+Myeongjo:wght@700;800&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800&family=Outfit:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700;800&family=Nanum+Myeongjo:wght@700;800&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
 <style>
 /* 후쿠오카 플래너 v3: 따뜻한 종이색 바탕 + 하카타만 남색 + 도리이 주홍 포인트. 홈 상단은 모모치 해변의 후쿠오카 타워 그림, 곳곳에 하카타오리(五色献上) 줄무늬 */
 :root {
@@ -704,7 +694,7 @@ small { font-size: 12.5px; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tl-ic { color: color-mix(in srgb, var(--c) 60%, #fff); } }
 /* 실제 사진 상단 */
 .hero.has-photo { height: clamp(440px, 122vw, 540px); background: #1B2540; }
-.hero-img.stock { object-position: 50% 35%; }
+.hero-img.stock { object-position: 50% 50%; }
 .hero.has-photo .hero-shade { background: linear-gradient(to bottom, rgba(8, 12, 28, .42) 0%, rgba(8, 12, 28, 0) 20%, rgba(8, 12, 28, 0) 42%, rgba(8, 12, 28, .72) 100%); }
 .credit { margin: 6px 0 0; text-align: center; font-size: 11.5px; color: var(--ink-3); }
 .credit a { color: inherit; }
@@ -730,13 +720,83 @@ textarea.code:focus { outline: none; border-color: var(--ink); }
 .hero-top { padding-top: calc(12px + env(safe-area-inset-top)); }
 .scene { top: calc(62px + env(safe-area-inset-top)); }
 .sheet { max-height: calc(90vh - env(safe-area-inset-top)); }
+/* 한국어 ↔ 일본어 */
+html[lang="ja"] { --font: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Gothic A1', sans-serif; --serif: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', serif; }
+html[lang="ja"] body { word-break: normal; line-break: strict; }
+.lang-btn { display: inline-flex; align-items: center; gap: 5px; height: 34px; padding: 0 11px 0 9px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-size: 13px; font-weight: 800; white-space: nowrap; }
+.lang-btn .ic { width: 16px; height: 16px; }
+.lang-btn span { font-family: 'Noto Sans JP', 'Gothic A1', sans-serif; }
+.lang-btn.light { height: 42px; padding: 0 14px 0 12px; border-radius: 14px; color: #fff; background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .3); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.ht-r { display: flex; align-items: center; gap: 8px; }
+.ab-r { gap: 6px; }
+html[lang="ja"] .kor { display: none; }
+.ab-r .lang-btn { height: 32px; padding: 0 10px; font-size: 12.5px; gap: 0; }
+.ab-r .lang-btn .ic { display: none; }
+.ab-t { min-width: 0; }
+.ab-t small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 장소 상세 */
+.spl-b, .al-b { display: flex; align-items: flex-start; gap: 12px; flex: 1; min-width: 0; text-align: left; padding: 0; }
+.spl li { padding: 0; }
+.spl-b { padding: 12px 2px; }
+.spl-b > .chev { align-self: center; color: var(--ink-3); width: 18px; height: 18px; flex: none; }
+.spl-b:active, .al-b:active { opacity: .7; }
+.sheet.s-spot { padding-top: 0; }
+.sp-hero { position: relative; margin: 0 -18px 0; height: 132px; padding: 16px 18px; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; color: #fff; overflow: hidden; background: linear-gradient(150deg, var(--c1), var(--c2)); border-radius: 26px 26px 0 0; }
+.sp-hero::before { content: ''; position: absolute; inset: 0; opacity: .16;
+  background: radial-gradient(circle at 50% 100%, transparent 8px, #fff 8.5px, #fff 10px, transparent 10.5px, transparent 14px, #fff 14.5px, #fff 16px, transparent 16.5px) 0 0 / 36px 18px,
+              radial-gradient(circle at 50% 100%, transparent 8px, #fff 8.5px, #fff 10px, transparent 10.5px, transparent 14px, #fff 14.5px, #fff 16px, transparent 16.5px) 18px 9px / 36px 18px; }
+.sp-cat { position: relative; align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 8px; border-radius: 999px; background: rgba(255, 255, 255, .22); font-size: 12.5px; font-weight: 800; }
+.sp-cat .ic { width: 15px; height: 15px; }
+.sp-ja { position: relative; font-family: 'Noto Serif JP', serif; font-weight: 700; font-size: 26px; line-height: 1.25; text-shadow: 0 1px 8px rgba(0, 0, 0, .18); }
+.sp-x { position: absolute; top: 12px; right: 12px; background: rgba(255, 255, 255, .22); color: #fff; }
+.sp-h { padding: 14px 2px 0; }
+.sp-h h2 { font-size: 21px; font-weight: 800; }
+.sp-h p { margin: 2px 0 0; color: var(--ink-2); font-size: 13px; }
+.sp-d { margin: 12px 2px 0; font-size: 15px; line-height: 1.65; }
+.sp-tip { display: flex; gap: 8px; margin: 12px 0 0; padding: 12px 14px; border-radius: 16px; background: var(--warn-2); color: var(--ink); font-size: 13.5px; line-height: 1.55; }
+.sp-tip .ic { width: 18px; height: 18px; color: var(--warn); flex: none; margin-top: 1px; }
+.sp-tip b { color: var(--warn); margin-right: 2px; }
+.sp-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 0; }
+.sp-facts > div { display: grid; grid-template-columns: 20px 1fr; column-gap: 8px; align-items: center; padding: 11px 12px; border-radius: 16px; background: var(--surface); box-shadow: var(--sh); }
+.sp-facts .ic { grid-row: span 2; width: 18px; height: 18px; color: var(--pri); }
+.sp-facts dt { font-size: 11.5px; color: var(--ink-3); font-weight: 600; }
+.sp-facts dd { margin: 0; font-size: 14px; font-weight: 800; }
+.sp-st { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 12px 14px; border-radius: 16px; background: var(--surface); box-shadow: var(--sh); }
+.sp-st > span { display: flex; flex-direction: column; gap: 2px; }
+.sp-st small { font-size: 11.5px; color: var(--ink-3); font-weight: 600; }
+.sp-st b { display: flex; align-items: center; gap: 6px; font-size: 15px; }
+.sp-st em { font-style: normal; font-size: 12.5px; color: var(--ink-2); }
+.btn.gm { margin-top: 10px; }
+.sp-taxi { margin-top: 12px; }
+.sp-taxi .ja-big { font-size: clamp(22px, 6.5vw, 28px); line-height: 1.35; }
+.sp-near { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sp-near button { display: flex; align-items: center; gap: 10px; text-align: left; padding: 10px; border-radius: 16px; background: var(--surface); box-shadow: var(--sh); min-width: 0; }
+.sp-near span { display: flex; flex-direction: column; min-width: 0; }
+.sp-near b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-near small { font-size: 12px; color: var(--ink-3); }
+.btn.in-day { color: var(--ok); }
+.edit .btn.wide { margin-top: 8px; }
+
+/* 동네 카드·동네 시트 사진 */
+.at-art.has-ph, .ar-band.has-ph { background: #2B303B; }
+.at-art.has-ph::before, .ar-band.has-ph::before { display: none; }
+.ph-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.at-art.has-ph::after, .ar-band.has-ph::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(6, 10, 20, .46) 0%, rgba(6, 10, 20, 0) 46%, rgba(6, 10, 20, 0) 58%, rgba(6, 10, 20, .42) 100%); }
+.at-ja, .at-ic, .ar-band span, .ar-band small { z-index: 1; }
+.has-ph .at-ja, .ar-band.has-ph span { text-shadow: 0 1px 8px rgba(0, 0, 0, .55); }
+.has-ph .at-ic { filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .5)); }
+.ar-band.has-ph { height: 150px; }
+.ar-band.has-ph small { text-shadow: 0 1px 6px rgba(0, 0, 0, .6); }
+.ph-cr { margin: 2px 4px 4px; text-align: right; font-size: 11px; color: var(--ink-3); }
+.ph-cr a { color: inherit; }
 
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-const IS_APP = true;
+const IS_APP = false;
 // ===== 후쿠오카 데이터 =====
 // 좌표는 지도·동선 계산용 근삿값입니다.
 const ZONES = {
@@ -824,7 +884,7 @@ const SPOTS = [
 
   // 베이사이드·하코자키
   { id: 'baysideplace', a: 'bayside', n: '베이사이드 플레이스 하카타', j: 'ベイサイドプレイス博多', lat: 33.6045, lng: 130.4036, c: 'shop', s: 40, p: 3, to: '21:00', d: '항구 앞 쇼핑·해산물 식당. 페리 선착장.' },
-  { id: 'porttower', a: 'bayside', n: '하카타 포트타워', j: '博多ポートタワー', lat: 33.6037, lng: 130.4024, c: 'sight', s: 25, p: 3, to: '17:00', d: '무료로 오르는 붉은 탑 전망대.' },
+  { id: 'porttower', a: 'bayside', n: '하카타 포트타워', j: '博多ポートタワー', lat: 33.6037, lng: 130.4024, c: 'sight', s: 25, p: 3, cl: [3], to: '20:00', d: '무료로 오르는 붉은 탑 전망대.' },
   { id: 'nagahamaya', a: 'bayside', n: '원조 나가하마야', j: '元祖長浜屋', lat: 33.5966, lng: 130.3895, c: 'food', s: 30, p: 4, meal: true, d: '나가하마 라멘의 원조. 가볍고 빠른 한 그릇.' },
   { id: 'hakozakigu', a: 'bayside', n: '하코자키궁', j: '筥崎宮', lat: 33.6143, lng: 130.4232, c: 'sight', s: 30, p: 3, d: '바다로 이어지는 참배길이 있는 하치만 신사.' },
 
@@ -865,7 +925,7 @@ const SPOTS = [
   // 유후인
   { id: 'yunotsubo', a: 'yufuin', n: '유노츠보 거리', j: '湯の坪街道', lat: 33.2655, lng: 131.3640, c: 'shop', s: 60, p: 5, to: '17:30', d: '잡화점과 디저트 가게가 이어진 메인 거리.' },
   { id: 'kinrinko', a: 'yufuin', n: '긴린코 호수', j: '金鱗湖', lat: 33.2665, lng: 131.3701, c: 'nature', s: 30, p: 5, b: 'm', d: '아침 물안개로 유명한 작은 호수.' },
-  { id: 'floral', a: 'yufuin', n: '유후인 플로럴 빌리지', j: '湯布院フローラルハウス', lat: 33.2650, lng: 131.3626, c: 'shop', s: 30, p: 3, to: '17:30', d: '유럽 시골 마을처럼 꾸민 작은 거리.' },
+  { id: 'floral', a: 'yufuin', n: '유후인 플로럴 빌리지', j: '湯布院フローラルヴィレッジ', lat: 33.2650, lng: 131.3626, c: 'shop', s: 30, p: 3, to: '17:30', d: '유럽 시골 마을처럼 꾸민 작은 거리.' },
   { id: 'yufuonsen', a: 'yufuin', n: '료칸 당일 온천', j: '日帰り温泉', lat: 33.2640, lng: 131.3665, c: 'onsen', s: 75, p: 4, g: true, to: '20:00', d: '유후다케가 보이는 노천탕 당일 입욕.' },
   { id: 'yufulunch', a: 'yufuin', n: '유후인 점심 (소바·분고규 등)', j: '由布院の食事', lat: 33.2660, lng: 131.3620, c: 'food', s: 50, p: 3, meal: true, g: true, to: '17:00', d: '거리 식당 중 골라서.' },
 
@@ -1088,6 +1148,97 @@ const BUS_HINTS = [
   { to: ['tower', 'seaside', 'citymuseum'], from: 'tenjin', ja: '天神 → 福岡タワー南口', d: '텐진 일대 정류장에서 「福岡タワー」 방면 버스(302번 등)를 타고 「福岡タワー南口」에서 내려요.' },
   { to: ['baysideplace', 'porttower'], from: 'hakata', ja: '博多駅西日本シティ銀行前F → 博多ふ頭', d: '하카타역 F 승강장(博多駅西日本シティ銀行前F)에서 99번(47·48·99 계열)을 타고 종점 「博多ふ頭」에서 내려요.' }
 ];
+
+// 장소 상세 정보. fee: free 무료 | paid 유료 | part 일부 유료  pr: 가격대 1~3
+// 영업시간·가격은 바뀌기 쉬워서 적지 않고, 구글 지도에서 확인하도록 안내해요.
+const SPOT_INFO = {
+  hakatacity: { ko: '하카타역 건물 전체가 쇼핑몰이에요. 아뮤플라자·한큐백화점·식당가가 이어져 있고, 옥상 「츠바메노모리 광장」에서는 미니 열차와 시내 전망을 즐길 수 있어요.', ja: '博多駅ビル全体がショッピングモール。アミュプラザ・博多阪急・レストラン街がつながり、屋上「つばめの杜ひろば」ではミニ電車と街の眺めを楽しめます。', tk: '식당가는 9~10층이에요. 비 오는 날 동선 짜기 좋아요.', tj: 'レストラン街は9〜10階。雨の日のルートにも便利です。' },
+  kitte: { ko: '하카타역 하카타 출구 바로 앞 빌딩이에요. 마루이와 잡화점, 위층 식당가와 지하 식당가가 있어 식사 겸 쇼핑하기 좋아요.', ja: '博多駅博多口の目の前のビル。マルイや雑貨店、上階と地下のレストラン街があり、食事とショッピングを一度に楽しめます。', tk: '역 지하에서 바로 이어져요.', tj: '駅の地下から直結しています。' },
+  issou: { pr: 1, ko: '거품이 올라올 만큼 진하게 우린 돈코츠 라멘으로 유명한 집이에요. 국물이 묵직하고 고소해서 「돈코츠 카푸치노」라고도 불려요.', ja: '泡が立つほど濃厚に炊いた豚骨ラーメンで有名なお店。こってり香ばしいスープから「豚骨カプチーノ」とも呼ばれます。', tk: '점심·저녁에는 줄이 길어요. 문 여는 시간이나 늦은 오후를 노리세요.', tj: '昼・夜は行列ができます。開店直後か午後遅めがおすすめ。' },
+  ooyama: { pr: 2, ko: '후쿠오카 명물 모츠나베(곱창 전골) 전문점이에요. 대표 메뉴는 된장 맛이고 간장 맛도 있어요. 마지막에 짬뽕면을 넣어 먹는 게 정석이에요.', ja: '福岡名物もつ鍋の専門店。看板はみそ味で、しょうゆ味もあります。シメにちゃんぽん麺を入れるのが定番です。', tk: '저녁 시간은 붐비니 예약하면 편해요.', tj: '夕食どきは混むので予約がおすすめ。' },
+  sumiyoshi: { fee: 'free', ko: '하카타역에서 걸어갈 수 있는 오래된 신사로, 바다와 항해의 신을 모셔요. 도심 한가운데인데도 큰 나무로 둘러싸여 조용해요.', ja: '博多駅から歩いて行ける古い神社で、海と航海の神様をまつります。街なかなのに大きな木々に囲まれて静かです。', tk: '라쿠스이엔 정원과 붙어 있어 같이 들르기 좋아요.', tj: '楽水園のすぐ隣なので一緒に寄るのがおすすめ。' },
+  rakusuien: { fee: 'paid', ko: '메이지 시대 상인의 별장 터에 만든 작은 일본 정원이에요. 연못과 폭포를 보며 다실에서 말차와 화과자를 맛볼 수 있어요.', ja: '明治時代の商人の別邸跡につくられた小さな日本庭園。池と滝を眺めながら茶室で抹茶と和菓子をいただけます。', tk: '입장료가 저렴하고 관광객이 적어 쉬어 가기 좋아요.', tj: '入園料が安く人も少ないので、ひと休みにぴったり。' },
+  taira: { pr: 1, ko: '현지인이 줄 서서 먹는 하카타 우동집이에요. 부드러운 면과 맑은 국물이 특징이고, 우엉 튀김(고보텐)을 올린 우동이 인기예요.', ja: '地元の人が並ぶ博多うどんの店。やわらかい麺と澄んだだしが特徴で、ごぼう天うどんが人気です。', tk: '점심 장사 위주라 일찍 닫아요. 오전~이른 오후에 가세요.', tj: '昼中心の営業で早めに閉まります。午前〜昼過ぎに。' },
+  mengaido: { pr: 1, ko: '하카타역 데이토스 2층의 라멘 골목이에요. 여러 라멘집이 모여 있어 줄이 짧은 곳을 골라 먹기 좋아요.', ja: '博多駅デイトス2階のラーメン街。いくつものラーメン店が集まり、空いている店を選んで食べられます。', tk: '기차 타기 전 시간이 애매할 때 들르기 좋아요.', tj: '列車に乗る前のすき間時間にも便利です。' },
+  mizutaki: { pr: 3, ko: '후쿠오카 향토 요리 미즈타키(닭 전골) 전문점이에요. 뽀얀 닭 육수에 닭고기와 채소를 익혀 먹고, 마지막에 남은 국물로 죽(조스이)을 만들어 줘요.', ja: '福岡の郷土料理・水炊きの専門店。白濁した鶏スープで鶏肉と野菜を煮て食べ、最後は残ったスープで雑炊に。', tk: '코스로 주문하는 곳이 많아요. 저녁은 예약 추천.', tj: 'コース注文が基本のことが多いです。夜は予約を。' },
+  canal: { ko: '건물 사이로 운하가 흐르는 대형 복합몰이에요. 운하에서 분수 쇼가 자주 열리고, 5층에는 전국 라멘집이 모인 「라멘 스타디움」이 있어요.', ja: '建物の間を運河が流れる大型複合施設。運河では噴水ショーが行われ、5階には全国のラーメン店が集まる「ラーメンスタジアム」があります。', tk: '저녁에는 분수 쇼에 조명이 더해져 더 예뻐요.', tj: '夜は噴水ショーに照明が加わってさらにきれいです。' },
+  kushida: { fee: 'free', ko: '「오쿠시다상」이라 불리는 하카타의 수호 신사예요. 7월 하카타 기온 야마카사 축제의 중심이고, 경내에는 커다란 장식 야마카사가 1년 내내 전시돼요.', ja: '「お櫛田さん」と呼ばれる博多の総鎮守。7月の博多祇園山笠の中心で、境内には巨大な飾り山笠が一年中展示されています。', tk: '캐널시티에서 걸어서 몇 분 거리라 함께 둘러보기 좋아요.', tj: 'キャナルシティから歩いて数分。一緒に回るのがおすすめ。' },
+  kawabata: { ko: '나카스카와바타역에서 쿠시다 신사까지 이어지는 오래된 아케이드 상점가예요. 기념품 가게와 노포가 많고, 「가와바타 젠자이 광장」에서는 단팥죽을 맛볼 수 있어요.', ja: '中洲川端駅から櫛田神社まで続く歴史あるアーケード商店街。お土産店や老舗が多く、「川端ぜんざい広場」ではぜんざいが味わえます。', tk: '단팥죽 가게는 주말 위주로 열어요.', tj: 'ぜんざいのお店は週末中心の営業です。' },
+  tochoji: { ko: '구카이(홍법대사)가 세웠다고 전해지는 사찰이에요. 높이 10m가 넘는 목조 좌불 「후쿠오카 대불」과 빨간 오층탑이 유명해요.', ja: '空海（弘法大師）が開いたと伝わるお寺。高さ10mを超える木造の座像「福岡大仏」と朱色の五重塔が有名です。', tk: '대불 아래 「지옥·극락 순례」 통로도 있어요. 대불전 안은 사진 촬영 금지예요.', tj: '大仏の下には「地獄・極楽めぐり」の通路も。大仏殿の中は撮影禁止です。' },
+  shofukuji: { fee: 'free', ko: '1195년 에이사이 선사가 세운 일본 최초의 선종 사찰이에요. 넓은 경내에 오래된 불전과 돌길이 이어져 조용히 산책하기 좋아요.', ja: '1195年に栄西禅師が開いた日本最初の禅寺。広い境内に古いお堂と石畳が続き、静かに散策できます。', tk: '건물 안은 대부분 비공개라 경내 산책 위주로 둘러봐요.', tj: '建物の内部はほとんど非公開なので、境内の散策が中心です。' },
+  machiya: { fee: 'paid', ko: '메이지 시대 하카타 상가 주택을 옮겨 지은 전시관이에요. 하카타오리 베 짜기와 하카타 인형 같은 전통 공예를 가까이서 볼 수 있어요.', ja: '明治時代の博多の町家を移築した展示館。博多織の機織りや博多人形など伝統工芸を間近で見られます。', tk: '기념품관은 무료로 들어갈 수 있어요.', tj: 'お土産処は無料で入れます。' },
+  yatainakasu: { pr: 2, ko: '나카강 강변에 저녁마다 포장마차(야타이)가 줄지어 서요. 라멘·꼬치구이·오뎅을 작은 카운터에 앉아 먹는 후쿠오카만의 밤 문화예요.', ja: '那珂川沿いに毎晩屋台が並びます。ラーメン・焼き鳥・おでんを小さなカウンターで味わう、福岡ならではの夜の文化です。', tk: '해 질 무렵부터 열고, 날씨가 나쁘면 쉬는 날이 있어요. 자리가 좁으니 짐은 가볍게.', tj: '夕方から営業し、悪天候の日は休むことも。席が狭いので荷物は少なめに。' },
+  ichiran: { pr: 1, ko: '1인용 칸막이 좌석에서 먹는 돈코츠 라멘 「이치란」의 본점이에요. 주문 용지에 면 익힘·맛 농도·매운 소스 양을 골라 내 입맛대로 먹어요.', ja: '一人ずつ仕切られた席で食べる豚骨ラーメン「一蘭」の本店。オーダー用紙で麺のかたさ・味の濃さ・辛いたれの量を選べます。', tk: '밤늦게까지 열어서 야타이 다음 코스로도 좋아요.', tj: '夜遅くまで開いているので屋台の後にも。' },
+  tetsunabe: { pr: 2, ko: '뜨거운 철 냄비째 나오는 한입 교자 전문점이에요. 바삭한 교자를 맥주와 함께 즐기는 집이라 메뉴가 단출해요.', ja: '熱々の鉄鍋ごと出てくるひとくち餃子の専門店。パリッとした餃子をビールと楽しむお店で、メニューはシンプルです。', tk: '저녁에만 열고 자리가 적어 줄을 설 수 있어요.', tj: '夜のみの営業で席が少なく、並ぶこともあります。' },
+  mentaiju: { pr: 2, ko: '명란젓 한 줄을 통째로 올리고 특제 다시마 소스를 뿌린 「멘타이쥬」 전문점이에요. 명란을 넣은 츠케멘도 인기예요.', ja: '明太子を一本まるごとのせ、特製の昆布だれをかけた「めんたい重」の専門店。明太子入りのつけ麺も人気です。', tk: '아침 일찍부터 열어 아침 식사로 좋아요.', tj: '朝早くから開いているので朝ごはんにも。' },
+  riverain: { fee: 'paid', ko: '하카타 리버레인 7~8층에 있는 아시아 근현대 미술 전문 미술관이에요. 아시아 각국 작가의 작품을 모아 전시해요.', ja: '博多リバレイン7〜8階にあるアジア近現代美術の専門美術館。アジア各国の作家の作品を集めて展示しています。', tk: '같은 건물에 카페와 쇼핑몰이 있어 비 오는 날 좋아요.', tj: '同じ建物にカフェやショップがあり、雨の日にもおすすめ。' },
+  yanagibashi: { pr: 2, ko: '「하카타의 부엌」이라 불리는 작은 시장이에요. 생선가게와 어묵·반찬 가게가 늘어서 있고, 해산물 덮밥을 파는 식당도 있어요.', ja: '「博多の台所」と呼ばれる小さな市場。鮮魚店やかまぼこ・惣菜の店が並び、海鮮丼を出す食堂もあります。', tk: '오전~이른 오후가 가장 활기차요. 일요일·공휴일은 쉬는 가게가 많아요.', tj: '午前〜昼過ぎがいちばん活気があります。日曜・祝日は休む店が多いです。' },
+  chikagai: { ko: '텐진 와타나베도리 아래로 길게 이어진 지하상가예요. 19세기 유럽풍 돌바닥과 조명이 특징이고, 패션·잡화·카페가 가득해요.', ja: '天神・渡辺通りの地下に長く続く地下街。19世紀ヨーロッパ風の石畳と照明が特徴で、ファッション・雑貨・カフェが並びます。', tk: '지하철 텐진역·텐진미나미역과 이어져 비 오는 날 이동 통로로도 좋아요.', tj: '地下鉄天神駅・天神南駅とつながっていて、雨の日の移動にも便利。' },
+  daimyo: { ko: '텐진 서쪽의 좁은 골목 동네예요. 편집숍, 빈티지 옷가게, 작은 카페와 식당이 모여 있어 걸어 다니며 구경하기 좋아요.', ja: '天神の西側に広がる路地の街。セレクトショップや古着屋、小さなカフェや飲食店が集まり、歩いて回るのが楽しいエリアです。', tk: '오후에 가야 대부분 가게가 열려 있어요.', tj: '午後に行くとほとんどの店が開いています。' },
+  onefukuoka: { ko: '옛 후쿠오카 빌딩 자리에 2025년 문을 연 텐진의 새 랜드마크예요. 쇼핑·식당·호텔이 함께 들어선 고층 복합 빌딩이에요.', ja: '旧福岡ビルの跡地に2025年に開業した天神の新しいランドマーク。ショップ・レストラン・ホテルが入る高層複合ビルです。', tk: '텐진 한복판 교차로에 있어 찾기 쉬워요.', tj: '天神の中心の交差点にあるので見つけやすいです。' },
+  parco: { ko: '텐진역과 바로 이어진 쇼핑몰이에요. 패션 외에도 애니메이션·캐릭터 굿즈 숍과 팝업 매장이 많아요.', ja: '天神駅直結のショッピングモール。ファッションのほか、アニメ・キャラクターグッズの店やポップアップストアが多いです。', tk: '지하에 식당가도 있어요.', tj: '地下にはレストラン街もあります。' },
+  akarenga: { fee: 'free', ko: '1909년 보험회사 지점으로 지은 붉은 벽돌 건물로, 도쿄역을 설계한 다쓰노 긴고의 작품이에요. 국가 중요문화재이고, 지금은 IT 엔지니어 교류 공간 「엔지니어 카페」가 들어와 있어요. 입장은 무료예요.', ja: '1909年に保険会社の支店として建てられた赤レンガの建物で、東京駅を設計した辰野金吾の作品。国の重要文化財で、現在はITエンジニアの交流拠点「エンジニアカフェ」が入っています。入館無料。', tk: '아치 창과 돔 지붕이 있는 외관을 꼭 사진으로 남겨 보세요.', tj: 'アーチ窓とドーム屋根の外観はぜひ写真に。' },
+  suikyo: { fee: 'free', ko: '스가와라노 미치자네가 강물에 얼굴을 비춰 봤다는 이야기에서 이름이 생긴 작은 신사예요. 「텐진」이라는 지명이 이 신사에서 나왔어요.', ja: '菅原道真が川面に姿を映したという伝説から名づけられた小さな神社。「天神」という地名はこの神社に由来します。', tk: '빌딩 숲 사이에 있어 산책 중 잠깐 들르기 좋아요.', tj: 'ビルの間にあるので散策の途中に気軽に寄れます。' },
+  centralpark: { fee: 'part', ko: '나카강 변의 잔디 공원이에요. 공원 안 「구 후쿠오카현 공회당 귀빈관」은 1910년에 지은 프랑스 르네상스풍 목조 건물로 국가 중요문화재예요.', ja: '那珂川沿いの芝生の公園。園内の「旧福岡県公会堂貴賓館」は1910年に建てられたフランス・ルネサンス様式の木造建築で、国の重要文化財です。', tk: '공원은 무료이고, 귀빈관 안은 소액 입장료가 있어요.', tj: '公園は無料、貴賓館の中は少額の入館料がかかります。' },
+  kego: { fee: 'free', ko: '텐진 한복판, 백화점 사이에 있는 신사예요. 도심 속 작은 숲처럼 조용하고, 옆에 케고 공원이 있어 잠깐 쉬어 가기 좋아요.', ja: '天神の真ん中、デパートの間にある神社。街なかの小さな森のように静かで、隣の警固公園でひと休みもできます。', tk: '쇼핑 중간에 들르기 좋은 위치예요.', tj: 'ショッピングの合間に寄りやすい場所です。' },
+  shinshin: { pr: 1, ko: '가는 면과 깔끔하면서 진한 돈코츠 국물로 현지인에게 인기 많은 하카타 라멘집이에요. 볶음밥 같은 사이드 메뉴도 인기예요.', ja: '細麺とすっきりしながらコクのある豚骨スープで地元でも人気の博多ラーメン店。焼き飯などのサイドメニューも好評です。', tk: '밤늦게까지 열어 2차 코스로 좋아요.', tj: '夜遅くまで開いているので二軒目にも。' },
+  hirao: { pr: 1, ko: '주문하면 눈앞에서 갓 튀긴 튀김을 한 개씩 접시에 올려 주는 텐푸라 정식집이에요. 테이블의 오징어 젓갈과 반찬은 마음껏 먹을 수 있어요.', ja: '揚げたての天ぷらを一品ずつお皿にのせてくれる天ぷら定食の店。テーブルのイカの塩辛やお漬物は食べ放題です。', tk: '식권을 먼저 사는 방식이에요.', tj: '先に食券を買うスタイルです。' },
+  yataitenjin: { pr: 2, ko: '와타나베도리와 쇼와도리 주변에 밤마다 들어서는 포장마차 거리예요. 나카스보다 현지 직장인이 많고, 프렌치·이탈리안을 파는 이색 야타이도 있어요.', ja: '渡辺通り・昭和通り周辺に毎晩並ぶ屋台街。中洲より地元の会社員が多く、フレンチやイタリアンの変わり種屋台もあります。', tk: '해 질 무렵 열고 비 오는 날은 쉴 수 있어요.', tj: '夕方から営業。雨の日は休むことがあります。' },
+  manu: { pr: 1, ko: '후쿠오카를 대표하는 로스터리 카페예요. 직접 볶은 원두로 내린 커피와 라떼가 인기이고, 원두를 기념품으로 사 가기도 좋아요.', ja: '福岡を代表するロースタリーカフェ。自家焙煎のコーヒーとラテが人気で、豆はお土産にもぴったり。', tk: '다이묘 골목 구경 중 쉬어 가기 좋아요.', tj: '大名散策の途中のひと休みに。' },
+  ohoripark: { fee: 'free', ko: '후쿠오카성 해자였던 커다란 호수를 중심으로 한 공원이에요. 호수를 한 바퀴(약 2km) 걷거나 오리배를 탈 수 있고, 일본 정원과 미술관도 공원 안에 있어요.', ja: '福岡城の外堀だった大きな池を中心にした公園。池を一周（約2km）歩いたり、ボートに乗ったりでき、日本庭園や美術館も園内にあります。', tk: '해 질 녘 산책이 특히 좋아요.', tj: '夕暮れどきの散歩が特におすすめ。' },
+  sbohori: { pr: 1, ko: '오호리 호숫가에 있는 스타벅스예요. 통유리와 테라스 너머로 호수가 보여 공원 산책 중 쉬어 가기 좋아요.', ja: '大濠公園の池のほとりにあるスターバックス。ガラス窓とテラスの向こうに池が広がり、散歩の休憩にぴったり。', tk: '주말 오후에는 자리가 금방 차요.', tj: '週末の午後はすぐ満席になります。' },
+  jgarden: { fee: 'paid', ko: '오호리 공원 남쪽의 본격적인 일본 정원이에요. 연못과 폭포, 돌다리가 어우러져 계절마다 다른 풍경을 보여 줘요.', ja: '大濠公園の南側にある本格的な日本庭園。池と滝、石橋が調和し、季節ごとに違う景色を見せてくれます。', tk: '입장료가 저렴하고 사람이 적어 조용히 둘러볼 수 있어요.', tj: '入園料が安く、人が少ないので静かに見て回れます。' },
+  artmuseum: { fee: 'paid', ko: '오호리 공원 안 미술관이에요. 달리·미로·워홀 같은 서양 근현대 작품과 일본 미술을 소장하고, 입구에는 구사마 야요이의 호박 작품도 있어요.', ja: '大濠公園内の美術館。ダリ、ミロ、ウォーホルなど西洋の近現代美術と日本美術を所蔵し、入口には草間彌生の南瓜の作品もあります。', tk: '로비에서 호수를 보며 쉬어 가기 좋아요.', tj: 'ロビーから池を眺めてひと休みできます。' },
+  castle: { fee: 'free', ko: '에도 시대 후쿠오카번의 성터예요. 천수각은 남아 있지 않지만 천수대 터에 오르면 시내와 오호리 공원이 한눈에 보이고, 봄에는 벚꽃 명소예요.', ja: '江戸時代の福岡藩の城跡。天守閣はありませんが、天守台に上ると街と大濠公園が一望でき、春は桜の名所です。', tk: '오호리 공원과 붙어 있어 함께 걸어서 둘러보세요.', tj: '大濠公園の隣なので一緒に歩いて回れます。' },
+  ropponmatsu: { ko: '츠타야 서점과 후쿠오카시 과학관이 들어 있는 복합 빌딩이에요. 과학관에는 플라네타륨과 체험 전시가 있어 아이와 함께 가기 좋아요.', ja: '蔦屋書店と福岡市科学館が入る複合ビル。科学館にはプラネタリウムや体験型の展示があり、子ども連れにもおすすめ。', tk: '지하철 나나쿠마선 롯폰마츠역 바로 앞이에요.', tj: '地下鉄七隈線・六本松駅のすぐ前です。' },
+  tower: { fee: 'paid', ko: '높이 234m의 해변 타워로, 8,000장의 하프미러 유리로 덮여 있어요. 123m 전망대에서 하카타만과 시내가 360도로 보이고, 밤에는 계절마다 다른 조명이 켜져요.', ja: '高さ234mの海辺のタワーで、8,000枚のハーフミラーに覆われています。123mの展望室から博多湾と街を360度見渡せ、夜は季節ごとのライトアップも。', tk: '해 지기 30분 전쯤 올라가면 노을과 야경을 한 번에 볼 수 있어요.', tj: '日没の30分前ごろに上ると、夕日と夜景を一度に楽しめます。' },
+  seaside: { fee: 'free', ko: '후쿠오카 타워 앞에 펼쳐진 인공 해변 공원이에요. 바다 위에 지은 리조트풍 건물 「마리존」에는 레스토랑과 웨딩 채플이 있어요.', ja: '福岡タワーの前に広がる人工ビーチの公園。海の上に建つリゾート風の建物「マリゾン」にはレストランやチャペルがあります。', tk: '노을 질 때 해변 산책이 가장 예뻐요.', tj: '夕焼けの時間の浜辺散歩がいちばんきれいです。' },
+  dome: { ko: '일본 최초의 개폐식 지붕 돔구장으로, 프로야구 소프트뱅크 호크스의 홈구장이에요. 시즌 중에는 경기를, 비시즌에는 콘서트와 이벤트를 볼 수 있어요.', ja: '日本初の開閉式屋根のドーム球場で、福岡ソフトバンクホークスの本拠地。シーズン中は試合、オフはコンサートやイベントが開かれます。', tk: '경기 일정과 티켓은 구단 사이트에서 미리 확인하세요.', tj: '試合日程とチケットは球団サイトで事前に確認を。' },
+  bosseazo: { fee: 'paid', ko: '돔 옆 엔터테인먼트 빌딩이에요. 몸으로 즐기는 디지털 아트 「팀랩 포레스트」, 옥상의 짚라인·슬라이드 같은 스릴 어트랙션, 왕정치 야구 박물관이 있어요.', ja: 'ドーム隣のエンタメビル。体を使って楽しむデジタルアート「チームラボフォレスト」、屋上のジップラインやスライダー、王貞治ベースボールミュージアムがあります。', tk: '어트랙션마다 요금이 따로 있어요.', tj: 'アトラクションごとに料金がかかります。' },
+  citymuseum: { fee: 'paid', ko: '후쿠오카의 역사를 다루는 박물관으로, 교과서에도 나오는 국보 금인 「한위노국왕」 도장을 실제로 볼 수 있어요.', ja: '福岡の歴史を紹介する博物館で、教科書にも登場する国宝の金印「漢委奴国王」を実際に見ることができます。', tk: '금인은 생각보다 작아요(한 변 약 2.3cm). 대규모 리뉴얼로 몇 년간 휴관할 예정이니 가기 전에 공식 사이트에서 개관 여부를 확인하세요.', tj: '金印は思ったより小さく、一辺約2.3cm。大規模リニューアルで数年間休館する予定なので、行く前に公式サイトで開館状況を確認を。' },
+  markis: { ko: '돔 바로 옆의 대형 쇼핑몰이에요. 패션·잡화·식당가가 모여 있어 타워·돔 구경 전후로 들르기 좋아요.', ja: 'ドームのすぐ隣の大型ショッピングモール。ファッション・雑貨・レストランが集まり、タワーやドームの前後に寄りやすいです。', tk: '비 오는 날 모모치 쪽 일정의 피난처로 좋아요.', tj: '雨の日のももちエリアの避難場所にも。' },
+  nishijin: { ko: '니시진역 주변에 이어진 서민 상점가예요. 할머니들이 리어카에 채소와 과일, 반찬을 싣고 파는 「리어카 부대」로 유명해요.', ja: '西新駅周辺に続く下町の商店街。おばあちゃんたちが野菜や果物、お惣菜をリヤカーで売る「リヤカー部隊」で有名です。', tk: '리어카 노점은 월~토 오후 1시~7시쯤 나와요. 요즘은 몇 대 정도로 줄었어요.', tj: 'リヤカーの露店は月〜土の13時〜19時ごろ。最近は数台ほどに減っています。' },
+  baysideplace: { ko: '하카타항 여객 터미널 옆 쇼핑·식당 단지예요. 해산물 식당과 기념품점이 있고, 건물 안 높이 약 8m의 원통형 수족관도 볼거리예요.', ja: '博多港の旅客ターミナル隣のショッピング・飲食エリア。海鮮レストランやお土産店があり、館内の高さ約8mの円柱水槽も見どころです。', tk: '시카노시마·우미노나카미치로 가는 배를 여기서 타요.', tj: '志賀島・海の中道行きの船はここから乗ります。' },
+  porttower: { fee: 'free', ko: '1964년에 세운 높이 100m의 빨간 철탑이에요. 70m 높이 전망실에 무료로 올라가 하카타항을 내려다볼 수 있고, 전망실은 2026년 초에 새로 단장했어요.', ja: '1964年に建てられた高さ100mの赤いタワー。高さ70mの展望室に無料で上り、博多港を見下ろせます。展望室は2026年初めにリニューアルしました。', tk: '아래층 항만 전시관도 무료예요.', tj: '下の階の港の展示館も無料です。' },
+  nagahamaya: { pr: 1, ko: '1952년 문을 연 나가하마 라멘의 원조집이에요. 메뉴는 라멘 하나뿐이고, 가는 면과 가벼운 돈코츠 국물이 특징이에요. 면 추가(카에다마) 문화가 여기서 시작됐다고 해요.', ja: '1952年創業の長浜ラーメンの元祖。メニューはラーメン一品のみで、細麺とあっさりした豚骨スープが特徴。替え玉の文化はここから始まったといわれます。', tk: '회전이 빨라 줄이 있어도 금방 들어가요.', tj: '回転が速いので、行列があってもすぐ入れます。' },
+  hakozakigu: { fee: 'free', ko: '일본 3대 하치만궁 중 하나로 꼽히는 신사예요. 누문에 걸린 「적국항복」 편액이 유명하고, 참배길이 바다까지 곧게 이어져요.', ja: '日本三大八幡宮のひとつに数えられる神社。楼門の「敵国降伏」の扁額が有名で、参道が海までまっすぐ続いています。', tk: '9월 「호조야」 축제 때는 참배길에 노점이 가득해요.', tj: '9月の「放生会」の時期は参道に露店がずらりと並びます。' },
+  tenmangu: { fee: 'free', ko: '학문의 신 스가와라노 미치자네를 모신 전국 텐만구의 총본궁이에요. 합격·학업 기원 참배객이 많고, 본전 앞 매화나무 「도비우메」와 소 동상이 유명해요. 본전은 2026년 봄에 124년 만의 대수리를 마쳐 화려한 옛 모습을 되찾았어요.', ja: '学問の神様・菅原道真をまつる全国天満宮の総本宮。合格祈願の参拝者が多く、本殿前の梅の木「飛梅」と牛の像が有名です。本殿は2026年春に124年ぶりの大改修を終え、華やかな姿がよみがえりました。', tk: '소 동상 머리를 쓰다듬으면 머리가 좋아진다는 이야기가 있어요. 아침 일찍 가면 덜 붐벼요.', tj: '牛の像の頭をなでると賢くなるといわれます。朝早めが空いています。' },
+  omotesando: { pr: 1, ko: '니시테츠 다자이후역에서 텐만구까지 이어지는 참배길이에요. 팥소를 넣고 구운 찹쌀떡 「우메가에모치」 가게가 줄지어 있고 기념품점과 카페도 많아요.', ja: '西鉄太宰府駅から天満宮まで続く参道。あんこ入りの焼き餅「梅ヶ枝餅」の店が並び、お土産店やカフェも多いです。', tk: '매달 25일에는 쑥 우메가에모치를 파는 가게가 있어요.', tj: '毎月25日はよもぎ入りの梅ヶ枝餅を売るお店もあります。' },
+  sbdazaifu: { pr: 1, ko: '건축가 구마 겐고가 설계한 스타벅스로, 약 2,000개의 나무 막대를 엮어 만든 실내가 유명해요.', ja: '建築家・隈研吾が設計したスターバックス。約2,000本の木の棒を組んだ店内が有名です。', tk: '사진 찍는 사람이 많아요. 안쪽 정원 쪽 자리도 있어요.', tj: '写真を撮る人が多い店。奥の中庭側にも席があります。' },
+  kyuhaku: { fee: 'paid', ko: '2005년에 문을 연 일본의 네 번째 국립박물관이에요. 아시아와의 교류 역사를 주제로 전시하고, 텐만구 쪽에서 무지갯빛 에스컬레이터 터널로 이어져요.', ja: '2005年に開館した日本で4番目の国立博物館。アジアとの交流の歴史をテーマに展示し、天満宮側から虹色のエスカレーターのトンネルでつながっています。', tk: '1층 로비와 터널은 무료로 구경할 수 있어요.', tj: '1階のロビーとトンネルは無料で見学できます。' },
+  komyozenji: { fee: 'paid', ko: '「규슈의 이끼 절」이라 불리는 작은 선종 사찰이에요. 이끼와 흰 모래로 바다를 표현한 정원과, 돌로 「빛 광(光)」 자를 그린 정원이 있어요.', ja: '「九州の苔寺」と呼ばれる小さな禅寺。苔と白砂で海を表した庭と、石で「光」の字をかたどった庭があります。', tk: '단풍 시기에 특히 아름다워요. 툇마루에 앉아 조용히 감상해 보세요.', tj: '紅葉の季節は特に見事。縁側に座って静かに眺めてみてください。' },
+  kamado: { fee: 'free', ko: '다자이후 북동쪽 호만산 기슭의 신사로, 인연 맺기 명소예요. 가을이면 참배길 단풍이 아름답고, 모던한 디자인의 부적 판매소도 볼거리예요.', ja: '太宰府の北東、宝満山のふもとにある縁結びの神社。秋は参道の紅葉が美しく、モダンなデザインの授与所も見どころです。', tk: '다자이후역에서 커뮤니티 버스 「마호로바호」로 약 10분이에요.', tj: '太宰府駅からコミュニティバス「まほろば号」で約10分。' },
+  dazaifulunch: { pr: 1, ko: '참배길과 주변에 우동·소바·덮밥 같은 점심 식당이 모여 있어요. 그날 줄이 짧은 곳을 골라 들어가면 돼요.', ja: '参道とその周辺に、うどん・そば・丼などのお店が集まっています。その日空いているお店を選べばOK。', tk: '주말 점심은 붐비니 11시대에 먹으면 편해요.', tj: '週末のお昼は混むので11時台がおすすめ。' },
+  futamigaura: { fee: 'free', ko: '바다 위에 선 하얀 도리이와 금줄로 묶인 부부바위가 있는 해안이에요. 노을 명소로 유명하고, 하지 무렵에는 두 바위 사이로 해가 져요.', ja: '海に立つ白い鳥居と、しめ縄で結ばれた夫婦岩がある海岸。夕日の名所で、夏至のころは二つの岩の間に日が沈みます。', tk: '주변에 바다 전망 카페가 많아요.', tj: '周辺には海の見えるカフェが多いです。' },
+  palmbeach: { pr: 2, ko: '이토시마 해변 바로 앞의 레스토랑·카페 단지예요. 바다를 배경으로 한 그네와 하얀 건물이 있어 사진 명소로 인기예요.', ja: '糸島の海辺に面したレストラン・カフェの複合施設。海を背景にしたブランコや白い建物があり、写真スポットとして人気です。', tk: '노을 시간에 맞춰 가면 분위기가 좋아요.', tj: '夕暮れどきに合わせて行くと雰囲気抜群。' },
+  shiraito: { fee: 'free', ko: '산속에 있는 높이 24m의 폭포예요. 여름에는 흐르는 물에 소면을 건져 먹는 「나가시 소멘」을, 6월에는 수국을 즐길 수 있어요.', ja: '山の中にある落差24mの滝。夏は流しそうめん、6月はあじさいが楽しめます。', tk: '대중교통이 불편해서 렌터카나 택시로 가요.', tj: '公共交通が不便なので、レンタカーかタクシーで。' },
+  keya: { fee: 'part', ko: '현무암 기둥이 늘어선 일본 최대급 해식동굴이에요. 유람선을 타면 바다 쪽에서 동굴 입구 가까이까지 들어가 볼 수 있어요.', ja: '玄武岩の柱が並ぶ日本最大級の海食洞。遊覧船に乗ると、海側から洞窟の入口近くまで行けます。', tk: '유람선은 날씨와 계절에 따라 쉬는 날이 있어요.', tj: '遊覧船は天候や季節によって運休することがあります。' },
+  kakigoya: { pr: 2, ko: '겨울철에만 바닷가에 문을 여는 굴 오두막이에요. 이토시마 앞바다에서 키운 굴을 숯불에 직접 구워 먹고, 소라·가리비 같은 해산물도 있어요.', ja: '冬の間だけ海辺にオープンする牡蠣小屋。糸島の海で育った牡蠣を炭火で自分で焼いて食べ、サザエやホタテもあります。', tk: '늦가을부터 봄 전까지만 열어요. 옷에 냄새가 배니 겉옷을 챙기세요.', tj: '晩秋から春先までの営業。においがつくので上着の用意を。' },
+  itosaisai: { ko: 'JA 이토시마가 운영하는 대형 농수산물 직판장이에요. 이토시마산 채소·과일·고기·해산물이 가득하고, 겨울~봄에는 딸기가 인기예요.', ja: 'JA糸島が運営する大型の農水産物直売所。糸島産の野菜・果物・肉・魚がそろい、冬〜春はいちごが人気です。', tk: '아침 일찍 가야 물건이 많아요.', tj: '朝早く行くほど品ぞろえが豊富です。' },
+  nokopark: { fee: 'paid', ko: '노코노시마 북쪽 언덕의 꽃 공원이에요. 봄에는 유채꽃, 가을에는 코스모스가 바다를 배경으로 피고, 옛 마을 거리를 재현한 구역도 있어요.', ja: '能古島北側の丘にある花の公園。春は菜の花、秋はコスモスが海を背景に咲き、昔の町並みを再現したエリアもあります。', tk: '선착장에서 섬 버스로 공원 앞까지 가요.', tj: '渡船場から島のバスで公園前まで行けます。' },
+  nokoichi: { ko: '노코노시마 선착장 앞 직판장이에요. 섬에서 기른 채소와 감귤, 수제 과자를 팔아요.', ja: '能古島の渡船場前にある直売所。島で育った野菜やみかん、手づくりのお菓子が並びます。', tk: '공원 가는 버스를 기다리며 둘러보기 좋아요.', tj: '公園行きのバスを待つ間にのぞいてみて。' },
+  nokolunch: { pr: 1, ko: '섬에는 식당이 많지 않아요. 아일랜드 파크 안 식당이나 선착장 주변 가게에서 노코 우동 같은 섬 음식을 먹어요.', ja: '島には飲食店が多くありません。アイランドパーク内の食堂や渡船場周辺のお店で、能古うどんなど島の味を。', tk: '식당이 일찍 닫으니 점심은 일찍 해결하세요.', tj: 'お店は早めに閉まるので、お昼は早めに。' },
+  umipark: { fee: 'paid', ko: '바다 사이로 길게 뻗은 땅 위의 넓은 국영 공원이에요. 자전거를 빌려 꽃밭과 놀이 시설, 작은 동물을 만나는 「동물의 숲」을 돌아볼 수 있어요.', ja: '海に挟まれて細長くのびる土地にある広い国営公園。自転車を借りて花畑や遊具、小動物とふれあえる「動物の森」を巡れます。', tk: '공원이 아주 넓어서 입구에서 자전거를 빌리는 걸 추천해요.', tj: 'とても広いので入口でレンタサイクルを借りるのがおすすめ。' },
+  marineworld: { fee: 'paid', ko: '규슈의 바다를 테마로 한 수족관이에요. 대형 수조와 해파리·상어 전시, 바다를 배경으로 한 돌고래·바다사자 쇼가 인기예요.', ja: '九州の海をテーマにした水族館。大水槽やクラゲ・サメの展示、海を背景にしたイルカ・アシカショーが人気です。', tk: '쇼 시간표를 먼저 보고 동선을 짜세요.', tj: 'ショーの時間を先に確認してから回りましょう。' },
+  shikaumi: { fee: 'free', ko: '바다의 신을 모신 시카노시마의 신사예요. 경내에는 1만 개가 넘는 사슴뿔을 모신 「녹각당」이 있고 바다 전망도 좋아요.', ja: '海の神をまつる志賀島の神社。境内には一万本以上の鹿の角を納めた「鹿角堂」があり、海の眺めも見事です。', tk: '섬 해안 도로를 따라 드라이브하기 좋아요.', tj: '島の海岸道路のドライブもおすすめ。' },
+  kinin: { fee: 'free', ko: '1784년 농부가 국보 금인을 발견한 자리에 만든 작은 공원이에요. 기념비와 금인 복제품이 있고 하카타만 전망이 좋아요.', ja: '1784年に農民が国宝の金印を発見した場所につくられた小さな公園。記念碑と金印のレプリカがあり、博多湾の眺めも良好です。', tk: '진짜 금인은 후쿠오카시 박물관에서 볼 수 있어요.', tj: '本物の金印は福岡市博物館で見られます。' },
+  umilunch: { pr: 1, ko: '마린월드와 해변공원 안 식당에서 간단히 점심을 먹을 수 있어요. 주변에 다른 식당이 적어요.', ja: 'マリンワールドや海浜公園内の食堂で手軽にランチ。周辺にほかの飲食店は少なめです。', tk: '공원 안에서는 매점도 이용할 수 있어요.', tj: '園内では売店も利用できます。' },
+  kawakudari: { fee: 'paid', ko: '사공이 긴 장대로 배를 저으며 수로를 따라가는 야나가와 명물 뱃놀이(약 70분)예요. 사공이 노래와 설명을 곁들이고, 겨울에는 배 안에 고타츠를 놓아요.', ja: '船頭さんが竿で舟を進め、水路をめぐる柳川名物の川下り（約70分）。船頭さんの歌や案内付きで、冬はこたつ舟になります。', tk: '모자와 햇빛 가리개를 챙기면 좋아요. 다리 밑을 지날 땐 몸을 숙여요.', tj: '帽子や日よけがあると快適。橋の下では身をかがめます。' },
+  ohana: { fee: 'paid', ko: '야나가와를 다스린 다치바나 가문의 저택이에요. 메이지 시대 서양관과 큰 연회장, 바다 풍경을 본뜬 정원 「쇼토엔」을 둘러볼 수 있어요.', ja: '柳川を治めた立花家の邸宅。明治の西洋館や大広間、海の景色を表した庭園「松濤園」を見学できます。', tk: '뱃놀이 하선장 근처라 이어서 둘러보기 좋아요.', tj: '川下りの下船場の近くなので続けて回れます。' },
+  unagi: { pr: 3, ko: '1681년에 문을 열었다고 전해지는 장어 요리 노포예요. 양념한 밥 위에 장어를 올려 찜통째 쪄낸 야나가와 명물 「세이로무시」를 맛볼 수 있어요.', ja: '1681年創業と伝わるうなぎ料理の老舗。たれをまぶしたご飯にうなぎをのせて蒸し上げる柳川名物「せいろ蒸し」が味わえます。', tk: '점심은 줄이 길어요.', tj: 'お昼どきは行列ができます。' },
+  yunotsubo: { ko: '유후인역에서 긴린코 호수까지 이어지는 메인 거리예요. 잡화점, 디저트 가게, 고로케·푸딩 같은 길거리 간식이 줄지어 있어요.', ja: '由布院駅から金鱗湖まで続くメインストリート。雑貨店やスイーツ店、コロッケやプリンなどの食べ歩きグルメが並びます。', tk: '한낮에는 붐비니 아침이나 늦은 오후가 걷기 편해요.', tj: '日中は混むので、朝か夕方が歩きやすいです。' },
+  kinrinko: { fee: 'free', ko: '바닥에서 온천수와 맑은 물이 함께 솟는 작은 호수예요. 추운 가을·겨울 이른 아침에는 호수 위로 물안개가 피어올라요.', ja: '湖底から温泉と清水が湧き出る小さな湖。寒い秋冬の早朝には湖面に朝霧が立ちのぼります。', tk: '호숫가 카페에서 쉬어 가기 좋아요.', tj: '湖畔のカフェでひと休みできます。' },
+  floral: { ko: '영국 시골 마을을 본뜬 작은 테마 거리예요. 동화 같은 건물 사이로 잡화 가게와 카페가 모여 있어요.', ja: 'イギリスの田舎町をイメージした小さなテーマ通り。おとぎ話のような建物の間に雑貨店やカフェが集まっています。', tk: '유노츠보 거리 끝 쪽에 있어 함께 들르기 좋아요.', tj: '湯の坪街道の先にあるので一緒に寄れます。' },
+  yufuonsen: { fee: 'paid', ko: '유후인에는 당일 입욕을 받는 료칸과 온천이 많아요. 유후다케 산이 보이는 노천탕에서 여행 피로를 풀어 보세요.', ja: '由布院には日帰り入浴ができる旅館や温泉がたくさん。由布岳を望む露天風呂で旅の疲れを癒して。', tk: '수건을 챙기거나 현장에서 사요. 문신이 있으면 입장이 제한될 수 있어요.', tj: 'タオルは持参か現地で購入。タトゥーがあると入浴を断られることがあります。' },
+  yufulunch: { pr: 2, ko: '유노츠보 거리와 역 주변에 소바, 분고규(오이타 소고기) 덮밥, 정식집이 많아요.', ja: '湯の坪街道と駅周辺には、そば、豊後牛の丼、定食のお店が多くあります。', tk: '인기 가게는 대기표를 받고 거리 구경을 하면 좋아요.', tj: '人気店は順番待ちの間に通りを散策するのがおすすめ。' },
+  jigoku: { fee: 'paid', ko: '땅에서 뜨거운 온천이 솟는 「지옥」 7곳을 도는 벳푸 대표 코스예요. 코발트빛 「바다 지옥」, 붉은 「피의 연못 지옥」, 주기적으로 물을 뿜는 「용권 지옥」 등이 있어요.', ja: '地中から熱い温泉が噴き出す7つの「地獄」を巡る別府の定番コース。コバルトブルーの「海地獄」、赤い「血の池地獄」、周期的に噴き上がる「龍巻地獄」などがあります。', tk: '공통 관람권을 사면 여러 곳을 저렴하게 볼 수 있어요. 들어가는 온천이 아니라 보는 온천이에요.', tj: '共通観覧券を買うとお得に回れます。入る温泉ではなく見る温泉です。' },
+  jigokumushi: { pr: 2, ko: '온천 증기로 재료를 쪄 먹는 체험형 식당이에요. 해산물·채소·달걀 등을 골라 직접 증기 가마에 넣고 쪄 먹어요.', ja: '温泉の蒸気で食材を蒸して食べる体験型の食事処。魚介や野菜、卵などを選び、自分で蒸し窯に入れて味わいます。', tk: '족욕 시설도 있어요.', tj: '足湯もあります。' },
+  takegawara: { fee: 'paid', ko: '1879년 문을 연 벳푸의 상징 같은 공중목욕탕이에요. 1938년에 지은 목조 건물이 그대로 남아 있고, 따뜻한 모래를 덮는 모래찜질을 체험할 수 있어요.', ja: '1879年創業、別府の象徴ともいえる共同浴場。1938年築の木造建築がそのまま残り、温かい砂をかける砂湯が体験できます。', tk: '일반 탕은 아주 저렴해요. 비누·수건은 챙겨 가세요.', tj: '普通浴はとても安いです。石けん・タオルは持参を。' },
+  mojiretro: { fee: 'free', ko: '메이지~다이쇼 시대의 서양식 건물이 남아 있는 항구 거리예요. 1914년에 지은 모지코역 역사와 옛 세관 건물, 도개교 「블루윙 모지」가 볼거리예요.', ja: '明治〜大正時代の洋風建築が残る港町。1914年築の門司港駅舎や旧門司税関、跳ね橋「ブルーウィングもじ」が見どころです。', tk: '해 질 녘부터 건물 조명이 켜져 밤 산책도 좋아요.', tj: '夕方からは建物がライトアップされ、夜の散策もおすすめ。' },
+  yakicurry: { pr: 2, ko: '카레 위에 치즈와 달걀을 올려 오븐에 구운 모지코 명물 「야키카레」예요. 항구 주변 여러 가게에서 맛볼 수 있어요.', ja: 'カレーにチーズと卵をのせてオーブンで焼いた門司港名物「焼きカレー」。港周辺の多くのお店で味わえます。', tk: '가게마다 맛이 달라서 지도에서 평이 좋은 곳을 골라 보세요.', tj: 'お店ごとに味が違うので、地図で評判のいいお店を選んで。' },
+  kanmon: { fee: 'free', ko: '바다 밑 약 780m를 걸어서 규슈에서 혼슈(시모노세키)로 건너가는 해저 터널이에요. 터널 중간 바닥에 후쿠오카현·야마구치현 경계선이 그려져 있어요.', ja: '海底の約780mを歩いて九州から本州（下関）へ渡る海底トンネル。途中の床には福岡県と山口県の県境が描かれています。', tk: '보행자는 무료예요. 엘리베이터로 지하까지 내려가요.', tj: '歩行者は無料。エレベーターで地下へ降ります。' },
+  kokura: { fee: 'paid', ko: '1602년 호소카와 다다오키가 세운 성으로, 지금의 천수각은 1959년에 다시 지었어요. 천수각 안 전시와 옆 「고쿠라성 정원」을 함께 둘러볼 수 있어요.', ja: '1602年に細川忠興が築いた城で、現在の天守閣は1959年の再建。天守閣内の展示と隣の「小倉城庭園」を一緒に楽しめます。', tk: '고쿠라역에서 걸어서 갈 수 있어요.', tj: '小倉駅から歩いて行けます。' }
+};
 
 // ===== 일정 엔진 =====
 const AREA = Object.fromEntries(AREAS.map(a => [a.id, a]));
@@ -1323,7 +1474,7 @@ function mealWin(t) { return t >= 660 && t <= 870 ? 'L' : t >= 1050 && t <= 1260
 function nextOpen(t, used) { if (!used.L && t < 660) return 660; if (!used.D && t < 1050) return 1050; return null; }
 function weekday(date) { return new Date(date + 'T00:00:00').getDay(); }
 function inSeason(s, date) { return !s.se || s.se.includes(Number(date.slice(5, 7))); }
-const WD = ['일', '월', '화', '수', '목', '금', '토'];
+let WD = ['일', '월', '화', '수', '목', '금', '토'];
 
 function createPlan(set, areaIds) {
   const dates = datesBetween(set.start, set.end); const N = dates.length;
@@ -1712,6 +1863,872 @@ function farePlan(plan) {
 
 if (typeof module !== 'undefined') module.exports = { farePlan, dayFares, taxiFare, subwayFare, rebalance, pickSpots, createPlan, computeDay, walkRecs, applyWalk, replanFrom, insertBest, legOptions, subRoute, fmt, toMin, SPOT, AREA, km, itemName, reorderDay, trimDay, leadingFixed };
 
+// ===== 한국어 ↔ 일본어 =====
+// 화면은 한국어로 그리고, 일본어일 때는 그려진 글자를 사전으로 바꿔요.
+// 사전 키에서 장소 이름은 {@}, 숫자는 {#}, 이미 일본어인 부분은 {J} 로 바꿔서 찾아요.
+let LANG = (() => { try { return JSON.parse(localStorage.getItem('fk-lang') || '"ko"') === 'ja' ? 'ja' : 'ko'; } catch (e) { return 'ko'; } })();
+const WD_KO = ['일', '월', '화', '수', '목', '금', '토'], WD_JA = ['日', '月', '火', '水', '木', '金', '土'];
+const HANGUL = /[가-힣ㄱ-ㆎ]/;
+const NAME_FIX = {
+  // 동네
+  '하카타역': '博多駅', '나카스·기온': '中洲・祇園', '텐진·다이묘': '天神・大名', '오호리공원·성터': '大濠公園・城跡', '모모치 해변': 'シーサイドももち',
+  '베이사이드·하코자키': 'ベイサイド・箱崎', '다자이후': '太宰府', '이토시마': '糸島', '노코노시마': '能古島', '우미노나카미치': '海の中道',
+  '야나가와': '柳川', '유후인': '由布院', '벳푸': '別府', '모지코·고쿠라': '門司港・小倉',
+  // 숙소 동네
+  '텐진': '天神', '나카스': '中洲', '기온·캐널시티': '祇園・キャナルシティ',
+  // 종류·이동수단
+  '명소': '観光', '맛집': 'グルメ', '카페': 'カフェ', '쇼핑': 'ショッピング', '자연·공원': '自然・公園', '온천': '温泉',
+  '도보': '徒歩', '지하철': '地下鉄', '버스': 'バス', '택시': 'タクシー', '렌터카·택시': 'レンタカー・タクシー', '전철·열차': '電車・列車', '페리': 'フェリー',
+  // 장소
+  '후쿠오카 공항 국제선': '福岡空港 国際線', '숙소 (하카타역 주변)': '宿（博多駅周辺）', '숙소 (텐진 주변)': '宿（天神周辺）', '숙소 (나카스 주변)': '宿（中洲周辺）', '숙소 (기온·캐널시티 주변)': '宿（祇園・キャナルシティ周辺）',
+  '하카타역 지쿠시 출구': '博多駅 筑紫口', '하카타 버스터미널': '博多バスターミナル', '니시테츠 텐진역': '西鉄福岡（天神）駅'
+};
+let NAME_JA = null, NAME_RE = null;
+function buildNames() {
+  const m = new Map(), add = (ko, ja) => { if (ko && ja && ko.length >= 2 && HANGUL.test(ko) && !m.has(ko)) m.set(ko, ja); };
+  Object.entries(NAME_FIX).forEach(([k, v]) => add(k, v));
+  SPOTS.forEach(s => add(s.n, s.j));
+  Object.values(STATIONS).forEach(s => add(s.n, s.j));
+  Object.values(LINES).forEach(l => add(l.n, l.j));
+  Object.values(HUB).forEach(h => add(h.n, h.j));
+  NAME_JA = m;
+  NAME_RE = new RegExp([...m.keys()].sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
+}
+const JC = '\u3040-\u30FF\u3400-\u9FFF\uF900-\uFAFF々〆ヵヶ「」『』【】〜（）';
+const JA_RUN = new RegExp(`[\\d.,:/()]*[${JC}][${JC}\\d.,:/()]*`, 'g');
+const NUM_RUN = /\d+(?:[.,:/]\d+)*/g;
+function normKey(s) {
+  if (!NAME_RE) buildNames();
+  const at = [], js = [], ns = [];
+  let k = s.replace(NAME_RE, m => { at.push(m); return '{@}'; });
+  k = k.replace(JA_RUN, m => { js.push(m); return '{J}'; });
+  k = k.replace(NUM_RUN, m => { ns.push(m); return '{#}'; });
+  return { key: k, at, js, ns };
+}
+// 사용자가 직접 적은 이름이 들어가는 문장
+const JA_RX = [
+  [/^'(.+)' 삭제할까요\?$/, '「$1」を削除しますか？'],
+  [/^'(.+)'부터 다시 짰어요$/, '「$1」から組み直しました'],
+  [/^(.+)을\(를\) 보류함으로 옮겼어요\.$/, '「$1」を保留リストに移しました。'],
+  [/^'(.+)'을\(를\) 마지막에 넣었어요\.$/, '「$1」を最後に入れました。'],
+  [/^(.+)을\(를\) (\d+)번째에 넣었어요\.$/, '「$1」を$2番目に入れました。'],
+  [/^(.+)을\(를\) (\d+)일차 (\d+)번째로 옮겼어요\.$/, '「$1」を$2日目の$3番目に移しました。'],
+  [/^(.+)까지 걸어서 (\d+)분$/, '$1まで徒歩$2分'],
+  [/^\((.+)까지 가 주세요\)$/, '($1までお願いします)'],
+  [/^(.+) 삭제$/, '$1を削除']
+];
+function fillKey(hit, n) {
+  const c = { '@': 0, '#': 0, J: 0 };
+  return hit.replace(/\{([#@J])(\d*)\}/g, (_, t, i) => {
+    const x = i ? +i - 1 : c[t]++;
+    return t === '@' ? (NAME_JA.get(n.at[x]) ?? n.at[x] ?? '') : t === '#' ? (n.ns[x] ?? '') : (n.js[x] ?? '');
+  });
+}
+// 통째로 없으면 ' · ', ' → ' 로 나눠서 조각마다 찾아요
+function trCore(core) {
+  if (Object.prototype.hasOwnProperty.call(JA, core)) return JA[core];
+  const n = normKey(core);
+  if (n.key === '{@}' && n.at.length === 1) return NAME_JA.get(n.at[0]);
+  const hit = JA[n.key];
+  if (hit != null) return fillKey(hit, n);
+  for (const [re, to] of JA_RX) {
+    const m = core.match(re);
+    if (m) return to.replace(/\$(\d)/g, (_, d) => { const g = m[+d] || ''; return NAME_JA.get(g) || (HANGUL.test(g) ? (trCore(g) ?? g) : g); });
+  }
+  for (const sep of [' · ', ' → ']) {
+    if (core.includes(sep)) return core.split(sep).map(p => HANGUL.test(p) ? (trCore(p.trim()) ?? p) : p).join(sep);
+  }
+  if (window.__miss) window.__miss.set(n.key, core);
+  return null;
+}
+function trText(text) {
+  if (!HANGUL.test(text)) return text;
+  const lead = text.match(/^\s*/)[0], trail = text.match(/\s*$/)[0], core = text.slice(lead.length, text.length - trail.length);
+  const o = trCore(core);
+  return o == null ? text : lead + o + trail;
+}
+const TR_ATTR = ['aria-label', 'placeholder', 'title', 'alt'];
+function trTree(root) {
+  if (LANG !== 'ja' || !root) return;
+  if (root.nodeType === 3) { trOne(root); return; }
+  if (root.nodeType !== 1 || skipEl(root)) return;
+  trAttrs(root);
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, { acceptNode: n => n.nodeType === 1 && skipEl(n) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  let n; while ((n = w.nextNode())) { if (n.nodeType === 3) trOne(n); else trAttrs(n); }
+}
+function skipEl(el) { return el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'TEXTAREA' || el.hasAttribute('data-notr'); }
+function trOne(t) {
+  const p = t.parentElement; if (p && p.closest('[data-notr],textarea,script,style')) return;
+  const v = t.nodeValue; if (!HANGUL.test(v)) return;
+  const o = trText(v); if (o !== v) t.nodeValue = o;
+}
+function trAttrs(el) { for (const a of TR_ATTR) { const v = el.getAttribute(a); if (v && HANGUL.test(v)) { const o = trText(v); if (o !== v) el.setAttribute(a, o); } } }
+let trObs = null;
+function startTr() {
+  if (trObs) return;
+  trObs = new MutationObserver(ms => {
+    if (LANG !== 'ja') return;
+    for (const m of ms) {
+      if (m.type === 'characterData') trOne(m.target);
+      else if (m.type === 'attributes') trAttrs(m.target);
+      else m.addedNodes.forEach(trTree);
+    }
+  });
+  trObs.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: TR_ATTR });
+}
+function applyLang() {
+  document.documentElement.lang = LANG;
+  WD = LANG === 'ja' ? WD_JA : WD_KO;
+  document.title = LANG === 'ja' ? '福岡旅行プランナー' : '후쿠오카 여행 플래너';
+}
+function langBtn(light) {
+  return `<button class="lang-btn${light ? ' light' : ''}" data-act="toggleLang" data-notr aria-label="${LANG === 'ja' ? '한국어로 보기' : '日本語で表示'}">${ic('globe')}<span>${LANG === 'ja' ? '한국어' : '日本語'}</span></button>`;
+}
+
+const JA = {
+"'{@}'부터 다시 짰어요": "「{@}」から組み直しました",
+"'후쿠오카 {#}일' 삭제할까요?": "「福岡{#}日」を削除しますか？",
+"(BOSS E{J}ZO FUKUOKA까지 가 주세요)": "(BOSS E{J}ZO FUKUOKAまでお願いします)",
+"(ONE FUKUOKA BLDG.까지 가 주세요)": "(ONE FUKUOKA BLDG.までお願いします)",
+"({#}년 {#}월 {#}일 기준, 바꿀 수 있어요)": "({#}年{#}月{#}日時点・変更できます)",
+"({#}분 늦음)": "({#}分遅れ)",
+"({@} 터미널까지 가 주세요)": "({@}ターミナルまでお願いします)",
+"({@}까지 가 주세요)": "({@}までお願いします)",
+"(¥{#} 더)": "(¥{#}高い)",
+"(비슷)": "(ほぼ同じ)",
+"(숙소 ({@} 근처)까지 가 주세요)": "(宿（{@}周辺）までお願いします)",
+"(시간이 부족해서)": "(時間が足りないため)",
+"BOSS E{J}ZO FUKUOKA 약 {#}km, {#}분": "BOSS E{J}ZO FUKUOKA 約{#}km・{#}分",
+"JR (시 밖) ¥{#}": "JR（市外）¥{#}",
+"JR 가고시마선": "JR鹿児島本線",
+"JR 가고시마선 타기": "JR鹿児島本線に乗る",
+"JR 가시이선 {@}역": "JR香椎線 {@}駅",
+"JR 가시이선 {@}역 (대기 포함 약 {#}분)": "JR香椎線 {@}駅（待ち時間込み約{#}分）",
+"JR 가시이선 타기": "JR香椎線に乗る",
+"JR 보통열차 ¥{#}": "JR普通列車 ¥{#}",
+"JR 열차": "JR列車",
+"JR 지쿠히선": "JR筑肥線",
+"JR 지쿠히선 타기": "JR筑肥線に乗る",
+"JR 큐슈 레일패스 북큐슈 {#}일": "JR九州レールパス 北部九州{#}日間",
+"JR 큐슈 레일패스 북큐슈 {#}일은 손해": "JR九州レールパス 北部九州{#}日間は損",
+"JR 특급 {@}노모리": "JR特急 ゆふいんの森",
+"JR 특급 ¥{#}": "JR特急 ¥{#}",
+"JR 특급 소닉 (자유석)": "JR特急ソニック（自由席）",
+"JR로 고쿠라까지": "JRで小倉まで",
+"ONE FUKUOKA BLDG. 약 {#}m, {#}분": "ONE FUKUOKA BLDG. 約{#}m・{#}分",
+"ONE FUKUOKA BLDG.까지 걸어서 {#}분": "ONE FUKUOKA BLDG.まで徒歩{#}分",
+"SUNQ 패스 북큐슈 {#}일": "SUNQパス 北部九州{#}日間",
+"SUNQ 패스 북큐슈 {#}일은 손해": "SUNQパス 北部九州{#}日間は損",
+"Suica 같은 일본 교통카드(IC카드)도 {@}·{@}·JR에서 그대로 써요. 잔액이 모자라면 역 발매기에서 충전해요.": "Suicaなどの交通系ICカードも{@}・{@}・JRでそのまま使えます。残高が足りないときは駅の券売機でチャージします。",
+"Visa·Mastercard·JCB 등 컨택리스 카드를 개찰구에 대기만 하면 돼요. 표를 따로 살 필요가 없어요.": "Visa・Mastercard・JCBなどのタッチ決済カードを改札にかざすだけ。切符を買う必要はありません。",
+"Visa·Mastercard·JCB 등 컨택리스 카드를 개찰구에 대면 하루 ¥{#}까지만 나가요. {#}일권(¥{#})을 사도 같아요.": "Visa・Mastercard・JCBなどのタッチ決済カードを改札にかざすと、1日¥{#}が上限です。{#}日乗車券（¥{#}）を買っても同じです。",
+"Visa·Mastercard·JCB 등 컨택리스 카드를 개찰구에 대면 하루 ¥{#}까지만 나가요. {#}일권(¥{#})을 사도 같아요. {#}일은 상한에 걸려 이득이에요.": "Visa・Mastercard・JCBなどのタッチ決済カードを改札にかざすと、1日¥{#}が上限です。{#}日乗車券（¥{#}）を買っても同じです。{#}日は上限に届くのでお得です。",
+"{#} 이후에 문을 열어요": "{#}から営業",
+"{#}. {@}": "{#}. {@}",
+"{#}. 숙소에 짐 맡기기": "{#}. 宿に荷物を預ける",
+"{#}km까지 ¥{#}, 이후 {#}m마다 ¥{#} ({#}년 {#}월 개정)": "{#}kmまで¥{#}、以降{#}mごとに¥{#}（{#}年{#}月改定）",
+"{#}km라 걸어가기엔 너무 멀어요.": "{#}kmあるので歩くには遠すぎます。",
+"{#}m 전망대에서 보는 {@}만 노을과 야경.": "{#}mの展望台から眺める{@}湾の夕日と夜景。",
+"{#}~{#}월 평일은 운항하지 않아요": "{#}〜{#}月の平日は運休です",
+"{#}곳": "{#}か所",
+"{#}곳 선택": "{#}か所選択",
+"{#}까지": "{#}まで",
+"{#}년 {#}월": "{#}年{#}月",
+"{#}년 넘은 아케이드 상점가. 단팥죽 가게도 있어요.": "{#}年以上続くアーケード商店街。ぜんざいのお店もあります。",
+"{#}년 문을 연 {@}의 새 복합빌딩.": "{#}年にオープンした{@}の新しい複合ビル。",
+"{#}년 붉은 벽돌 건물. 사진 찍기 좋아요.": "{#}年築の赤レンガの建物。写真映えします。",
+"{#}단계 중 {#}단계": "全{#}ステップ中{#}",
+"{#}분": "{#}分",
+"{#}분 늘리기": "{#}分延ばす",
+"{#}분 줄이기": "{#}分短くする",
+"{#}시간 전 도착 기준": "出発{#}時間前に着く想定",
+"{#}엔 =": "{#}円 =",
+"{#}엔당 원화": "{#}円あたりのウォン",
+"{#}인": "{#}人",
+"{#}인 칸막이 돈코츠 라멘의 본점.": "{#}人ずつ仕切られた席で食べる豚骨ラーメンの本店。",
+"{#}일권 ¥{#} (신용카드 터치도 하루 ¥{#} 상한)": "{#}日乗車券 ¥{#}（タッチ決済も1日¥{#}が上限）",
+"{#}일차": "{#}日目",
+"{#}일차 {#}번째에 넣었어요.": "{#}日目の{#}番目に入れました。",
+"{#}일차 동선 지도": "{#}日目のルートマップ",
+"{#}일차 시간": "{#}日目の時間",
+"{#}일차 이동 안내": "{#}日目の移動案内",
+"{#}일차 일정을 다시 짰어요": "{#}日目の予定を組み直しました",
+"{#}일차부터 쓰면 ¥{#} 아껴요. 니시테츠 전철 + {@}(¥{#}) 포함 가격과 비교했어요. {@}": "{#}日目から使うと¥{#}お得です。西鉄電車＋{@}（¥{#}）込みの料金と比べました。{@}",
+"{#}일차에 넣기": "{#}日目に入れる",
+"{#}일차에 장소 추가": "{#}日目に場所を追加",
+"{#}정거장": "{#}駅",
+"{#}쯤": "{#}ごろ",
+"{#}쯤 문을 닫아요": "{#}ごろ閉まります",
+"{@} ({#}~{#}월 평일 운휴)": "{@}（{#}〜{#}月の平日は運休）",
+"{@} ({#}~{#}월 평일 운휴) (대기 포함 약 {#}분)": "{@}（{#}〜{#}月の平日は運休）（待ち時間込み約{#}分）",
+"{@} (대기 포함 약 {#}분)": "{@}（待ち時間込み約{#}分）",
+"{@} (예약 권장)": "{@}（予約推奨）",
+"{@} (예약 권장) (대기 포함 약 {#}분)": "{@}（予約推奨）（待ち時間込み約{#}分）",
+"{@} (요금은 {@} 기준)": "{@}（料金は{@}で計算）",
+"{@} (전석 지정)": "{@}（全席指定）",
+"{@} (전석 지정) (대기 포함 약 {#}분)": "{@}（全席指定）（待ち時間込み約{#}分）",
+"{@} {#}": "{@} {#}",
+"{@} {#}분": "{@} {#}分",
+"{@} {#}분, 바다 보이는 꽃 언덕": "{@}{#}分、海が見える花の丘",
+"{@} {#}시간 {#}분": "{@} {#}時間{#}分",
+"{@} {#}일권": "{@}{#}日乗車券",
+"{@} {@} (약 {#}분)": "{@}{@}（約{#}分）",
+"{@} {@} 방면 {#}정거장": "{@} {@}方面 {#}駅",
+"{@} {@}에서 {J}·{J} 행을 타면 갈아타지 않고 그대로 가요. {J} 행이었다면 {J}에서 JR 열차로 갈아타고 {J}지쿠젠마에바루{J}에서 내려요.": "{@}{@}で{J}・{J}行きに乗れば、乗り換えなしでそのまま行けます。{J}行きだった場合は{J}でJR列車に乗り換え、「筑前前原」で降ります。",
+"{@} ¥{#}": "{@} ¥{#}",
+"{@} 기사님이나 역무원에게 이 화면을 보여 주세요.": "{@}の運転手さんや駅員さんにこの画面を見せてください。",
+"{@} 노을, 돔, 박물관": "{@}の夕日、ドーム、博物館",
+"{@} 리버레인 안 아시아 근현대 미술관.": "{@}リバレイン内のアジア近現代美術館。",
+"{@} 마을 산책과 {@}": "{@}街の散策と{@}",
+"{@} 방면": "{@}方面",
+"{@} 북쪽 출구 정류장에서 니시테츠 {@} {J} 행을 타고 종점에서 내려요. {@} 앞 A 승강장{J}A)에서 {#}·{#}번을 타도 바로 가요.": "{@}北口のバス停から西鉄{@}{J}行きに乗り、終点で降ります。{@}前Aのりば{J}A)から{#}・{#}番に乗っても直行します。",
+"{@} 삭제": "{@}を削除",
+"{@} 상한 ¥{#} 적용 (그냥 내면 ¥{#})": "{@}の上限¥{#}を適用（そのまま払うと¥{#}）",
+"{@} 숙소까지 걷기": "{@}の宿まで歩く",
+"{@} 순서로만 쓸 수 있어요.": "{@}の順でしか使えません。",
+"{@} 승강장이나 길가에서 손을 들어 잡아요. {J}일본어로 보여주기{J} 화면을 기사님께 보여 주면 돼요.": "{@}乗り場や道ばたで手を挙げて止めます。{J}日本語で見せる{J}画面を運転手さんに見せればOKです。",
+"{@} 안에서는 {@}": "{@}内では{@}",
+"{@} 앞 전광판의 번호·행선지를 확인하고, 가운데(뒷)문으로 타면서 교통카드를 찍거나 번호표{J}를 뽑아요. 내릴 정류장 안내가 나오면 벨을 누르고, 앞문에서 요금을 내요. 신용카드 터치가 안 되는 {@}가 많아요.": "{@}前面の表示で番号・行き先を確かめ、中（後ろ）のドアから乗って交通系ICカードをタッチするか整理券{J}を取ります。降りる停留所の案内が出たらボタンを押し、前のドアで運賃を払います。タッチ決済が使えない{@}も多いです。",
+"{@} 약 {#}km, {#}분": "{@} 約{#}km・{#}分",
+"{@} 약 {#}m, {#}분": "{@} 約{#}m・{#}分",
+"{@} 약 {#}분": "{@} 約{#}分",
+"{@} 약 {#}분 (대략 {#}시간 간격)": "{@} 約{#}分（およそ{#}時間おき）",
+"{@} 약 {#}분 (대략 {#}시간 간격) (대기 포함 약 {#}분)": "{@} 約{#}分（およそ{#}時間おき）（待ち時間込み約{#}分）",
+"{@} 여객터미널": "{@}旅客ターミナル",
+"{@} 일대의 야타이 거리.": "{@}一帯の屋台街。",
+"{@} 주변을 보여 주고 있어요. 숙소·공항 쪽 이동은 지도 밖으로 이어져요.": "{@}周辺を表示しています。宿・空港方面への移動は地図の外に続きます。",
+"{@} 중심가와 골목 편집숍": "{@}の中心街と路地のセレクトショップ",
+"{@} 증기로 해산물·채소를 쪄 먹어요.": "{@}の蒸気で海鮮や野菜を蒸して食べます。",
+"{@} 직통": "{@}直通",
+"{@} 직행{@} 타기": "{@}直行{@}に乗る",
+"{@} 직행{@} 타비토는 제외": "{@}直行{@}「旅人」は対象外",
+"{@} 타기": "{@}に乗る",
+"{@} 터미널": "{@}ターミナル",
+"{@} 포함 ¥{#}": "{@}込み¥{#}",
+"{@} 하시모토 방면 {#}정거장": "{@} 橋本方面 {#}駅",
+"{@} 한 방향으로만 쓸 수 있고, 중간에 {@}으로 돌아오면 무효예요. {@}를 {@}와 같은 날 돌면 더 이득이에요.": "{@}の一方向でしか使えず、途中で{@}に戻ると無効です。{@}を{@}と同じ日に回るとさらにお得です。",
+"{@} 한복판의 조용한 신사.": "{@}の真ん中にある静かな神社。",
+"{@}(동쪽) 방면": "{@}（東）方面",
+"{@}(서쪽) 방면": "{@}（西）方面",
+"{@}·{@} 관광 티켓": "{@}・{@}観光きっぷ",
+"{@}·{@} 관광 티켓 사기": "{@}・{@}観光きっぷを買う",
+"{@}·{@} 요금": "{@}・{@}の料金",
+"{@}·{@} 처음이라면": "{@}・{@}がはじめてなら",
+"{@}·{@}·{@} 비교": "{@}・{@}・{@}を比較",
+"{@}·{@}·모지코 같은 먼 곳을 {#}일 안에 {#}곳 넘게": "{@}・{@}・門司港のような遠い場所に{#}日で{#}か所以上",
+"{@}·니시테츠 {@}·니시테츠 전철·시영 도선이 하루 무제한. 외국인 여행자 전용이라 여권이 필요해요.": "{@}・西鉄{@}・西鉄電車・市営渡船が1日乗り放題。外国人旅行者専用なのでパスポートが必要です。",
+"{@}→{@}": "{@}→{@}",
+"{@}가 서로 멀어서 역 앞 렌터카나 {@}가 편해요.": "{@}が離れているので、駅前のレンタカーか{@}が便利です。",
+"{@}까지 걷기": "{@}まで歩く",
+"{@}까지 걸어서 {#}분": "{@}まで徒歩{#}分",
+"{@}는 {@}가 흩어져 있어 렌터카나 {@}가 편해요.": "{@}は{@}が点在しているので、レンタカーか{@}が便利です。",
+"{@}로 {@}": "{@}で{@}",
+"{@}로 바로 이동": "{@}で直接移動",
+"{@}로 바로 이동 (요금은 {@} 기준)": "{@}で直接移動（料金は{@}で計算）",
+"{@}로만 다니면 약 ¥{#}": "{@}だけで回ると約¥{#}",
+"{@}를 오가거나 {@}·{@}를 많이 타는 날": "{@}へ行き来する日や、{@}・{@}によく乗る日",
+"{@}만": "{@}湾",
+"{@}만 여러 번 타는 날": "{@}だけに何度も乗る日",
+"{@}선 타기": "{@}線に乗る",
+"{@}시 커뮤니티 {@}예요. 내릴 곳: {J}": "{@}市のコミュニティ{@}です。降りる場所：{J}",
+"{@}에서 {@}으로 갈아타기": "{@}で{@}に乗り換え",
+"{@}역": "{@}駅",
+"{@}역까지 걷기": "{@}駅まで歩く",
+"{@}은 신용카드 터치로 타기": "{@}はタッチ決済で乗る",
+"{@}을 하루 {#}번 넘게 타면 저절로 이득": "{@}に1日{#}回より多く乗れば自動的にお得",
+"{@}을(를) 보류함으로 옮겼어요.": "{@}を保留リストに移しました。",
+"{@}의 부엌. 해산물 덮밥과 어묵 간식.": "{@}の台所。海鮮丼とかまぼこのおやつ。",
+"{@}의 수호 신사. 거대한 야마카사 장식을 볼 수 있어요.": "{@}の総鎮守。巨大な山笠の飾りが見られます。",
+"{@}이라는 지명이 여기서 나왔어요.": "「{@}」という地名はここから生まれました。",
+"{J} (○○는 어디예요?) 라고 보여 주세요.": "{J}（○○はどこですか？）と見せてください。",
+"{J} 머묾": "{J}滞在",
+"{J} 머묾 ·": "{J}滞在 ·",
+"{J} 방면 신칸센 자유석 칸에 타요.": "{J}方面の新幹線の自由席車両に乗ります。",
+"{J} 방면 열차를 타고 {J}에서 내려요.": "{J}方面の列車に乗り、{J}で降ります。",
+"{J} 방면 열차를 타고 종점 {J}까지 가요.": "{J}方面の列車に乗り、終点の{J}まで行きます。",
+"{J} 행 니시테츠 {@}를 타요. {#}·{#}번은 {@}까지 바로 가요.": "{J}行きの西鉄{@}に乗ります。{#}・{#}番は{@}まで直行します。",
+"{J} 행을 타고 {J}{@}{J}에서 내려요.": "{J}行きに乗り、「海ノ中道」で降ります。",
+"{J} 행을 타고 종점까지 약 {#}분.": "{J}行きに乗り、終点まで約{#}分。",
+"{J} 행이면 {@}로 그대로 이어져요. {J} 행이면 {J}에서 {@}로 갈아타요.": "{J}行きなら{@}にそのまま直通します。{J}行きなら{J}で{@}に乗り換えます。",
+"{J}·{J} 방면 노선{@}예요. 내릴 곳: {J}": "{J}・{J}方面の路線{@}です。降りる場所：{J}",
+"{J}·{J} 방면 보통·쾌속을 타고 {J}가시이{J}에서 내려요.": "{J}・{J}方面の普通・快速に乗り、「香椎」で降ります。",
+"{J}·{J} 방면 신칸센 자유석 칸에 타고 {J}에서 내려요. 모든 열차가 고쿠라에 서요.": "{J}・{J}方面の新幹線の自由席車両に乗り、{J}で降ります。すべての列車が小倉に停まります。",
+"{J}·{J} 방면 열차(보통·급행·특급 모두 서요)를 타고 {J}니시테츠 후쓰카이치{J}에서 내려요.": "{J}・{J}方面の列車（普通・急行・特急すべて停車）に乗り、「西鉄二日市」で降ります。",
+"{J}에서 내려요.": "{J}で降ります。",
+"{J}역에서 나와 국내선 터미널 {@} 승강장에서 타요 (약 {#}분).": "{J}駅を出て、国内線ターミナルの{@}乗り場から乗ります（約{#}分）。",
+"{J}역에서 지하상가를 따라 {J}역까지 걸어서 약 {#}~{#}분. 안내판의 {J}초록)을 따라가요.": "{J}駅から地下街を通って{J}駅まで徒歩約{#}〜{#}分。案内板の{J}緑)をたどります。",
+"¥{#} 절약": "¥{#}節約",
+"가격은 바뀔 수 있어요": "料金は変わることがあります",
+"가고 싶은 곳": "行きたい場所",
+"가고 싶은 곳 고르기": "行きたい場所を選ぶ",
+"가고 싶은 동네": "行きたいエリア",
+"가까운 정류장과 {@} 번호는 아래 {J}구글 지도{J} 버튼으로 확인하세요. {@} 앞 전광판의 번호·행선지를 보고 타요.": "近くのバス停と{@}の番号は下の{J}Googleマップ{J}ボタンで確認してください。{@}前面の表示で番号・行き先を見て乗ります。",
+"가는 날": "出発日",
+"가시이 환승": "香椎で乗り換え",
+"가시이에서 JR 가시이선으로": "香椎でJR香椎線へ",
+"가시이에서 갈아타기": "香椎で乗り換え",
+"가장 덜 돌아가는 자리에 넣어 드려요.": "いちばん遠回りにならない位置に入れます。",
+"가장 빠름": "最速",
+"가장 쌈": "最安",
+"가져오기": "取り込む",
+"갈아타기": "乗り換え",
+"갓 구운 매화떡을 먹으며 걷는 거리.": "焼きたての梅ヶ枝餅を食べながら歩く参道。",
+"갓 딴 굴을 직접 구워 먹는 겨울 한정 오두막.": "とれたての牡蠣を自分で焼いて食べる冬季限定の小屋。",
+"갓 튀긴 튀김을 하나씩 내주는 정식집.": "揚げたての天ぷらを一つずつ出してくれる定食屋。",
+"강변 야타이에서 라멘·꼬치와 한잔.": "川沿いの屋台でラーメン・焼き鳥と一杯。",
+"강변 잔디밭과 메이지 시대 서양식 건물.": "川沿いの芝生と明治時代の洋館。",
+"같은 계획이 이미 있으면 더 최근에 고친 쪽으로 맞춰요. 지금 있는 다른 계획은 지워지지 않아요.": "同じプランがすでにあれば、より最近に直した方に合わせます。いまある他のプランは消えません。",
+"같은 곳": "同じ場所",
+"같은 역의 {@}선 승강장에서 {J} 행을 타고 종점까지 가요 (약 {#}분).": "同じ駅の{@}線のりばで{J}行きに乗り、終点まで行きます（約{#}分）。",
+"같은 장소": "同じ場所",
+"개찰구에 신용카드(Visa·Mastercard·JCB 등)를 대거나 교통카드(Suica 등)를 찍어요. 승강장 위 안내판에서 {J}○○{J}행{J} 방면을 확인하고 타요. 역마다 K{#} 같은 번호가 붙어 있어요.": "改札でタッチ決済のクレジットカード（Visa・Mastercard・JCBなど）をかざすか、交通系ICカード（Suicaなど）をタッチします。ホームの案内板で{J}○○{J}行{J}の方面を確かめて乗ります。駅ごとにK{#}のような番号が付いています。",
+"거리 식당 중 골라서.": "通りの食堂から選んで。",
+"거리 식당 중 골라서. (여러 가게 중 골라서)": "通りの食堂から選んで。（何軒かから選べます）",
+"거리별 ¥{#}~¥{#}": "距離に応じて¥{#}〜¥{#}",
+"걷기": "徒歩",
+"걷기로 바꾸고 늦어진 만큼 일정을 정리했어요": "徒歩に変えて、遅れた分だけ予定を整理しました",
+"걷기만": "徒歩だけ",
+"걷는 길 추천": "歩く道のおすすめ",
+"걷는 길 추천 지도": "歩く道のおすすめマップ",
+"걸어가는 길에 들를 만한 곳": "歩く道すがら寄りたい場所",
+"걸어서 {#}km": "徒歩{#}km",
+"걸어서 {#}m": "徒歩{#}m",
+"걸어서 이동": "歩いて移動",
+"계획 {#}개": "プラン{#}件",
+"계획 세우고 내 일정으로 계산하기": "プランを作って自分の予定で計算する",
+"계획 옮기기": "プランを移す",
+"계획을 저장하면 구간마다 타는 역·방면·내리는 역을 일본어와 함께 알려 드려요.": "プランを保存すると、区間ごとに乗る駅・方面・降りる駅を日本語表記つきでお知らせします。",
+"계획을 저장하면 이동 안내가 만들어져요": "プランを保存すると移動案内が作られます",
+"고르면 크게 보여 줘요. 화면을 그대로 보여 주세요.": "選ぶと大きく表示します。画面をそのまま見せてください。",
+"고속{@} {@}호": "高速{@} {@}号",
+"고속{@} ¥{#}": "高速{@} ¥{#}",
+"고속{@}로 {@}·{@}를 다녀올 때": "高速{@}で{@}・{@}に行くとき",
+"고쿠라 + JR 고쿠라": "小倉 + JR小倉",
+"고쿠라에서 JR로 갈아타기": "小倉でJRに乗り換え",
+"고쿠라에서 신칸센": "小倉から新幹線",
+"공원 안 식당이나 선착장 주변에서.": "公園内の食堂か船着き場の周辺で。",
+"공원 안 식당이나 선착장 주변에서. (여러 가게 중 골라서)": "公園内の食堂か船着き場の周辺で。（何軒かから選べます）",
+"공항": "空港",
+"공항 구간은 걸어서 가기 어려워요.": "空港の区間は歩いて行けません。",
+"공항 국제선 ↔ {@} 직행{@} (니시테츠)": "空港国際線 ↔ {@} 直行{@}（西鉄）",
+"공항 국제선 ↔ {@} 직행{@} ¥{#}": "空港国際線 ↔ {@} 直行{@} ¥{#}",
+"공항 도착 기준": "空港到着の目安",
+"공항 도착 기준({#})보다": "空港到着の目安（{#}）より",
+"공항 약 {#}m, {#}분": "空港 約{#}m・{#}分",
+"공항에서 시내로": "空港から市内へ",
+"공항에서 출발": "空港から出発",
+"공항에서 출발 (입국 후)": "空港から出発（入国後）",
+"교통 패스": "交通パス",
+"교통 패스 한눈에": "交通パス早わかり",
+"교통비": "交通費",
+"교통비·패스": "交通費・パス",
+"교통카드": "交通系ICカード",
+"구간마다 어느 역·정류장에서 무엇을 어느 방향으로 타고, 몇 번째 역에서 내리는지 일본어 표기와 함께 알려 드려요.": "区間ごとに、どの駅・バス停から何にどの方向で乗り、何番目の駅で降りるかを日本語表記つきでお知らせします。",
+"구글 지도로 실시간 확인": "Googleマップでリアルタイム確認",
+"구글 지도에서 걷는 길 보기": "Googleマップで歩く道を見る",
+"국내선": "国内線",
+"국내선 무료 셔틀{@}": "国内線 無料シャトル{@}",
+"국내선역": "国内線駅",
+"국보 금인을 직접 볼 수 있는 박물관.": "国宝の金印を実際に見られる博物館。",
+"국보 금인이 발견된 바닷가 언덕.": "国宝の金印が見つかった海辺の丘。",
+"국제선": "国際線",
+"국제선 무료 셔틀{@}": "国際線 無料シャトル{@}",
+"국제선 터미널": "国際線ターミナル",
+"국제선 터미널 {#}층 {#}·{#}번 승강장에서 니시테츠 직행{@}를 타요. 중간에 서지 않고 {@}{J} {J}에서 내려요 (약 {#}분). 막차는 밤 {#}시쯤이에요.": "国際線ターミナル{#}階{#}・{#}番のりばから西鉄の直行{@}に乗ります。途中で停まらず{@}{J}{J}で降ります（約{#}分）。最終便は夜{#}時ごろです。",
+"국제선 터미널 {#}층 {@} 승강장에서 타요 (약 {#}분). 국내선 터미널에 {@} {J}역이 바로 이어져요.": "国際線ターミナル{#}階の{@}乗り場から乗ります（約{#}分）。国内線ターミナルに{@}{J}駅が直結しています。",
+"국제선 터미널에 내린 기준이에요. 숙소 동네를 골라 주세요.": "国際線ターミナルに着いた場合です。宿のエリアを選んでください。",
+"국제선 터미널에는 {@}역이 없어요. 무료 셔틀{@}로 국내선 터미널({@}역)까지 가거나, 터미널 앞에서 바로 {@}·{@}를 타요.": "国際線ターミナルには{@}駅がありません。無料シャトル{@}で国内線ターミナル（{@}駅）まで行くか、ターミナル前から{@}・{@}に直接乗ります。",
+"규슈 바다를 재현한 수족관과 돌고래 쇼.": "九州の海を再現した水族館とイルカショー。",
+"규슈 최대급 농산물 직판장. 딸기·도시락.": "九州最大級の農産物直売所。いちごやお弁当。",
+"그냥 결제하면 ¥{#}": "そのまま払うと¥{#}",
+"그림 시간대 (지금: 낮)": "イラストの時間帯（いま：昼）",
+"그림 시간대 (지금: 밤)": "イラストの時間帯（いま：夜）",
+"근교": "近郊",
+"기타 {@} ¥{#}": "その他の{@} ¥{#}",
+"기타큐슈 주변을 보여 주고 있어요. 숙소·공항 쪽 이동은 지도 밖으로 이어져요.": "北九州周辺を表示しています。宿・空港方面への移動は地図の外に続きます。",
+"길 양옆 {#}m 안쪽이에요. 고르면 이 구간에 넣고 이후 일정을 다시 짜요.": "道の両側{#}m以内です。選ぶとこの区間に入れて、その後の予定を組み直します。",
+"길 위 추천": "道すがらのおすすめ",
+"길안내": "道案内",
+"길에서 {#}m": "道から{#}m",
+"길을 물을 땐 {J}": "道を尋ねるときは{J}",
+"나가하마 라멘의 원조. 가볍고 빠른 한 그릇.": "長浜ラーメンの元祖。あっさり早い一杯。",
+"나무 막대 수천 개로 엮은 구마 겐고 설계 매장.": "何千本もの木の棒を組んだ隈研吾設計の店舗。",
+"날짜": "日付",
+"날짜별": "日付別",
+"날짜와 동네만 고르면 동선·교통비까지 짜 드려요": "日付とエリアを選ぶだけで、ルートや交通費まで組み立てます",
+"남은 {#}곳 중 {#}곳": "残り{#}か所中{#}か所",
+"남은 {#}곳은 그대로, 시간만 맞췄어요": "残りの{#}か所はそのままで、時間だけ合わせました",
+"낮": "昼",
+"낮 풍경으로 보기": "昼の風景で見る",
+"내 사진 고르기": "自分の写真を選ぶ",
+"내리기": "降りる",
+"내리는 역": "降りる駅",
+"노선{@}": "路線{@}",
+"노코 선착장 가는 {@}": "能古渡船場行きの{@}",
+"높이 {#}m 폭포와 산속 산책길.": "落差{#}mの滝と山の散策路。",
+"눌러서 {@} 보기": "タップして{@}を見る",
+"늦어요": "遅れます",
+"니시테츠 {@}": "西鉄{@}",
+"니시테츠 {@} (대기 포함 대략)": "西鉄{@}（待ち時間込みの目安）",
+"니시테츠 {@} (약 {#}분)": "西鉄{@}（約{#}分）",
+"니시테츠 {@} (약 {#}분) (대기 포함 약 {#}분)": "西鉄{@}（約{#}分）（待ち時間込み約{#}分）",
+"니시테츠 {@} {#}일권": "西鉄{@}{#}日乗車券",
+"니시테츠 {@} 타기": "西鉄{@}に乗る",
+"니시테츠 {@}로 약 {#}분. 내릴 곳: {J}": "西鉄{@}で約{#}分。降りる場所：{J}",
+"니시테츠 전철": "西鉄電車",
+"니시테츠 전철 ¥{#}": "西鉄電車 ¥{#}",
+"니시테츠 전철 타기": "西鉄電車に乗る",
+"니시테츠 전철과 {@}가 들어 있어요. {@}": "西鉄電車と{@}がセットになっています。{@}",
+"니시테츠 특급": "西鉄特急",
+"다른 계획": "ほかのプラン",
+"다른 날로": "別の日へ",
+"다른 지역으로 넘어가는 구간이라 걷기는 고를 수 없어요.": "別のエリアへ移る区間なので、徒歩は選べません。",
+"다른 지역으로 넘어가는 구간이라 걸어서 갈 수 없어요.": "別のエリアへ移る区間なので、歩いては行けません。",
+"다시 누르면 새로 고를 수 있어요.": "もう一度押すと選び直せます。",
+"다시 짜기": "組み直す",
+"다음": "次へ",
+"다음 달": "翌月",
+"다이쇼 시대 서양식 건물이 남은 항구.": "大正時代の洋館が残る港町。",
+"닫기": "閉じる",
+"달리·미로부터 일본 근대미술까지.": "ダリ、ミロから日本の近代美術まで。",
+"당일치기": "日帰り",
+"당일치기 (지도 밖)": "日帰り（地図の外）",
+"당일치기는 하루에 한 곳만 넣을 수 있어요": "日帰りは1日に1か所だけ入れられます",
+"대략 {#}시간 간격이라 돌아오는 배 시간을 미리 봐 두세요.": "およそ{#}時間おきなので、帰りの船の時間を先に確認しておきましょう。",
+"대략 {#}시간 간격이에요. 표는 대합소 판매기에서 사요.": "およそ{#}時間おきです。切符は待合所の券売機で買います。",
+"대부분 걸어서 다녀요": "ほとんど歩いて回れます",
+"더 골라도 돼요": "もっと選んでも大丈夫です",
+"도로 거리를 직선의 {#}배로 추정": "道路距離を直線距離の{#}倍と推定",
+"도선장": "渡船場",
+"도심 구간 ¥{#}, 그 밖은 거리에 따라": "都心部¥{#}、それ以外は距離に応じて",
+"도심 속 인공 해변과 바다 위 건물 마리존.": "都心の人工ビーチと海に浮かぶ建物「マリゾン」。",
+"도착": "到着",
+"돌바닥이 깔린 지하상가. 비 오는 날에도 좋아요.": "石畳の地下街。雨の日にもおすすめ。",
+"돌아오는 길에 들르는 성과 정원.": "帰り道に寄る城と庭園。",
+"돌아오는 날을 눌러 주세요. 같은 날을 한 번 더 누르면 당일치기예요.": "帰る日をタップしてください。同じ日をもう一度タップすると日帰りです。",
+"돔 옆 대형 {@}몰.": "ドームの隣の大型{@}モール。",
+"돔 옆 엔터테인먼트 빌딩. 팀랩과 옥상 어트랙션.": "ドーム隣のエンタメビル。チームラボと屋上アトラクション。",
+"동그라미를 눌러 고르세요": "丸をタップして選んでください",
+"동네 둘러보기": "エリアを見て回る",
+"동선 자동": "ルート自動作成",
+"되돌렸어요.": "元に戻しました。",
+"되돌리기": "元に戻す",
+"되돌릴 내용이 없어요.": "元に戻す内容がありません。",
+"뒤로": "戻る",
+"들를 곳을 골라 주세요": "立ち寄る場所を選んでください",
+"레트로 항구와 해협 터널": "レトロな港町と関門トンネル",
+"렌터카 또는 {@}": "レンタカーまたは{@}",
+"를 눌러요.": "を押します。",
+"를 열어요.": "を開きます。",
+"리어카 노점이 늘어선 서민 상점가.": "リヤカーの露店が並ぶ下町の商店街。",
+"마린월드나 공원 안 식당에서 간단히.": "マリンワールドか公園内の食堂で軽く。",
+"마린월드나 공원 안 식당에서 간단히. (여러 가게 중 골라서)": "マリンワールドか公園内の食堂で軽く。（何軒かから選べます）",
+"마무리": "終了",
+"마무리 시간({#})보다": "終了時間（{#}）より",
+"마지막 날 비행기": "最終日の飛行機",
+"마지막에 넣기": "最後に入れる",
+"맑은 날 파란 하늘 아래 {@}": "晴れた日の青空の下の{@}",
+"맑은 닭 육수 전골. 마지막은 죽으로 마무리.": "澄んだ鶏スープの鍋。シメは雑炊で。",
+"매일 숙소에서 출발해 숙소로 돌아오는 동선으로 짜요.": "毎日、宿から出発して宿に戻るルートで組み立てます。",
+"머무는 시간": "滞在時間",
+"메모": "メモ",
+"명란을 통째로 올린 덮밥. 아침부터 영업.": "明太子を丸ごとのせた丼。朝から営業。",
+"모래찜질로 유명한 {#}년 창업 레트로 {@}.": "砂むし湯で有名な{#}年創業のレトロな{@}。",
+"모지코": "門司港",
+"모지코 (대기 포함 약 {#}분)": "門司港（待ち時間込み約{#}分）",
+"모지코역까지 걷기": "門司港駅まで歩く",
+"목록에 없는 일정 직접 넣기": "リストにない予定を直接入れる",
+"목적지": "目的地",
+"못 넣은 곳은 보류함으로": "入らなかった場所は保留リストへ",
+"무료": "無料",
+"무료 셔틀{@}로 국내선 {@}역 (약 {#}분)": "無料シャトル{@}で国内線{@}駅へ（約{#}分）",
+"무료 셔틀{@}로 국제선 터미널 (약 {#}분)": "無料シャトル{@}で国際線ターミナルへ（約{#}分）",
+"무료로 오르는 붉은 탑 전망대.": "無料で上れる赤い塔の展望台。",
+"문은 기사님이 자동으로 열고 닫아요. {J}일본어로 보여주기{J} 화면을 보여 주면 돼요.": "ドアは運転手さんが自動で開け閉めします。{J}日本語で見せる{J}画面を見せればOKです。",
+"바꾸기": "変更",
+"바꾸면 이 날 일정을 다시 맞춰요.": "変えるとこの日の予定を合わせ直します。",
+"바다 밑 {#}m를 걸어서 혼슈로 건너가요.": "海底{#}mを歩いて本州へ渡ります。",
+"바다 앞 레스토랑·{@} 단지. 그네 포토존.": "海辺のレストラン・{@}の集まるエリア。ブランコのフォトスポット。",
+"바다 위 도리이, 해변 {@}, 폭포": "海の上の鳥居、ビーチの{@}、滝",
+"바다 위 하얀 도리이와 부부바위. 노을 {@}.": "海に立つ白い鳥居と夫婦岩。夕日の{@}スポット。",
+"바다로 이어지는 참배길이 있는 하치만 신사.": "海へ続く参道がある八幡宮。",
+"바다를 내려다보는 꽃 언덕. 가을 코스모스.": "海を見下ろす花の丘。秋はコスモス。",
+"바다의 신을 모신 섬 신사와 해안 드라이브.": "海の神をまつる島の神社と海岸ドライブ。",
+"바다지옥·피의 연못 등 뜨거운 {@} 연못 순례.": "海地獄・血の池など熱い{@}の池めぐり。",
+"반나절": "半日",
+"반나절+": "半日以上",
+"받은 코드 붙여 넣기": "受け取ったコードを貼り付ける",
+"밤": "夜",
+"밤 풍경으로 보기": "夜の風景で見る",
+"밤에 파랗게 불이 켜진 {@}": "夜に青くライトアップされた{@}",
+"방면": "方面",
+"방문": "訪問",
+"뱃놀이 ¥{#} 별도": "川下り¥{#}は別",
+"뱃놀이와 장어 세이로무시": "川下りとうなぎのせいろ蒸し",
+"번주 저택과 연못 정원.": "藩主の屋敷と池の庭園。",
+"보내기": "送る",
+"보류함": "保留リスト",
+"보류함으로": "保留リストへ",
+"보여주기만 하면 되는 말": "見せるだけで伝わる言葉",
+"북큐슈 고속{@}·시내{@} {#}일 무제한. 고속{@}는 좌석 예약이 필요해요.": "北部九州の高速{@}・路線{@}が{#}日間乗り放題。高速{@}は座席の予約が必要です。",
+"비행기 {#}": "飛行機 {#}",
+"빠듯해요": "ぎりぎりです",
+"사공이 노 젓는 배로 수로를 따라 약 {#}분.": "船頭さんが漕ぐ舟で水路を約{#}分。",
+"사이토자키 (마린월드 근처)": "西戸崎（マリンワールド近く）",
+"사이토자키 (마린월드 근처) (대기 포함 약 {#}분)": "西戸崎（マリンワールド近く）（待ち時間込み約{#}分）",
+"사진은 이 기기에만 저장돼요. 다른 기기에서는 기본 {@} 사진이 보여요.": "写真はこの端末だけに保存されます。ほかの端末では標準の{@}の写真が表示されます。",
+"삭제": "削除",
+"삭제하면 되돌릴 수 없어요.": "削除すると元に戻せません。",
+"상단 사진": "トップの写真",
+"상단 사진 바꾸기": "トップの写真を変える",
+"상단 사진:": "トップの写真：",
+"새 여행": "新しい旅",
+"새 여행 계획 세우기": "新しい旅行プランを作る",
+"선착장 앞 섬 특산물 직판장.": "船着き場前の島の特産品直売所。",
+"선택": "選択",
+"섬 노선{@} (니시테츠)": "島内の路線{@}（西鉄）",
+"세부 계획 만들기": "詳しいプランを作る",
+"셋 중 어느 열차든 OK": "3本のどの列車でもOK",
+"소프트뱅크 호크스 홈구장.": "福岡ソフトバンクホークスの本拠地。",
+"숙소": "宿",
+"숙소 ({@} 근처)": "宿（{@}周辺）",
+"숙소 도착": "宿に到着",
+"숙소 약 {#}km, {#}분": "宿 約{#}km・{#}分",
+"숙소 약 {#}m, {#}분": "宿 約{#}m・{#}分",
+"숙소 위치": "宿の場所",
+"숙소까지 걸어서 {#}분": "宿まで徒歩{#}分",
+"숙소에 짐 맡기기": "宿に荷物を預ける",
+"숙소에 짐 맡기기 삭제": "宿に荷物を預けるを削除",
+"숙소에 짐 맡기기 약 {#}m, {#}분": "宿に荷物を預ける 約{#}m・{#}分",
+"숙소에 짐 맡기기을(를) 보류함으로 옮겼어요.": "「宿に荷物を預ける」を保留リストに移しました。",
+"숙소에서 출발": "宿から出発",
+"순서": "順番",
+"순서 조정": "順番を調整",
+"시간": "時間",
+"시간 바꾸기": "時間を変える",
+"시간이 모자라거나 직접 뺀 곳이에요. 원하는 날에 다시 넣을 수 있어요.": "時間が足りなかったり、自分で外したりした場所です。好きな日に入れ直せます。",
+"시간이 부족해서 보류": "時間が足りないので保留",
+"시내": "市内",
+"시내 경유": "市内経由",
+"시내{@}": "路線{@}",
+"시내{@} ¥{#}": "路線{@} ¥{#}",
+"시내{@} 하루 무제한이에요.": "路線{@}が1日乗り放題です。",
+"시내는 크게, 외곽은 작게 그린 안내 지도": "市内は大きく、郊外は小さく描いた案内マップ",
+"시영 도선": "市営渡船",
+"시영 도선 ¥{#}": "市営渡船 ¥{#}",
+"시카노시마 (약 {#}분)": "志賀島（約{#}分）",
+"시카노시마 (약 {#}분) (대기 포함 약 {#}분)": "志賀島（約{#}分）（待ち時間込み約{#}分）",
+"시티패스": "シティパス",
+"식사": "食事",
+"신용카드 터치로 {@}": "タッチ決済で{@}",
+"신칸센 ¥{#}": "新幹線 ¥{#}",
+"신칸센 자유석 {@}": "新幹線自由席 {@}",
+"신칸센+JR {#}분": "新幹線+JR {#}分",
+"신칸센으로 고쿠라까지 (약 {#}분)": "新幹線で小倉まで（約{#}分）",
+"아래": "下の",
+"아직 보낼 계획이 없어요. 먼저 계획을 세워 저장해 주세요.": "まだ送るプランがありません。先にプランを作って保存してください。",
+"아직 일정이 없어요": "まだ予定がありません",
+"아침 물안개로 유명한 작은 호수.": "朝霧で有名な小さな湖。",
+"안내 닫기": "案内を閉じる",
+"앞으로": "これから",
+"앱 버전이나 다른 기기로 보내기": "アプリ版やほかの端末へ送る",
+"앱에서": "アプリで",
+"앱이나 다른 기기로 계획을 옮겨요. 코드 하나로 전부 옮겨져요.": "アプリやほかの端末にプランを移します。コード一つで全部移せます。",
+"약 {#}km": "約{#}km",
+"약 {#}m": "約{#}m",
+"약 {#}분": "約{#}分",
+"약 ¥{#}": "約¥{#}",
+"얇은 면에 깔끔한 돈코츠. 늦게까지 열어요.": "細麺にすっきりした豚骨。遅くまで営業。",
+"어디부터 갈까요?": "どこから行きましょうか？",
+"어른 {#}명 기준": "大人{#}人の場合",
+"어른 {#}명 기준이에요. {@}·{@}와 일부 JR은 거리로 계산한 추정치라 실제와 다를 수 있어요.": "大人{#}人の場合です。{@}・{@}と一部のJRは距離からの推定なので、実際と異なることがあります。",
+"언제 떠나세요?": "いつ出発しますか？",
+"언제 사야 이득일까": "いつ買うとお得？",
+"여기부터 다시 짜기": "ここから組み直す",
+"여유": "余裕",
+"여유 있어요": "余裕があります",
+"여행 이름": "旅行の名前",
+"여행 일본어": "旅の日本語",
+"여행 준비": "旅の準備",
+"역 발매기에서 사요. 카드 터치 상한과 값이 같아요.": "駅の券売機で買います。タッチ決済の上限と同じ金額です。",
+"역 번호·방면·노선은 {#}년 기준이에요. {@} 번호와 시간표는 바뀔 수 있으니 {J}구글 지도로 실시간 확인{J}을 함께 보세요.": "駅番号・方面・路線は{#}年時点の情報です。{@}の番号や時刻表は変わることがあるので、{J}Googleマップでリアルタイム確認{J}もあわせて見てください。",
+"역 빌딩 {@}, 라멘, 모츠나베": "駅ビルの{@}、ラーメン、もつ鍋",
+"역 빌딩 {@}몰. 옥상 광장에서 시내가 보여요.": "駅ビルの{@}モール。屋上広場から街が見えます。",
+"역 안에서 여러 라멘집을 비교해 고를 수 있어요.": "駅の中でいくつものラーメン店を比べて選べます。",
+"역 앞 {@}·식당가 빌딩.": "駅前の{@}・飲食店ビル。",
+"역에서 {@} 약 {#}분": "駅から{@}約{#}分",
+"역에서 걸어서 {#}분, 오래된 숲속 신사.": "駅から徒歩{#}分、古い森の中の神社。",
+"역으로 가는 {@}": "駅へ行く{@}",
+"연못과 폭포가 있는 정갈한 정원.": "池と滝のある端正な庭園。",
+"예: 호텔에서 쉬기": "例：ホテルで休む",
+"예약 번호, 먹고 싶은 메뉴": "予約番号、食べたいメニュー",
+"옛 {@} 상가 주택과 전통공예.": "昔の{@}の町家と伝統工芸。",
+"오는 날": "帰る日",
+"오늘 들르는 곳": "今日の立ち寄り先",
+"옮길 날 선택": "移す日を選ぶ",
+"외국인 여행자 전용. 특급·규슈 신칸센 포함, {@}~고쿠라 신칸센은 빠져요.": "外国人旅行者専用。特急・九州新幹線を含み、{@}〜小倉の新幹線は対象外です。",
+"요금 기준": "料金の基準",
+"우미나카 라인": "海の中道ライン",
+"운하가 흐르는 복합몰. 분수쇼가 열려요.": "運河が流れる複合モール。噴水ショーがあります。",
+"원": "ウォン",
+"원래 {#}일차": "もとは{#}日目",
+"유럽 시골 마을처럼 꾸민 작은 거리.": "ヨーロッパの田舎町のような小さな通り。",
+"유후다케가 보이는 노천탕 당일 입욕.": "由布岳を望む露天風呂の日帰り入浴。",
+"유후다케가 보이는 노천탕 당일 입욕. (여러 가게 중 골라서)": "由布岳を望む露天風呂の日帰り入浴。（何軒かから選べます）",
+"을 비교해 바꿀 수 있어요. 걷기로 바꾸면 길 위 {@}·{@}를 추천하고 이후 일정을 다시 짜요.": "を比べて変更できます。徒歩に変えると道すがらの{@}・{@}をおすすめし、その後の予定を組み直します。",
+"이 구간 타는 법 보기": "この区間の乗り方を見る",
+"이 구간은 걸어가기 어려워요.": "この区間は歩くのが難しいです。",
+"이 길 근처엔 추천할 곳이 아직 없어요. 걷기만 해도 좋아요.": "この道の近くにはまだおすすめの場所がありません。歩くだけでも楽しいですよ。",
+"이 날 다시 짜기": "この日を組み直す",
+"이 날은 아직 일정이 없어요.": "この日はまだ予定がありません。",
+"이 동네 넣어서 계획 세우기": "このエリアを入れてプランを作る",
+"이 브라우저에 저장돼요": "このブラウザに保存されます",
+"이끼와 돌로 꾸민 고요한 정원 사찰.": "苔と石で整えた静かな庭園の寺。",
+"이동 {#}번": "移動{#}回",
+"이동 방법": "移動方法",
+"이동 방법 바꾸기: {@} {#}분": "移動方法を変える：{@} {#}分",
+"이동 방법 바꾸기: {@} {#}분 ¥{#}": "移動方法を変える：{@} {#}分 ¥{#}",
+"이동 방법 바꾸기: {@} {#}분 약 ¥{#}": "移動方法を変える：{@} {#}分 約¥{#}",
+"이동 시간·요금·영업시간은 대략적인 값이에요. 방문 전에 확인하세요.": "移動時間・料金・営業時間はおおよその値です。訪れる前に確認してください。",
+"이동 안내": "移動案内",
+"이동 칸을 누르면": "移動欄をタップすると",
+"이름": "名前",
+"이름·동네·종류 (예: 라멘, {@})": "名前・エリア・種類（例：ラーメン、{@}）",
+"이번 여행 교통비": "今回の旅の交通費",
+"이번 일정에선 ¥{#} 더 들어요. 북큐슈 고속{@}·시내{@} {#}일 무제한. 고속{@}는 좌석 예약 필요. 가격은 판매처마다 조금 달라요.": "今回の予定では¥{#}高くなります。北部九州の高速{@}・路線{@}が{#}日間乗り放題。高速{@}は座席の予約が必要。価格は販売所によって少し違います。",
+"이번 일정에선 ¥{#} 더 들어요. 외국인 여행자 전용. 특급·규슈 신칸센 포함, {@}~고쿠라 신칸센은 제외.": "今回の予定では¥{#}高くなります。外国人旅行者専用。特急・九州新幹線を含み、{@}〜小倉の新幹線は対象外。",
+"이번 일정은 교통비가 거의 들지 않아요.": "今回の予定は交通費がほとんどかかりません。",
+"이번에 바꾼 내용이 사라져요.": "今回変えた内容が消えます。",
+"이전 달": "前月",
+"인연을 비는 산기슭 신사. 가을 단풍 {@}.": "縁結びの山すその神社。秋の紅葉の{@}スポット。",
+"일본 최대급 목조 좌불상이 있는 사찰.": "日本最大級の木造坐像がある寺。",
+"일본 최초의 선종 사찰. 조용한 경내 산책.": "日本最初の禅寺。静かな境内を散策。",
+"일본어로 보여주기": "日本語で見せる",
+"일정": "予定",
+"일정 +{#}분": "予定 +{#}分",
+"일정에 딱 맞아요": "予定にぴったりです",
+"일정을 만들었어요. 마음에 들면 저장하세요.": "予定を作りました。気に入ったら保存してください。",
+"자동 일정": "自動作成",
+"자유 일정": "自由行動",
+"자전거로 도는 넓은 꽃 공원과 동물 숲.": "自転車で回る広い花の公園と動物の森。",
+"작은 일본 정원에서 말차 한 잔.": "小さな日本庭園で抹茶を一杯。",
+"잡화점과 디저트 가게가 이어진 메인 거리.": "雑貨店とスイーツ店が続くメイン通り。",
+"장소 검색": "場所を検索",
+"장소 추가": "場所を追加",
+"장어를 쪄낸 {@} 명물 세이로무시.": "うなぎを蒸し上げた{@}名物のせいろ蒸し。",
+"저녁": "夕食",
+"저장": "保存",
+"저장 안 하고 나가기": "保存せずに出る",
+"저장됨": "保存済み",
+"저장하고 나가기": "保存して出る",
+"저장하고 이동 안내 보기": "保存して移動案内を見る",
+"저장하지 않고 나갈까요?": "保存せずに出ますか？",
+"저장했어요. 구간별 이동 안내가 만들어졌어요.": "保存しました。区間ごとの移動案内ができました。",
+"적용하고 다시 짜기": "適用して組み直す",
+"전철 {#}분": "電車 {#}分",
+"전철·JR": "電車・JR",
+"전체": "すべて",
+"점심": "昼食",
+"정차역 보기": "停車駅を見る",
+"지금": "いま",
+"지금 동선에서 {#}km": "いまのルートから{#}km",
+"지금 동선에서 {#}m": "いまのルートから{#}m",
+"지금 일정에선 따로 패스를 사지 않아도 돼요": "今の予定ならパスを買わなくても大丈夫です",
+"지도": "地図",
+"지도나 아래 카드에서 골라 주세요": "地図か下のカードから選んでください",
+"지옥 순례와 레트로 {@}": "地獄めぐりとレトロな{@}",
+"지쿠시 출구에서 {@} 약 {#}분": "筑紫口から{@}約{#}分",
+"지쿠젠마에바루": "筑前前原",
+"지쿠젠마에바루 (대기 포함 약 {#}분)": "筑前前原（待ち時間込み約{#}分）",
+"직접 고름": "自分で選んだ",
+"직접 뺀 곳": "自分で外した場所",
+"직접 찍은 후쿠오카 사진으로 바꿀 수 있어요.": "自分で撮った福岡の写真に変えられます。",
+"직접 추가": "直接追加",
+"직행{@}": "直行{@}",
+"직행{@}는 밤 {#}시쯤 끊겨요. 늦게 내리면 셔틀{@}+{@}이나 {@}를 타요. 국내선으로 도착했다면 터미널에서 바로 {@} {J}역으로 내려가면 돼요. 시간은 대략적인 값이에요.": "直行{@}は夜{#}時ごろで終わります。遅く着いたらシャトル{@}+{@}か{@}に乗ります。国内線に着いたなら、ターミナルからそのまま{@}{J}駅へ降りればOKです。時間はおおよその値です。",
+"직행{@}로 {@}": "直行{@}で{@}",
+"진한 돈코츠 거품 라멘. 줄 서는 집이에요.": "濃厚な泡系豚骨ラーメン。行列ができる店です。",
+"참배길 식당 중 마음에 드는 곳에서.": "参道の食堂から気に入ったお店で。",
+"참배길 식당 중 마음에 드는 곳에서. (여러 가게 중 골라서)": "参道の食堂から気に入ったお店で。（何軒かから選べます）",
+"처음 타는 법": "はじめての乗り方",
+"처음이라면": "はじめてなら",
+"천수대 터에 오르면 시내가 한눈에 보여요.": "天守台跡に上ると街が一望できます。",
+"철판째 나오는 한입 교자.": "鉄板ごと出てくる一口餃子。",
+"첫날 공항 도착": "初日の空港到着",
+"첫날 미리보기": "初日のプレビュー",
+"최대 {#}일까지 고를 수 있어요.": "最大{#}日まで選べます。",
+"추가": "追加",
+"추천": "おすすめ",
+"추천대로 하면": "おすすめ通りにすると",
+"축소": "縮小",
+"출발": "出発",
+"출발하는 날을 눌러 주세요.": "出発する日をタップしてください。",
+"취소": "キャンセル",
+"츠타야 서점과 후쿠오카시 과학관이 있어요.": "蔦屋書店と福岡市科学館があります。",
+"치즈를 올려 오븐에 구운 모지코 명물 카레.": "チーズをのせてオーブンで焼いた門司港名物の焼きカレー。",
+"치즈를 올려 오븐에 구운 모지코 명물 카레. (여러 가게 중 골라서)": "チーズをのせてオーブンで焼いた門司港名物の焼きカレー。（何軒かから選べます）",
+"캐널시티, 신사·사찰, 강변 야타이": "キャナルシティ、神社・お寺、川沿いの屋台",
+"캐릭터·애니메이션 굿즈 숍이 많은 {@}몰.": "キャラクター・アニメグッズのお店が多い{@}モール。",
+"커뮤니티 {@} 마호로바호": "コミュニティ{@} まほろば号",
+"코드": "コード",
+"코드 복사": "コードをコピー",
+"코드를 붙여 넣고": "コードを貼り付けて",
+"타기": "乗る",
+"타는 법": "乗り方",
+"타는 역": "乗る駅",
+"타는 역·방면·내리는 역을 일본어와 함께": "乗る駅・方面・降りる駅を日本語つきで",
+"터미널 앞 {@} 승강장에서 타요. 호텔 이름과 주소(일본어)를 보여 주면 돼요.": "ターミナル前の{@}乗り場から乗ります。ホテルの名前と住所（日本語）を見せればOKです。",
+"터치 결제 카드가 없을 때": "タッチ決済のカードがないとき",
+"텐만구 뒤편 무지개 터널로 이어지는 대형 박물관.": "天満宮の裏手、虹色のトンネルでつながる大型博物館。",
+"투어리스트 시티패스": "ツーリストシティパス",
+"특급 {#}시간": "特急 {#}時間",
+"특급·급행이라도 이 안내에 적힌 역에는 서요. 표는 역 발매기나 교통카드로.": "特急・急行でも、この案内に書かれた駅には停まります。切符は駅の券売機か交通系ICカードで。",
+"파일에서 가져오기": "ファイルから取り込む",
+"편집숍·빈티지숍·{@}가 모인 골목.": "セレクトショップ・古着屋・{@}が集まる路地。",
+"하루": "1日",
+"하루 마무리": "1日の終わり",
+"하루 시작": "1日の始まり",
+"하루 최대 ¥{#}": "1日最大¥{#}",
+"하루에 {@}와 {@}를 한 방향으로 돌 때": "1日で{@}と{@}を一方向に回るとき",
+"하시모토 방면": "橋本方面",
+"학문의 신 텐만구와 참배길": "学問の神様の天満宮と参道",
+"학문의 신을 모신 신사. 합격 기원 {@}.": "学問の神様をまつる神社。合格祈願の{@}スポット。",
+"항구 앞 {@}·해산물 식당. {@} 선착장.": "港の前の{@}・海鮮食堂。{@}乗り場。",
+"항구 전망, 나가하마 라멘, {@}": "港の眺め、長浜ラーメン、{@}",
+"해 질 무렵에 가면 더 좋아요": "夕暮れどきに行くともっといいです",
+"해변공원, 수족관, 시카노시마": "海浜公園、水族館、志賀島",
+"현무암 기둥이 늘어선 해식동굴. 유람선 감상.": "玄武岩の柱が並ぶ海食洞。遊覧船で見物。",
+"현지인이 줄 서는 {@} 우동. 우엉튀김 우동 추천.": "地元の人が並ぶ{@}うどん。ごぼう天うどんがおすすめ。",
+"현해탄": "玄界灘",
+"호수 바로 앞 테라스 {@}.": "湖のすぐ前のテラス{@}。",
+"호수 산책, {@}, 미술관": "湖の散策、{@}、美術館",
+"호수 한 바퀴(약 {#}km)를 걷는 시민 공원.": "湖を一周（約{#}km）歩ける市民の公園。",
+"호텔 예약 확인서의 호텔 이름·주소를 함께 보여 주세요.": "ホテル予約確認書のホテル名・住所もあわせて見せてください。",
+"화면 전환": "画面切り替え",
+"확대": "拡大",
+"확인": "確認",
+"환율": "為替レート",
+"후쓰카이치 환승": "二日市で乗り換え",
+"후쓰카이치에서 {@}선으로 갈아타기": "二日市で{@}線に乗り換え",
+"후쓰카이치에서 갈아타기": "二日市で乗り換え",
+"후쿠오카 {#}박 {#}일": "福岡 {#}泊{#}日",
+"후쿠오카 {#}박 {#}일 삭제": "福岡 {#}泊{#}日を削除",
+"후쿠오카 {#}일": "福岡 {#}日",
+"후쿠오카 {#}일 삭제": "福岡 {#}日を削除",
+"후쿠오카 {@}·{@}·{@}, 이것만 알면 돼요": "福岡の{@}・{@}・{@}、これだけ知っておけば大丈夫",
+"후쿠오카 {@}은 급행이 없어 모든 열차가 이 역에 서요.": "福岡の{@}には急行がないので、すべての列車がこの駅に停まります。",
+"후쿠오카 공항 도착": "福岡空港に到着",
+"후쿠오카 대표 로스터리 {@}.": "福岡を代表する自家焙煎{@}。",
+"후쿠오카 명물 곱창전골. 된장 맛이 대표 메뉴.": "福岡名物のもつ鍋。味噌味が定番。",
+"후쿠오카 시내 주변을 보여 주고 있어요. 숙소·공항 쪽 이동은 지도 밖으로 이어져요.": "福岡市内周辺を表示しています。宿・空港方面への移動は地図の外に続きます。",
+"후쿠오카 안내 지도": "福岡の案内マップ",
+"후쿠오카 플래너": "福岡プランナー",
+"후쿠오카,": "福岡、",
+"사진 파일을 골라 주세요.": "写真ファイルを選んでください。",
+"사진을 열 수 없어요.": "写真を開けません。",
+"이 사진은 열 수 없어요. 다른 사진을 골라 주세요.": "この写真は開けません。別の写真を選んでください。",
+"이 사진은 쓸 수 없어요.": "この写真は使えません。",
+"상단 사진을 바꿨어요.": "トップの写真を変えました。",
+"사진을 바꿨어요. 저장 공간이 모자라 다음에 열면 기본 사진이 보여요.": "写真を変えました。保存容量が足りないため、次に開くと標準の写真になります。",
+"기본 사진으로 되돌렸어요.": "標準の写真に戻しました。",
+"기본 사진으로 되돌리기": "標準の写真に戻す",
+"내가 고른 후쿠오카 사진": "自分で選んだ福岡の写真",
+"{@}을(를) 넣어 뒀어요. 날짜를 골라 주세요.": "{@}を入れておきました。日付を選んでください。",
+"계획 {#}개를 가져왔어요": "プランを{#}件取り込みました",
+"계획 {#}개를 가져왔어요.": "プランを{#}件取り込みました。",
+"{#}개는 최신으로 바꿨어요.": "{#}件は最新に更新しました。",
+"이미 같은 계획이 있어요.": "同じプランがすでにあります。",
+"이 파일에서 계획을 찾지 못했어요.": "このファイルにプランが見つかりませんでした。",
+"파일을 열 수 없어요.": "ファイルを開けません。",
+"코드를 복사했어요. 다른 쪽 \"가져오기\"에 붙여 넣으세요.": "コードをコピーしました。もう一方の「取り込む」に貼り付けてください。",
+"코드를 복사했어요.": "コードをコピーしました。",
+"코드가 선택됐어요. 길게 눌러 복사해 주세요.": "コードを選択しました。長押ししてコピーしてください。",
+"코드를 읽을 수 없어요. 처음부터 끝까지 다 복사했는지 확인해 주세요.": "コードを読み取れません。最初から最後まで全部コピーしたか確認してください。",
+"먼저 코드를 붙여 넣어 주세요.": "先にコードを貼り付けてください。",
+"저장했지만 이 브라우저에선 보관이 안 될 수 있어요.": "保存しましたが、このブラウザでは残らないことがあります。",
+"저장했어요.": "保存しました。",
+"계획을 삭제했어요.": "プランを削除しました。",
+"{@}(으)로 바꿨어요.": "{@}に変えました。",
+"{@}(으)로 바꿨어요. 이후 일정이 {#}분 늦어져요.": "{@}に変えました。その後の予定が{#}分遅くなります。",
+"{@}(으)로 바꿨어요. 이후 일정이 {#}분 당겨져요.": "{@}に変えました。その後の予定が{#}分早まります。",
+"걷기로 바꿨어요.": "徒歩に変えました。",
+"걷기로 바꿨어요. 이후 일정이 {#}분 늦어져요.": "徒歩に変えました。その後の予定が{#}分遅くなります。",
+"걷기로 바꿨어요. 이후 일정이 {#}분 당겨져요.": "徒歩に変えました。その後の予定が{#}分早まります。",
+"{@}을(를) {#}번째에 넣었어요.": "{@}を{#}番目に入れました。",
+"{@}을(를) {#}일차 {#}번째로 옮겼어요.": "{@}を{#}日目の{#}番目に移しました。",
+"이름을 적어 주세요.": "名前を入力してください。",
+"마무리 시간이 출발보다 늦어야 해요.": "終了時間は出発より後にしてください。",
+"계정 저장 공간이 가득 찼어요. 이 브라우저에는 저장됐어요.": "アカウントの保存容量がいっぱいです。このブラウザには保存されました。",
+"계정에 저장돼요": "アカウントに保存されます",
+"다른 기기에서도 보여요": "ほかの端末でも見られます",
+"이 휴대폰에 저장돼요": "このスマホに保存されます",
+"인터넷 없이도 열려요": "オフラインでも開けます",
+"웹 버전에서 만든 계획 가져오기": "Web版で作ったプランを取り込む",
+"다른 폰으로 보내기": "ほかのスマホへ送る",
+"웹 버전이나 다른 기기로 계획을 옮겨요. 코드 하나로 전부 옮겨져요.": "Web版やほかの端末にプランを移します。コード一つで全部移せます。",
+"웹 버전에서": "Web版で",
+"카톡·메모로 보내기": "カカオトーク・メモで送る",
+"파일로 저장": "ファイルに保存",
+"후쿠오카 여행 플래너": "福岡旅行プランナー",
+"그 밖에 {#}곳": "ほか{#}か所",
+"오늘 일정": "今日の予定",
+"교통비 약 ¥{#}": "交通費 約¥{#}",
+"여행 {#}일차": "旅行{#}日目",
+"다녀온 여행": "行ってきた旅",
+"BOSS E{J}ZO FUKUOKA까지 걷기": "BOSS E{J}ZO FUKUOKAまで歩く",
+"JR 특급 소닉": "JR特急ソニック",
+"{@} 방면 {J} 행 직통 열차도 OK)": "{@}方面 {J}行きの直通列車もOK)",
+"{@} 선착장까지 걷기": "{@}の船着き場まで歩く",
+"{@} 시내 노선{@}예요. 내릴 곳: {J}": "{@}の市内路線{@}です。降りる場所：{J}",
+"{@}역 {@}센터까지 걷기": "{@}駅{@}センターまで歩く",
+"{J} 행 배를 타고 종점 {@} 여객 대합소에서 내려요.": "{J}行きの船に乗り、終点の{@}旅客待合所で降ります。",
+"{J} 행 배를 타고 종점에서 내려요 (중간에 {J}에 들러요).": "{J}行きの船に乗り、終点で降ります（途中で{J}に寄ります）。",
+"{J} 행 배를 타고 종점에서 내려요.": "{J}行きの船に乗り、終点で降ります。",
+"{J} 행 특급{J}을 타면 갈아타지 않고 약 {#}분. {J}에서 내려요.": "{J1}行きの特急に乗れば乗り換えなしで約{#}分。{J3}で降ります。",
+"{J}역에서 지하상가를 따라 {J}역까지 걸어서 약 {#}~{#}분. 안내판의 {J}주황)을 따라가요.": "{J}駅から地下街を通って{J}駅まで徒歩約{#}〜{#}分。案内板の{J}オレンジ)をたどります。",
+"같은 역 안에서 {J} 승강장으로 옮겨 타요.": "同じ駅の中で{J}のホームへ移って乗ります。",
+"고속{@} {J}": "高速{@} {J}",
+"공항 국제선 직행{@} 타기": "空港国際線行きの直行{@}に乗る",
+"니시테츠 {@}역까지 걷기": "西鉄{@}駅まで歩く",
+"니시테츠 특급 타기": "西鉄特急に乗る",
+"베이사이드 플레이스 옆 {@} 여객 대합소에서 {J} 행 배를 타고 {J}사이토자키{J}에서 내려요.": "ベイサイドプレイス隣の{@}旅客待合所から{J}行きの船に乗り、「西戸崎」で降ります。",
+"시영 도선 타기": "市営渡船に乗る",
+"시카노시마 선착장까지 걷기": "志賀島の船着き場まで歩く",
+"신칸센 쪽(동쪽) 출구예요.": "新幹線側（東側）の出口です。",
+"예약한 {@}를 {@} {#}층 고속{@} 승강장에서 타요. {@} 고속{@}터미널·공항 국제선에서도 타요.": "予約した{@}に{@}{#}階の高速{@}乗り場から乗ります。{@}高速{@}ターミナル・空港国際線からも乗れます。",
+"예약한 {@}를 {@}역 앞 {@}센터에서 타요.": "予約した{@}に{@}駅前の{@}センターから乗ります。",
+"예약한 열차를 타고 종점 {J}까지 가요.": "予約した列車に乗り、終点の{J}まで行きます。",
+"자유석 칸에 타고 종점 {J}까지 가요.": "自由席車両に乗り、終点の{J}まで行きます。",
+"자유석{J} 칸에 타고 {J}에서 내려요.": "自由席車両に乗り、{J2}で降ります。",
+"전석 지정이라 미리 예약하세요. {J}에서 내려요.": "全席指定なので事前に予約してください。{J}で降ります。",
+"종점 {J}까지 약 {#}분.": "終点の{J}まで約{#}分。",
+"지쿠시 출구 앞 승강장에서 {J} 직행{@}를 타요 (약 {#}분). 국내선 터미널엔 서지 않아요.": "筑紫口前ののりばから{J}行きの直行{@}に乗ります（約{#}分）。国内線ターミナルには停まりません。",
+"{J}요일은 휴관일 수 있어요": "{J}曜日は休みの可能性があります",
+"시즌이 아닐 수 있어요": "シーズン外かもしれません",
+"저녁 이후에 가면 더 좋아요": "夕方以降に行くともっといいです",
+"식사 시간대와 맞지 않아 보류": "食事の時間帯と合わないため保留",
+"식사가 이미 계획돼 있어서 보류": "食事がすでに予定に入っているため保留",
+"걷다가 들름": "歩く途中で立ち寄り",
+"찾는 곳이 없어요. 아래에서 직접 넣을 수 있어요.": "見つかりません。下から直接追加できます。",
+"요금 확인": "料金は要確認",
+"요금은 현지 확인": "料金は現地で確認",
+"시간을 바꾸고 일정을 다시 짰어요": "時間を変えて予定を組み直しました",
+"걷는 길로 바꾸고 이후 일정을 다시 짰어요": "歩く道に変えて、その後の予定を組み直しました",
+"{#}일은 투어리스트 시티패스가 이득": "{#}日はツーリストシティパスがお得",
+"{#}일은 니시테츠 {@} {#}일권이 이득": "{#}日は西鉄{@}{#}日乗車券がお得",
+"{@}·{@}·니시테츠 전철·시영 도선을 하루 동안 무제한. 외국인 여행자 전용(여권 필요).": "{@}・{@}・西鉄電車・市営渡船が1日乗り放題。外国人旅行者専用（パスポートが必要）。",
+"시내{@} 하루 무제한 약 ¥{#}.": "路線{@}が1日乗り放題 約¥{#}。",
+"BOSS E{J}ZO FUKUOKA 정보 보기": "BOSS E{J}ZO FUKUOKAの情報を見る",
+"ONE FUKUOKA BLDG. 정보 보기": "ONE FUKUOKA BLDG.の情報を見る",
+"ONE FUKUOKA BLDG.까지 걷기": "ONE FUKUOKA BLDG.まで歩く",
+"{@} 마리존 선착장에서 타요. {#}~{#}월 평일은 운항하지 않아요.": "{@}・マリゾンの船着き場から乗ります。{#}〜{#}月の平日は運休です。",
+"{@} 정보 보기": "{@}の情報を見る",
+"우미나카 라인 고속선": "うみなかライン高速船",
+"장소 정보": "スポット情報",
+"장소 정보·가는 법 보기": "スポット情報・行き方を見る",
+"마린월드 근처 선착장에서 타요. {#}~{#}월 평일은 운항하지 않아요.": "マリンワールド近くの船着き場から乗ります。{#}〜{#}月の平日は運休です。"
+};
+
 // ===== 화면 (모바일 앱 스타일) =====
 const $app = document.getElementById('app');
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -1747,15 +2764,17 @@ const ICON = {
   sc_dusk: '<path d="M7 16a5 5 0 0 1 10 0M3 16h18M6 20h12M12 5v3M5.5 9.5 7 11M18.5 9.5 17 11"/>',
   sc_night: '<path d="M19.5 14.5A8 8 0 1 1 9.5 4.5a6.3 6.3 0 0 0 10 10z"/>',
   swap: '<path d="M7 7h13l-4-4M17 17H4l4 4"/>', copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>', share: '<path d="M12 3v13M7 8l5-5 5 5M5 13v7h14v-7"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.8 3.8 5.8 3.8 9s-1.2 6.2-3.8 9c-2.6-2.8-3.8-5.8-3.8-9S9.4 5.8 12 3z"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',
   camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>', chat: '<path d="M4 5h16v11h-9l-5 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/>'
 };
 function ic(n, cls = '') { return `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n] || ''}</svg>`; }
 function ymd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 function pd(s) { return new Date(s + 'T00:00:00'); }
-function md(s) { const d = pd(s); return `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`; }
-function mds(s) { const d = pd(s); return `${d.getMonth() + 1}.${d.getDate()} ${WD[d.getDay()]}`; }
-function nights(n) { return n <= 1 ? '당일치기' : `${n - 1}박 ${n}일`; }
-function dur(m) { m = Math.round(m); const h = Math.floor(m / 60), r = m % 60; return h ? `${h}시간${r ? ' ' + r + '분' : ''}` : `${r}분`; }
+function md(s) { const d = pd(s); return LANG === 'ja' ? `${d.getMonth() + 1}月${d.getDate()}日(${WD[d.getDay()]})` : `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`; }
+function mds(s) { const d = pd(s); return LANG === 'ja' ? `${d.getMonth() + 1}/${d.getDate()}(${WD[d.getDay()]})` : `${d.getMonth() + 1}.${d.getDate()} ${WD[d.getDay()]}`; }
+function nights(n) { return LANG === 'ja' ? (n <= 1 ? '日帰り' : `${n - 1}泊${n}日`) : n <= 1 ? '당일치기' : `${n - 1}박 ${n}일`; }
+function dur(m) { m = Math.round(m); const h = Math.floor(m / 60), r = m % 60; return LANG === 'ja' ? (h ? `${h}時間${r ? r + '分' : ''}` : `${r}分`) : h ? `${h}시간${r ? ' ' + r + '분' : ''}` : `${r}분`; }
 function dist(k) { return k < 1 ? Math.round(k * 1000) + 'm' : k.toFixed(1) + 'km'; }
 function today() { return ymd(new Date()); }
 function dayDiff(a, b) { return Math.round((pd(b) - pd(a)) / 864e5); }
@@ -1807,7 +2826,7 @@ function updateStoreNote() { const el = document.getElementById('storeNote'); if
 function storeNote() { return store.mode === 'account' ? `${ic('check')}계정에 저장돼요 · 다른 기기에서도 보여요` : `${ic('save')}${IS_APP ? '이 휴대폰에 저장돼요 · 인터넷 없이도 열려요' : '이 브라우저에 저장돼요'}`; }
 
 // ---- 상태 ----
-const S = { view: 'home', plans: store.readLocal(), draft: null, plan: null, saved: true, isNew: false, di: 0, tab: 'sched', sel: null, mapSel: null, sheet: null, undo: [], banner: null, mv: null, toastT: null, rate: lsGet('fk-rate', FARE.krwPer100), hintOff: lsGet('fk-hint-off', false), heroImg: lsGet('fk-hero', null), heroBroken: false, photoBroken: false, scene: null };
+const S = { view: 'home', plans: store.readLocal(), draft: null, plan: null, saved: true, isNew: false, di: 0, tab: 'sched', sel: null, mapSel: null, sheet: null, undo: [], banner: null, mv: null, toastT: null, rate: lsGet('fk-rate', FARE.krwPer100), hintOff: lsGet('fk-hint-off', false), heroImg: lsGet('fk-hero', null), heroBroken: false, photoBroken: false, areaBroken: {}, scene: null };
 function defaultDraft() { const t = new Date(); return { start: null, end: null, hotel: 'hakata', arrive: '10:00', depart: '18:00', dayStart: '09:30', dayEnd: '21:30', areas: [], cal: ymd(new Date(t.getFullYear(), t.getMonth(), 1)) }; }
 function planStatus(p) {
   const t = today();
@@ -1831,7 +2850,7 @@ function toast(msg, undo) {
 // ---- 공통 조각 ----
 function appbar({ back, title, right = '', sub = '' }) {
   return `<header class="appbar">${back ? `<button class="ib" data-act="${back}" aria-label="뒤로">${ic('back')}</button>` : `<span class="brand">${logoSVG()}후쿠오카 플래너</span>`}
-    ${title ? `<div class="ab-t">${title}${sub ? `<small>${sub}</small>` : ''}</div>` : '<span class="ab-sp"></span>'}<div class="ab-r">${right}</div></header>`;
+    ${title ? `<div class="ab-t">${title}${sub ? `<small>${sub}</small>` : ''}</div>` : '<span class="ab-sp"></span>'}<div class="ab-r">${langBtn()}${right}</div></header>`;
 }
 function progress(n) { return `<div class="prog" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="${n}" aria-label="3단계 중 ${n}단계">${[1, 2, 3].map(i => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</div>`; }
 function modeIc(m, size = '') { return `<span class="mi ${size}" style="--m:${MODE[m].color}">${ic(m)}</span>`; }
@@ -1960,6 +2979,7 @@ function itemRow(p, r, i, N) {
         ${N > 1 ? `<label class="ed"><span>다른 날로</span><select data-change="moveDay" data-uid="${it.uid}"><option value="">옮길 날 선택</option>${p.days.map((d, k) => k === S.di ? '' : `<option value="${k}">${k + 1}일차 · ${mds(d.date)}</option>`).join('')}</select></label>` : ''}
         <label class="ed col"><span>메모</span><input type="text" id="memo-${it.uid}" data-input="memo" data-uid="${it.uid}" value="${esc(it.memo || '')}" placeholder="예약 번호, 먹고 싶은 메뉴" maxlength="120"></label>
         <div class="row2"><button class="btn soft" data-act="replanHere" data-uid="${it.uid}">${ic('shuffle')}여기부터 다시 짜기</button><button class="btn soft" data-act="toPark" data-uid="${it.uid}">${ic('box')}보류함으로</button></div>
+        ${s ? `<button class="btn soft wide" data-act="spotSheet" data-id="${s.id}">${ic('info')}장소 정보·가는 법 보기</button>` : ''}
       </div>` : ''}
     </div>
   </li>`;
@@ -2140,7 +3160,7 @@ function addListHTML(sh) {
   if (!list.length) return `<p class="note">${ic('search')}<span>찾는 곳이 없어요. 아래에서 직접 넣을 수 있어요.</span></p>`;
   return `<ul>${list.map(({ s, d }) => {
     const w = where[s.id], added = (sh.added || []).includes(s.id);
-    return `<li>${catTile(s.c)}<span class="al-t"><b>${esc(s.n)}</b><small>${AREA[s.a].n} · ${dur(s.s)} · 지금 동선에서 ${dist(d)}</small></span>
+    return `<li><button class="al-b" data-act="spotSheet" data-id="${s.id}" aria-label="${esc(s.n)} 정보 보기">${catTile(s.c)}<span class="al-t"><b>${esc(s.n)}</b><small>${AREA[s.a].n} · ${dur(s.s)} · 지금 동선에서 ${dist(d)}</small></span></button>
       ${added ? `<span class="tag walk">${ic('check')}넣음</span>` : w != null ? `<span class="tag">${w + 1}일차</span>` : `<button class="btn soft sm" data-act="addSpot" data-id="${s.id}">추가</button>`}</li>`;
   }).join('')}</ul>`;
 }
@@ -2362,11 +3382,58 @@ const AREA_TONE = {
   beppu: ['#E07A4F', '#6E2828'], mojiko: ['#5C7FD6', '#1C2A66']
 };
 const SCENES = [['day', '낮'], ['night', '밤']];
-// 상단 사진 (Unsplash 라이선스, 무료 사용)
+// 상단 사진 (모두 Unsplash 라이선스) — 앱을 열 때마다 바로 전과 다른 사진이 나와요
 const HERO_PHOTOS = {
-  day: { src: 'photos/fukuoka-tower-day.jpg', by: 'Rap Dela Rea', url: 'https://unsplash.com/photos/S8TPedkoGXM', alt: '맑은 날 파란 하늘 아래 후쿠오카 타워' },
-  night: { src: 'photos/fukuoka-tower-night.jpg', by: 'Taewoo Kim', url: 'https://unsplash.com/photos/vKcWjhcAfxc', alt: '밤에 파랗게 불이 켜진 후쿠오카 타워' }
+  day: [
+    { f: 'hero-day-1.jpg', by: 'Leopold Maitre', u: '3msDfruIp4k', alt: ['해 질 녘 분홍빛 하늘이 비친 오호리 공원 호수', '夕暮れのピンク色の空が映る大濠公園の池'] },
+    { f: 'hero-day-2.jpg', by: 'Zion C', u: 'ovBw9UkuiDA', alt: ['후쿠오카 성터 해자 위로 핀 벚꽃', '福岡城跡の堀に咲く桜'] },
+    { f: 'hero-day-3.jpg', by: 'Nichika Sakurai', u: 'ur4N7oXpVls', alt: ['노을 진 텐진 하늘과 전깃줄', '夕焼けの天神の空と電線'] },
+    { f: 'hero-day-4.jpg', by: 'Minyeong Jeong', u: 'H7FnrACfoAI', alt: ['절 문 너머로 보이는 만개한 벚꽃', '寺の門越しに見える満開の桜'] },
+    { f: 'hero-day-5.jpg', by: 'PJH', u: 'OAwFBZfBA7Q', alt: ['노을빛이 비치는 미야지다케 신사 앞 길', '夕日が差す宮地嶽神社前の道'] }
+  ],
+  night: [
+    { f: 'hero-nightview-1.jpg', by: 'Taewoo Kim', u: 'vKcWjhcAfxc', alt: ['파란 조명으로 빛나는 후쿠오카 타워', '青くライトアップされた福岡タワー'] },
+    { f: 'hero-nightview-2.jpg', by: 'K.T. Francis', u: '0OVIS0uRrdQ', alt: ['붉은 등롱이 밝힌 니시공원 신사 돌계단', '赤い灯籠に照らされた西公園の神社の石段'] },
+    { f: 'hero-nightview-3.jpg', by: 'Caleb Jack', u: 'H3Nv1kiQfL8', alt: ['노란 등불이 켜진 후쿠오카의 밤 골목', '提灯が灯る福岡の夜の路地'] },
+    { f: 'hero-nightview-4.jpg', by: 'Red Shuheart', u: 'BltD4NLohe8', alt: ['높은 곳에서 내려다본 밤의 도심 거리', '高い所から見下ろした夜の街の通り'] }
+  ]
 };
+// 이번에 열었을 때 보여 줄 사진 고르기 (지난번과 겹치지 않게)
+const HERO_PICK = (() => {
+  const last = lsGet('fk-hero-last', {}) || {}, pick = {};
+  for (const sc of Object.keys(HERO_PHOTOS)) {
+    const n = HERO_PHOTOS[sc].length;
+    let i = Math.floor(Math.random() * n);
+    if (n > 1 && i === last[sc]) i = (i + 1 + Math.floor(Math.random() * (n - 1))) % n;
+    pick[sc] = i;
+  }
+  lsSet('fk-hero-last', pick);
+  return pick;
+})();
+function heroPhoto(sc) {
+  const list = HERO_PHOTOS[sc] || HERO_PHOTOS.day, p = list[(HERO_PICK[sc] || 0) % list.length];
+  return { ...p, src: `photos/${p.f}`, url: `https://unsplash.com/photos/${p.u}`, altT: L(p.alt[0], p.alt[1]) };
+}
+
+// 동네 카드 사진 (모두 Unsplash 라이선스) — [사진가, Unsplash 사진 ID]
+const AREA_PHOTOS = {
+  hakata: ['WS Chae', 'JFLqBa5p4h0'], nakasu: ['Jayjayli', 'cAKKzIgOKEQ'], tenjin: ['Nichika Sakurai', 'V46fgZZLJCY'],
+  ohori: ['Winged Jedi', 'L_GSQ5N8IU0'], momochi: ['PJH', 'uDqOED6rrBE'], bayside: ['Yuhei Abe Studio', 'VesZCwIGrjY'],
+  dazaifu: ['Winged Jedi', 'FwQhjDz4RYs'], itoshima: ['PJH', 'izMurwBQ5Q4'], noko: ['Kouji Tsuru', 'cy7zm8mGzEY'],
+  uminaka: ['Zion C', 'MW9Kch8DRjw'], yanagawa: ['MIO ITO', 'CD-8j0ak10g'], yufuin: ['Tayawee Supan', 'pDmndWCyGUc'],
+  beppu: ['Tayawee Supan', 'I8K-lIkvqYI'], mojiko: ['Tomo M', 'TuTiKzZElBU']
+};
+const areaPh = id => AREA_PHOTOS[id] && !S.areaBroken[id] ? `photos/area-${id}.jpg` : null;
+const areaImg = id => `<img class="ph-img" data-area="${id}" src="photos/area-${id}.jpg" alt="" decoding="async">`;
+// 사진을 못 불러오면 그 동네만 원래 색깔 카드로 돌아가요
+document.addEventListener('error', e => {
+  const t = e.target;
+  if (!t || !t.classList || !t.classList.contains('ph-img')) return;
+  S.areaBroken[t.dataset.area] = 1;
+  const box = t.parentElement; if (box) box.classList.remove('has-ph');
+  const cr = box && box.nextElementSibling; if (cr && cr.classList.contains('ph-cr')) cr.remove();
+  t.remove();
+}, true);
 
 function logoSVG() {
   return `<svg class="logo2" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="9" fill="#D63A1F"/><path d="M11.6 22.5 13.3 6h1.4l1.7 16.5z" fill="#fff"/><rect x="10.6" y="12.6" width="6.8" height="2.2" rx="1" fill="#fff"/><path d="M14 6V3" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/><path d="M6.5 22.8h15" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>`;
@@ -2467,7 +3534,7 @@ function heroScene() {
 }
 
 function heroV(f) {
-  const mine = S.heroImg && !S.heroBroken, sc = heroScene(), scL = SCENES.find(x => x[0] === sc)[1], hp = HERO_PHOTOS[sc];
+  const mine = S.heroImg && !S.heroBroken, sc = heroScene(), scL = SCENES.find(x => x[0] === sc)[1], hp = heroPhoto(sc);
   const stock = !mine && !S.photoBroken, photo = mine;
   let txt;
   if (f) {
@@ -2475,9 +3542,9 @@ function heroV(f) {
     txt = `<span class="dday b-${st.k}">${st.label}</span><h1 class="hero-t">${esc(f.title)}</h1><p class="hero-s">${md(f.set.start)} – ${md(f.set.end)} · ${nights(f.days.length)}</p>`;
   } else txt = `<p class="hero-k">FUKUOKA <span lang="ja">福岡</span></p><h1 class="hero-t">후쿠오카,<br>어디부터 갈까요?</h1><p class="hero-s">날짜와 동네만 고르면 동선·교통비까지 짜 드려요</p>`;
   return `<section class="hero t-${sc}${mine || stock ? ' has-photo' : ''}">
-    ${mine ? `<img class="hero-img" src="${S.heroImg}" alt="내가 고른 후쿠오카 사진">` : stock ? `<img class="hero-img stock" src="${hp.src}" alt="${hp.alt}">` : heroSVG()}
+    ${mine ? `<img class="hero-img" src="${S.heroImg}" alt="내가 고른 후쿠오카 사진">` : stock ? `<img class="hero-img stock" src="${hp.src}" alt="${esc(hp.altT)}">` : heroSVG()}
     <div class="hero-shade"></div>
-    <div class="hero-top"><span class="brand light">${logoSVG()}후쿠오카 플래너</span><button class="hb" data-act="heroSheet" aria-label="상단 사진 바꾸기">${ic('camera')}</button></div>
+    <div class="hero-top"><span class="brand light">${logoSVG()}후쿠오카 플래너</span><span class="ht-r">${langBtn(true)}<button class="hb" data-act="heroSheet" aria-label="상단 사진 바꾸기">${ic('camera')}</button></span></div>
     ${mine ? '' : `<div class="scene" role="group" aria-label="그림 시간대 (지금: ${scL})">${SCENES.map(([k, l]) => `<button class="${k === sc ? 'on' : ''}" data-act="scene" data-v="${k}" aria-pressed="${k === sc}" aria-label="${l} 풍경으로 보기" title="${l}">${ic('sc_' + k)}</button>`).join('')}</div>`}
     <div class="hero-txt">${txt}</div>
   </section>`;
@@ -2501,8 +3568,9 @@ function areaMeta(a) {
 }
 function areaTile(a) {
   const n = SPOTS.filter(s => s.a === a.id).length, [c1, c2] = AREA_TONE[a.id] || ['#F0703A', '#B92E1C'];
+  const ph = areaPh(a.id);
   return `<button class="atile" data-act="areaSheet" data-id="${a.id}" style="--c1:${c1};--c2:${c2}">
-    <span class="at-art"><span class="at-ja" lang="ja">${AREA_JA[a.id] || ''}</span>${ic(areaMainCat(a.id), 'at-ic')}</span>
+    <span class="at-art${ph ? ' has-ph' : ''}">${ph ? areaImg(a.id).replace('<img ', '<img loading="lazy" ') : ''}<span class="at-ja" lang="ja">${AREA_JA[a.id] || ''}</span>${ic(areaMainCat(a.id), 'at-ic')}</span>
     <span class="at-b"><b>${a.n}</b><small>${esc(a.sub)}</small><em>${a.kind === 'trip' ? a.far : a.kind === 'outer' ? '근교' : '시내'} · ${n}곳</em></span>
   </button>`;
 }
@@ -2538,7 +3606,7 @@ function homeV() {
     ${rest.length ? `<h2 class="sec"><span>다른 계획</span></h2><ul class="plist">${rest.map(planRow).join('')}</ul>` : ''}
     <button class="xfer-btn" data-act="xferSheet">${ic('swap')}<span><b>계획 옮기기</b><small>${IS_APP ? '웹 버전에서 만든 계획 가져오기 · 다른 폰으로 보내기' : '앱 버전이나 다른 기기로 보내기 · 가져오기'}</small></span>${ic('next', 'chev')}</button>
     <p class="store-note" id="storeNote">${storeNote()}</p>
-    ${S.heroImg ? '' : `<p class="credit">상단 사진: <a href="${HERO_PHOTOS.day.url}" target="_blank" rel="noopener">${HERO_PHOTOS.day.by}</a> · <a href="${HERO_PHOTOS.night.url}" target="_blank" rel="noopener">${HERO_PHOTOS.night.by}</a> (Unsplash)</p>`}
+    ${S.heroImg ? '' : `<p class="credit">${L('상단 사진', 'トップの写真')} <a href="${heroPhoto(heroScene()).url}" target="_blank" rel="noopener">${heroPhoto(heroScene()).by}</a> · Unsplash</p>`}
   </main></div>`;
 }
 
@@ -2599,16 +3667,17 @@ const PHRASES = [
 function phraseSheetV(sh) {
   const b = PHRASES[sh.i ?? 0];
   return shHead('여행 일본어', '고르면 크게 보여 줘요. 화면을 그대로 보여 주세요.')
-    + `<div class="ja-card"><small>${esc(b[0])}</small><div class="ja-big" lang="ja">${esc(b[1])}</div><p class="ja-ko">${esc(b[2])}</p></div>
-    <ul class="phl">${PHRASES.map((x, i) => `<li><button class="${i === (sh.i ?? 0) ? 'on' : ''}" data-act="phrase" data-i="${i}" aria-pressed="${i === (sh.i ?? 0)}"><b>${esc(x[0])}</b><span lang="ja">${esc(x[1])}</span></button></li>`).join('')}</ul>`;
+    + `<div class="ja-card"><small data-notr>${esc(b[0])}</small><div class="ja-big" lang="ja">${esc(b[1])}</div><p class="ja-ko" data-notr>${esc(b[2])}</p></div>
+    <ul class="phl">${PHRASES.map((x, i) => `<li><button class="${i === (sh.i ?? 0) ? 'on' : ''}" data-act="phrase" data-i="${i}" aria-pressed="${i === (sh.i ?? 0)}"><b data-notr>${esc(x[0])}</b><span lang="ja">${esc(x[1])}</span></button></li>`).join('')}</ul>`;
 }
 
 function areaSheetV(sh) {
   const a = AREA[sh.id], list = SPOTS.filter(s => s.a === a.id).sort((x, y) => (x.p || 3) - (y.p || 3));
-  const [c1, c2] = AREA_TONE[a.id] || ['#F0703A', '#B92E1C'];
+  const [c1, c2] = AREA_TONE[a.id] || ['#F0703A', '#B92E1C'], ph = areaPh(a.id);
   return shHead(`${a.n}`, `${esc(a.sub)} · ${areaMeta(a)}`)
-    + `<div class="ar-band" style="--c1:${c1};--c2:${c2}"><span lang="ja">${AREA_JA[a.id] || ''}</span><small>${list.length}곳</small></div>
-    <ul class="spl">${list.map(s => `<li>${catTile(s.c)}<span class="al-t"><b>${esc(s.n)}</b><small>${CATS[s.c].n} · ${dur(s.s)}${s.j ? ` · <span lang="ja">${esc(s.j)}</span>` : ''}</small><span class="sp-d">${esc(s.d)}</span></span></li>`).join('')}</ul>
+    + `<div class="ar-band${ph ? ' has-ph' : ''}" style="--c1:${c1};--c2:${c2}">${ph ? areaImg(a.id) : ''}<span lang="ja">${AREA_JA[a.id] || ''}</span><small>${list.length}곳</small></div>
+    ${ph ? `<p class="ph-cr">${L('사진', '写真')} <a href="https://unsplash.com/photos/${AREA_PHOTOS[a.id][1]}" target="_blank" rel="noopener">${AREA_PHOTOS[a.id][0]}</a> · Unsplash</p>` : ''}
+    <ul class="spl">${list.map(s => `<li><button class="spl-b" data-act="spotSheet" data-id="${s.id}">${catTile(s.c)}<span class="al-t"><b>${esc(s.n)}</b><small>${CATS[s.c].n} · ${dur(s.s)}${s.j ? ` · <span lang="ja">${esc(s.j)}</span>` : ''}</small><span class="sp-d">${esc(s.d)}</span></span>${ic('next', 'chev')}</button></li>`).join('')}</ul>
     <div class="sh-foot"><button class="btn soft" data-act="closeSheet">닫기</button><button class="btn pri" data-act="planArea" data-id="${a.id}">이 동네 넣어서 계획 세우기</button></div>`;
 }
 
@@ -2617,7 +3686,7 @@ function heroSheetV() {
     + `<div class="sh-foot col">
       <label class="btn pri pick">${ic('camera')}내 사진 고르기<input type="file" accept="image/*" data-change="heroFile" class="sr"></label>
       ${S.heroImg ? `<button class="btn soft" data-act="heroReset">기본 사진으로 되돌리기</button>` : ''}</div>
-    <p class="note">${ic('save')}<span>사진은 이 기기에만 저장돼요. 다른 기기에서는 기본 후쿠오카 타워 사진이 보여요.</span></p>`;
+    <p class="note">${ic('save')}<span>${L('사진은 이 기기에만 저장돼요. 다른 기기에서는 기본 후쿠오카 사진이 보여요.', '写真はこの端末にだけ保存されます。ほかの端末では標準の福岡の写真が表示されます。')}</span></p>`;
 }
 
 const SHEETS = { air: airSheetV, pass: passSheetV, how: howSheetV, phrase: phraseSheetV, area: areaSheetV, hero: heroSheetV };
@@ -2648,8 +3717,15 @@ function wireHero() {
   const hi = document.querySelector('.hero-img');
   if (!hi) return;
   const stock = hi.classList.contains('stock');
-  hi.addEventListener('error', () => { if (stock) S.photoBroken = true; else S.heroBroken = true; render(); }, { once: true });
-  if (stock && !wireHero.pre) { wireHero.pre = true; Object.values(HERO_PHOTOS).forEach(p => { const im = new Image(); im.src = p.src; }); }
+  hi.addEventListener('error', () => {
+    if (stock) {
+      // 못 불러온 사진은 건너뛰고 다음 사진으로, 다 안 되면 그림으로
+      const sc = heroScene(); S.heroTries = (S.heroTries || 0) + 1;
+      if (S.heroTries < HERO_PHOTOS[sc].length) HERO_PICK[sc] = (HERO_PICK[sc] + 1) % HERO_PHOTOS[sc].length; else S.photoBroken = true;
+    } else S.heroBroken = true;
+    render();
+  }, { once: true });
+  if (stock && !wireHero.pre) { wireHero.pre = true; Object.keys(HERO_PHOTOS).forEach(sc => { const im = new Image(); im.src = heroPhoto(sc).src; }); }
 }
 
 Object.assign(A, {
@@ -2746,6 +3822,95 @@ Object.assign(A, {
 });
 if (IS_APP && navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { });
 
+Object.assign(A, {
+  toggleLang() {
+    LANG = LANG === 'ja' ? 'ko' : 'ja'; lsSet('fk-lang', LANG); applyLang();
+    const y = window.scrollY; render(); window.scrollTo(0, y);
+  }
+});
+
+// ---- 장소 상세 ----
+function L(ko, ja) { return LANG === 'ja' ? ja : ko; }
+const AREA_CITY = { dazaifu: '太宰府', itoshima: '糸島', noko: '能古島', yanagawa: '柳川', yufuin: '由布院', beppu: '別府', mojiko: '北九州' };
+function stationLine(id) { return Object.keys(LINES).find(k => LINES[k].st.includes(id)); }
+function nearStation(s) {
+  let best = null;
+  for (const [id, st] of Object.entries(STATIONS)) { const d = km(s, st); if (!best || d < best.d) best = { id, st, d }; }
+  return best && best.d <= 1.6 ? best : null;
+}
+function spotMapsUrl(s) {
+  const q = s.g ? `${s.lat},${s.lng}` : `${s.j} ${AREA_CITY[s.a] || '福岡'}`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+}
+function spotFacts(s, info) {
+  const f = [];
+  f.push([ic('clock'), L('추천 머무는 시간', 'おすすめ滞在'), dur(s.s)]);
+  if (s.to || s.from) f.push([ic('clock'), L('여는 시간 (대략)', '営業時間（目安）'), s.from && s.to ? `${s.from}–${s.to}` : s.to ? L(`${s.to}쯤 닫아요`, `${s.to}ごろまで`) : L(`${s.from}부터`, `${s.from}から`)]);
+  if (s.cl && s.cl.length) f.push([ic('alert'), L('쉬는 날', '定休日'), s.cl.map(d => L(`${WD_KO[d]}요일`, `${WD_JA[d]}曜日`)).join(', ')]);
+  if (s.se && s.se.length) f.push([ic('spark'), L('운영 시기', '営業時期'), L(`${s.se[0]}~${s.se[s.se.length - 1]}월`, `${s.se[0]}〜${s.se[s.se.length - 1]}月`)]);
+  if (s.b) f.push([ic('sc_day'), L('가기 좋은 때', 'おすすめの時間帯'), { m: L('아침', '朝'), e: L('해 질 녘', '夕暮れ'), n: L('밤', '夜') }[s.b]]);
+  if (info.fee) f.push([ic('card'), L('입장', '入場'), { free: L('무료', '無料'), paid: L('유료', '有料'), part: L('일부 유료', '一部有料') }[info.fee]]);
+  if (info.pr) f.push([ic('wallet'), L('가격대', '価格帯'), ['', L('¥ 부담 없음', '¥ 手ごろ'), L('¥¥ 보통', '¥¥ ふつう'), L('¥¥¥ 조금 비싸요', '¥¥¥ やや高め')][info.pr]]);
+  return f;
+}
+function spotSheetV(sh) {
+  const s = SPOT[sh.id], info = SPOT_INFO[s.id] || {}, a = AREA[s.a], [c1, c2] = AREA_TONE[s.a] || ['#F0703A', '#B92E1C'];
+  const desc = LANG === 'ja' ? (info.ja || '') : (info.ko || s.d), tip = LANG === 'ja' ? info.tj : info.tk;
+  const ns = nearStation(s), nl = ns && stationLine(ns.id);
+  const H = { ...PLACES.hotel[sh.h], n: `${HOTEL_LABEL[sh.h]} 숙소` }, B = { ...s, n: s.n };
+  const opts = legOptions(H, B), sel = sh.o || (pickDefault(opts) || opts[0] || {}).id;
+  const near = SPOTS.filter(x => x.id !== s.id && x.z === s.z && !x.g).map(x => ({ x, d: km(s, x) })).filter(o => o.d <= 1.2).sort((p, q) => p.d - q.d).slice(0, 4);
+  const p = S.view === 'plan' && S.plan, inDay = p ? p.days.findIndex(d => d.items.some(i => i.sid === s.id)) : -1;
+  const back = sh.back ? `<button class="btn soft" data-act="spotBack">${ic('back')}${sh.back.type === 'area' ? L(`${a.n} 목록`, '一覧に戻る') : L('목록으로', '一覧に戻る')}</button>` : `<button class="btn soft" data-act="closeSheet">${L('닫기', '閉じる')}</button>`;
+  const main = p ? (inDay >= 0 ? `<span class="btn soft in-day">${ic('check')}${L(`${inDay + 1}일차 일정에 있어요`, `${inDay + 1}日目の予定に入っています`)}</span>` : `<button class="btn pri" data-act="spotAdd" data-id="${s.id}">${ic('plus')}${L(`${S.di + 1}일차에 넣기`, `${S.di + 1}日目に入れる`)}</button>`)
+    : `<button class="btn pri" data-act="planArea" data-id="${s.a}">${L('이 동네로 계획 세우기', 'プランを作る')}</button>`;
+  return `<div class="sp-hero" style="--c1:${c1};--c2:${c2}">
+      <span class="sp-cat">${ic(s.c)}${LANG === 'ja' ? NAME_JA_CAT[s.c] : CATS[s.c].n}</span>
+      <span class="sp-ja" lang="ja">${esc(s.j)}</span>
+      <button class="ib sm sp-x" data-act="closeSheet" aria-label="${L('닫기', '閉じる')}">${ic('close')}</button>
+    </div>
+    <div class="sp-h"><h2>${esc(LANG === 'ja' ? s.j : s.n)}</h2><p>${LANG === 'ja' ? (AREA_JA[s.a] || a.n) : a.n}${s.g ? L(' · 여러 가게 중 골라서', ' · 何軒かから選べます') : ''}</p></div>
+    <p class="sp-d">${esc(desc)}</p>
+    ${tip ? `<p class="sp-tip">${ic('spark')}<span><b>${L('팁', 'ヒント')}</b> ${esc(tip)}</span></p>` : ''}
+    <dl class="sp-facts">${spotFacts(s, info).map(([i, k, v]) => `<div>${i}<dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+    ${ns ? `<div class="sp-st">${modeIc('subway')}<span><small>${L('가까운 역', '最寄り駅')}</small><b>${nl ? `<span class="sc-code" style="--m:${LINES[nl].color}">${stCode(nl, ns.id)}</span>` : ''}<span lang="ja">${esc(ns.st.j)}</span>${LANG === 'ja' ? '' : ` ${esc(ns.st.n)}`}</b><em>${L(`걸어서 약 ${wmin(ns.d)}분`, `徒歩約${wmin(ns.d)}分`)}</em></span></div>` : ''}
+    <a class="btn soft wide gm" href="${spotMapsUrl(s)}" target="_blank" rel="noopener">${ic('map')}${L('구글 지도에서 영업시간·사진·리뷰 보기', 'Googleマップで営業時間・写真・口コミを見る')}</a>
+    <div class="ja-card sp-taxi"><small>${L('택시 기사님께 이 화면을 보여 주세요', 'タクシーではこの画面を見せてください')}</small><div class="ja-big" lang="ja">${esc(s.j)}<br>までお願いします</div></div>
+    <h3 class="sec"><span>${L('숙소에서 가는 법', '宿からの行き方')}</span></h3>
+    <div class="chips-sel">${Object.entries(HOTEL_LABEL).map(([k, v]) => `<button class="${sh.h === k ? 'on' : ''}" data-act="spotHotel" data-v="${k}" aria-pressed="${sh.h === k}">${v}</button>`).join('')}</div>
+    <div class="aopts">${opts.map(o => {
+      const on = o.id === sel, ft = fareTxt(o.fare) || (o.mode === 'walk' ? '' : L('무료', '無料'));
+      const steps = on ? guideFor(o, H, B).map(x => x.taxi ? { ...x, d: L('택시 승강장이나 길에서 손을 들어 세워요. 위의 일본어 화면을 보여 주면 돼요.', 'タクシー乗り場や道で手を挙げて止めます。上の日本語の画面を見せればOKです。') } : x) : [];
+      return `<div class="aopt${on ? ' on' : ''}"><button class="opt${on ? ' on' : ''}" data-act="spotOpt" data-o="${o.id}" aria-expanded="${on}">
+          ${modeIc(o.mode)}<span class="ob"><span class="o1"><b>${MODE[o.mode].n}</b></span><span class="o2"><b>${dur(o.min)}</b>${ft ? `<em>${ft}</em>` : ''}</span><span class="ol">${esc(o.label)}</span></span>${ic(on ? 'up' : 'down', 'chev')}</button>
+        ${on ? `<ol class="gsteps">${steps.map(stepHTML).join('')}</ol>` : ''}</div>`;
+    }).join('')}</div>
+    ${near.length ? `<h3 class="sec"><span>${L('근처에 같이 가 볼 곳', '近くの立ち寄り先')}</span></h3><div class="sp-near">${near.map(({ x, d }) => `<button data-act="spotSheet" data-id="${x.id}" data-keep="1">${catTile(x.c)}<span><b>${esc(LANG === 'ja' ? x.j : x.n)}</b><small>${dist(d)}</small></span></button>`).join('')}</div>` : ''}
+    <p class="fine">${L('영업시간과 가격은 바뀔 수 있어요. 가기 전에 구글 지도에서 한 번 확인하세요. 이동 시간은 대략적인 값이에요.', '営業時間や料金は変わることがあります。行く前にGoogleマップで確認してください。移動時間はおおよその値です。')}</p>
+    <div class="sh-foot">${back}${main}</div>`;
+}
+const NAME_JA_CAT = { sight: '観光', food: 'グルメ', cafe: 'カフェ', shop: 'ショッピング', nature: '自然・公園', onsen: '温泉' };
+SHEETS.spot = spotSheetV; SHEET_LABEL.spot = '장소 정보';
+Object.assign(A, {
+  spotSheet(d) {
+    const prev = S.sheet, f = sortedPlans()[0];
+    const h = S.view === 'plan' && S.plan ? S.plan.set.hotel : f ? f.set.hotel : 'hakata';
+    const back = prev && prev.type === 'spot' ? prev.back : prev && (prev.type === 'area' || prev.type === 'add') ? prev : null;
+    S.sheet = { type: 'spot', id: d.id, h: prev && prev.type === 'spot' ? prev.h : h, o: null, back };
+    render(); const sh = document.querySelector('.sheet'); if (sh) sh.scrollTo(0, 0);
+  },
+  spotHotel(d) { S.sheet.h = d.v; S.sheet.o = null; S.keepSheetScroll = true; render(); },
+  spotOpt(d) { S.sheet.o = d.o; S.keepSheetScroll = true; render(); },
+  spotBack() { S.sheet = S.sheet.back; render(); },
+  spotAdd(d) {
+    const p = S.plan; if (!p) return; pushUndo(); p.parked = p.parked.filter(x => x.sid !== d.id);
+    const pos = insertBest(p, S.di, mkItem(d.id, 'user')); dirty();
+    if (S.sheet.back && S.sheet.back.type === 'add') { S.sheet.back.added = [...(S.sheet.back.added || []), d.id]; }
+    S.keepSheetScroll = true; render();
+    toast(`${SPOT[d.id].n}을(를) ${pos + 1}번째에 넣었어요.`, true);
+  }
+});
+
 // ===== 탑승 안내 (저장한 계획에서 보여줌) =====
 const TOWARD = {
   kuko: { '후쿠오카공항': { ja: '福岡空港行', ko: '후쿠오카공항(동쪽) 방면' }, '메이노하마': { ja: '姪浜行 · 筑前前原行 · 唐津行', ko: '메이노하마(서쪽) 방면 · 셋 중 어느 열차든 OK' } },
@@ -2834,10 +3999,10 @@ function stepHTML(s) {
   let body = `<b class="gs-t">${esc(s.t)}</b>`;
   if (s.k === 'subway') {
     body += `<div class="sub-rows">
-      <div><small>타는 역</small><span class="sc-code" style="--m:${color}">${s.board.code}</span><b lang="ja">${esc(s.board.ja)}</b><em>${esc(s.board.ko)}</em></div>
-      <div><small>방면</small><b lang="ja">${esc(s.ja)}</b><em>${esc(s.towardKo)}</em></div>
-      <div><small>내리는 역</small><span class="sc-code" style="--m:${color}">${s.off.code}</span><b lang="ja">${esc(s.off.ja)}</b><em>${esc(s.off.ko)}</em></div></div>
-      <details class="stops"><summary>${s.n}정거장 · 약 ${s.min}분 · 정차역 보기${ic('down', 'chev')}</summary><ol>${s.stops.map((x, i) => `<li class="${i === 0 ? 'b' : i === s.stops.length - 1 ? 'e' : ''}"><span class="sc-code sm" style="--m:${color}">${x.code}</span><span lang="ja">${esc(x.ja)}</span><em>${esc(x.ko)}</em>${i === 0 ? '<i>타기</i>' : i === s.stops.length - 1 ? '<i>내리기</i>' : ''}</li>`).join('')}</ol></details>
+      <div><small>타는 역</small><span class="sc-code" style="--m:${color}">${s.board.code}</span><b lang="ja">${esc(s.board.ja)}</b><em class="kor">${esc(s.board.ko)}</em></div>
+      <div><small>방면</small><b lang="ja">${esc(s.ja)}</b><em class="kor">${esc(s.towardKo)}</em></div>
+      <div><small>내리는 역</small><span class="sc-code" style="--m:${color}">${s.off.code}</span><b lang="ja">${esc(s.off.ja)}</b><em class="kor">${esc(s.off.ko)}</em></div></div>
+      <details class="stops"><summary>${s.n}정거장 · 약 ${s.min}분 · 정차역 보기${ic('down', 'chev')}</summary><ol>${s.stops.map((x, i) => `<li class="${i === 0 ? 'b' : i === s.stops.length - 1 ? 'e' : ''}"><span class="sc-code sm" style="--m:${color}">${x.code}</span><span lang="ja">${esc(x.ja)}</span><em class="kor">${esc(x.ko)}</em>${i === 0 ? '<i>타기</i>' : i === s.stops.length - 1 ? '<i>내리기</i>' : ''}</li>`).join('')}</ol></details>
       <p class="gs-ok">${ic('check')}후쿠오카 지하철은 급행이 없어 모든 열차가 이 역에 서요.</p>`;
   } else {
     if (s.ja) body += `<span class="ja" lang="ja">${esc(s.ja)}</span>`;
@@ -3028,9 +4193,10 @@ function drawWalk(el) {
 }
 
 
+applyLang();
+startTr();
 render();
 store.init();
-if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 
 </script>
 </body>
