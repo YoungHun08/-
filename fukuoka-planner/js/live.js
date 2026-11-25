@@ -14,6 +14,13 @@ function nowMin() {
   return d.getHours() * 60 + d.getMinutes();
 }
 
+// 막차가 끝나 다른 방법으로 바꾼 구간 안내 (배너)
+function svcLiveTxt(leg, b) {
+  return L(
+    `<b>${esc(leg.swapFrom.n)} 막차가 끝났어요</b> ${esc(b)}까지는 ${modeNm(leg.mode)}(으)로 안내해요.`,
+    `<b>${esc(leg.swapFrom.n)}の最終が終わりました</b> ${esc(b)}までは${modeNm(leg.mode)}で案内します。`
+  );
+}
 // 맞추기 전/후를 비교한 요약 (배너에 표시)
 function syncSummary(p, before, after) {
   const L = [];
@@ -32,8 +39,13 @@ function syncSummary(p, before, after) {
       })
     );
   legs
-    .filter(x => x.leg.lastGone)
-    .forEach(x => L.push({ k: 'warn', t: `<b>막차가 끝났어요</b> ${esc(x.b)}까지는 택시로 바꿔 보세요.` }));
+    .filter(x => x.leg.lastGone || x.leg.swapFrom || x.leg.svcGone)
+    .forEach(x =>
+      L.push({
+        k: 'warn',
+        t: x.leg.swapFrom ? svcLiveTxt(x.leg, x.b) : `<b>막차가 끝났어요</b> ${esc(x.b)}까지는 택시로 바꿔 보세요.`
+      })
+    );
   const d = after.endArr - before.endArr;
   L.push({
     k: after.over > 0 ? 'warn' : 'ok',

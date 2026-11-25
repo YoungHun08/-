@@ -226,6 +226,51 @@ function fareUnknown(f) {
 // 출발한다고 보고, 역·정류장에 닿는 시각 이후 가장 빠른 차를 잡아요. 막차가 지나면 lastGone = true.
 const LINE_HW = { kuko: 5, hako: 7, nana: 7 }; // 지하철 노선별 배차 간격(분, 낮 기준)
 const SERVICE = { subway: [330, 1450], bus: [390, 1420], train: [330, 1440], ferry: [480, 1050] }; // 첫차~막차(분)
+// 노선별 첫차·막차 (분, 타는 곳에서 출발하는 시각). 2026년 10월 시간표 기준 대략값 — 바뀌면 여기만 고쳐요
+// out: 후쿠오카 → 그 지역 / back: 그 지역 → 후쿠오카
+const SVC_ROUTE = {
+  'yufuin:0': { out: [528, 1008], back: [480, 1020], n: ['고속버스 유후인호', '高速バスゆふいん号'] }, // 하카타BT 08:48~16:48 · 유후인 08:00~17:00
+  'yufuin:1': { out: [463, 1110], back: [548, 1167], n: ['JR 특급 유후·유후인노모리', 'JR特急ゆふ・ゆふいんの森'] }, // 하카타 07:43~18:30 · 유후인 09:08~19:27
+  'beppu:0': { out: [381, 1326], back: [321, 1298], n: ['JR 특급 소닉', 'JR特急ソニック'] }, // 하카타 06:21~22:06 · 벳푸 05:21~21:38
+  airbus: { out: [390, 1260], back: [390, 1260], n: ['공항 직행버스', '空港直行バス'] } // 국제선 → 하카타역 막차 21:00
+};
+// 이동 o 의 '주로 타는 차'가 다니는 시간 {w:[첫차, 막차], pre: 타기 전까지 걸리는 분, n: 이름}. 확인 안 하는 이동이면 null
+// (시내·동네 버스는 일반 버스 시간 6:30~23:40, 배는 섬·노선마다 달라서 따로 보지 않아요)
+function svcOf(o) {
+  if (!o) return null;
+  if (o.airBus) {
+    const r = SVC_ROUTE.airbus;
+    return { w: o.airBus.out ? r.out : r.back, pre: o.airBus.out ? 0 : Math.max(0, o.min - 23), n: L(...r.n) };
+  }
+  const g = (o.gparts || []).find(x => x.vkey);
+  const r = g && SVC_ROUTE[g.vkey];
+  if (r) return { w: g.out ? r.out : r.back, pre: o.pre || 0, n: L(...r.n) };
+  const nm = { subway: ['지하철', '地下鉄'], train: ['전철', '電車'], bus: ['버스', 'バス'] }[o.mode];
+  if (nm && SERVICE[o.mode]) return { w: SERVICE[o.mode], pre: o.pre || 0, n: L(...nm) };
+  return null;
+}
+// 출발 시각 t 기준 첫차·막차 확인 (계획 짤 때)
+//  - 첫차 전이면 첫차까지 기다리는 시간을 더해요 (firstWait · firstAt)
+//  - 막차가 지났으면 고를 수 없게(isOff) 하고 이유를 적어요 (svcGone · offNote) → 기본 선택이 택시 등으로 바뀌어요
+function svcCheck(o, t) {
+  const s = svcOf(o);
+  if (!s || t == null) return o;
+  const board = t + s.pre,
+    [f, l] = s.w;
+  if (board > l && board < f + 1440) return svcGoneOf(o, s);
+  if (board < f) return { ...o, min: o.min + (f - board), firstWait: f - board, firstAt: f, svcName: s.n };
+  return o;
+}
+function svcGoneOf(o, s) {
+  return {
+    ...o,
+    isOff: true,
+    svcGone: true,
+    svcName: s.n,
+    svcLast: s.w[1],
+    offNote: L(`막차가 끝났어요 · ${s.n} 막차 약 ${fmt(s.w[1] % 1440)}`, `最終便が終わりました · ${s.n}の最終 約${fmt(s.w[1] % 1440)}`)
+  };
+}
 // 교통편 이름으로 배차 간격(분) 추정
 function hwOf(label, mode) {
   const L = label || '';
@@ -256,7 +301,8 @@ function nextDep(t, hw, phase, first, last) {
 function withTimetable(o, t0) {
   if (!o || !o.hw || t0 == null || (o.mode !== 'subway' && o.mode !== 'train')) return o;
   const board = t0 + (o.pre || 0),
-    svc = SERVICE[o.mode] || [330, 1440];
+    so = svcOf(o),
+    svc = (so && so.w) || SERVICE[o.mode] || [330, 1440];
   const { d, over } = nextDep(board, o.hw, phaseOf(o.label || o.mode, o.hw), svc[0], svc[1]);
   const wait = d - board,
     wait0 = Math.min(o.wait0 == null ? o.hw / 2 : o.wait0, Math.max(0, o.min - 1));
@@ -567,29 +613,55 @@ function isOff(o, date) {
 }
 // 이동 방법 목록에서 기본으로 고를 것
 function pickDefault(opts, date) {
-  opts = opts.filter(o => !isOff(o, date));
+  const all = opts;
+  opts = opts.filter(o => !o.isOff && !isOff(o, date));
+  if (!opts.length) return all[0];
   const walk = opts.find(o => o.mode === 'walk');
   if (opts.length === 1) return opts[0];
   if (walk && walk.min <= 15) return walk;
   const pub = opts.filter(o => o.mode !== 'taxi' && o.mode !== 'walk');
   const eff = o => o.min + fareSum(o.fare) / 100;
-  const best = pub.sort((x, y) => eff(x) - eff(y))[0];
+  const best = pub.sort((x, y) => eff(x) - eff(y))[0],
+    taxi = opts.find(o => o.mode === 'taxi');
+  // 막차가 끝났거나 첫차를 한참 기다려야 하는 시간: 택시까지 같이 견주고, 오래 걷는 길(25분 넘게)은 고르지 않아요
+  if (taxi && all.some(o => o.svcGone || o.firstWait > 20 || (o.tt && o.wait > 20))) {
+    const b2 = [...pub, taxi].sort((x, y) => eff(x) - eff(y))[0];
+    return walk && walk.min <= 25 && walk.min <= eff(b2) + 3 ? walk : b2;
+  }
   if (walk && (!best || walk.min <= best.min + 3)) return walk;
-  return best || opts.find(o => o.mode === 'taxi') || walk || opts[0];
+  return best || taxi || walk || opts[0];
 }
 // 두 지점 사이 가장 나은 방법 하나
 function bestOpt(a, b) {
   return pickDefault(legOptions(a, b));
 }
-// 일정 칸 사이 이동: 직접 고른 방법이 있으면 그것, 없으면 기본. t 가 있으면 그 시각 기준 '다음 차'
-function chooseLeg(a, b, mode, date, t) {
+// 일정 칸 사이 이동: 직접 고른 방법이 있으면 그것, 없으면 기본.
+// t(출발 시각)가 있으면 첫차·막차를 확인하고(svcCheck), live 면 그 시각 이후 '다음 차'에 맞춰요(withTimetable)
+// 막차가 끝나 원래 고를 방법을 못 쓰면 swapFrom 에 그 방법을 적어요 (화면에 「막차 끝남 → 택시」)
+function chooseLeg(a, b, mode, date, t, live) {
   const base = legOptions(a, b),
-    timed = t == null ? base : base.map(o => withTimetable(o, t));
+    timed =
+      t == null
+        ? base
+        : base.map(o => {
+            const g = svcCheck(o, t);
+            if (g.isOff || !live) return g;
+            const tt = withTimetable(o, t);
+            if (!tt.tt) return g;
+            return tt.lastGone ? svcGoneOf(o, svcOf(o)) : tt;
+          });
   const opts = timed.map(o => (isOff(o, date) ? { ...o, isOff: true } : o));
-  const pick =
-    (mode && (opts.find(o => o.id === mode && !o.isOff) || opts.find(o => o.mode === mode && !o.isOff))) ||
-    pickDefault(opts, date);
-  return { ...pick, chosen: !!(mode && (pick.id === mode || pick.mode === mode)), opts };
+  const want = (list, ok) =>
+    (mode && (list.find(o => o.id === mode && ok(o)) || list.find(o => o.mode === mode && ok(o)))) ||
+    pickDefault(list, date);
+  const pick = want(opts, o => !o.isOff);
+  let swapFrom = null;
+  if (opts.some(o => o.svcGone)) {
+    const un = opts.map(o => (o.svcGone ? { ...o, isOff: false } : o)),
+      w = want(un, o => !isOff(o, date));
+    if (w.svcGone && w.id !== pick.id) swapFrom = { mode: w.mode, id: w.id, n: w.svcName, last: w.svcLast };
+  }
+  return { ...pick, chosen: !!(mode && (pick.id === mode || pick.mode === mode)), opts, swapFrom };
 }
 
 // ---- 계획 모델 ----
@@ -1194,7 +1266,7 @@ function computeDay(plan, di) {
   for (const it of day.items) {
     const p = itemPt(plan, it),
       key = ck + '>' + it.uid,
-      leg = chooseLeg(cur, p, day.modes[key], day.date, live ? t : null);
+      leg = chooseLeg(cur, p, day.modes[key], day.date, t, live);
     let arr = t + leg.min;
     if (it.arrAct != null) {
       arr = it.arrAct;
@@ -1222,7 +1294,7 @@ function computeDay(plan, di) {
     ck = it.uid;
   }
   const endKey = ck + '>E',
-    endLeg = chooseLeg(cur, endPt, day.modes[endKey], day.date, live ? t : null);
+    endLeg = chooseLeg(cur, endPt, day.modes[endKey], day.date, t, live);
   const endArr = t + endLeg.min,
     deadline = toMin(day.end.time);
   const walkKm =
