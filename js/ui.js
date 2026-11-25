@@ -13,6 +13,8 @@ const esc = s =>
   );
 const ICON = {
   star: '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
   grip: '<path d="M5 8h14M5 12h14M5 16h14"/>',
   phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
   flip: '<path d="M4.5 10a7.5 7.5 0 0 1 13.3-4.2L20 8"/><path d="M20 3.5V8h-4.5"/><path d="M19.5 14a7.5 7.5 0 0 1-13.3 4.2L4 16"/><path d="M4 20.5V16h4.5"/>',
@@ -477,7 +479,9 @@ function draftCaps() {
 // 동네 고르기 카드
 function areaCard(a) {
   const on = S.draft.areas.includes(a.id),
-    n = SPOTS.filter(s => s.a === a.id).length,
+    // 가고 싶은 곳에 이미 담은 장소는 빼고 세요
+    wished = new Set(wishAll().filter(w => w.k === 's').map(w => w.id)),
+    n = SPOTS.filter(s => s.a === a.id && !wished.has(s.id)).length,
     tm = a.min + 2 * accessMin(a.z);
   return `<button class="acard${on ? ' on' : ''}" data-act="toggleArea" data-id="${a.id}" aria-pressed="${on}">
     <span class="ac-k">${on ? ic('check') : ''}</span>
@@ -496,7 +500,12 @@ function areasV() {
   const D = S.draft,
     cap = draftCaps(),
     pct = cap.total ? Math.round((cap.need / cap.total) * 100) : 0;
-  const msg = !D.areas.length
+  const wn = wishAll().length;
+  const msg = D.mode === 'manual'
+    ? L('직접 계획 · 빈 일정표를 만들어요', '自分で計画 · 空の予定表を作ります')
+    : !D.areas.length && wn
+    ? L(`가고 싶은 곳 ${wn}곳으로 짜요`, `行きたい所${wn}か所で組みます`)
+    : !D.areas.length
     ? '지도나 아래 카드에서 골라 주세요'
     : cap.trips > cap.N
       ? '당일치기는 하루에 한 곳만 넣을 수 있어요'
@@ -528,12 +537,13 @@ function areasV() {
             .join('')}</div>`
       )
       .join('')}
+    ${wishDraftV()}
   </main>
   <div class="cta">
     <div class="meter"><div class="m-t"><b>${D.areas.length}곳 선택</b><span class="${pct > 100 || cap.trips > cap.N ? 'warn-t' : ''}">${msg}</span></div>
     ${D.areas.length ? `<div class="selchips">${D.areas.map(id => `<button class="selchip" data-act="toggleArea" data-id="${id}" aria-label="${esc(L(`${AREA[id].n} 빼기`, `${AREA_JA[id] || AREA[id].n}を外す`))}">${esc(shortArea(L(AREA[id].n, AREA_JA[id] || AREA[id].n)))}<i aria-hidden="true">×</i></button>`).join('')}</div>` : ''}
     <div class="bar"><i style="width:${Math.min(100, pct)}%" class="${pct > 100 ? 'over' : ''}"></i></div></div>
-    <button class="btn pri big" data-act="generate" ${D.areas.length ? '' : 'disabled'}>세부 계획 만들기</button>
+    <button class="btn pri big" data-act="generate" ${D.areas.length || D.mode === 'manual' || wn ? '' : 'disabled'}>${D.mode === 'manual' ? L('빈 일정표 만들기', '空の予定表を作る') : '세부 계획 만들기'}</button>
   </div>`
   );
 }
@@ -735,6 +745,7 @@ function schedTab() {
     ${tl}
     ${status}
     <div class="day-act"><button class="btn soft wide" data-act="addOpen">${ic('plus')}장소 추가</button></div>
+    ${wishPlanV(p)}
     ${parked}
     <p class="fine">이동 시간·요금·영업시간은 대략적인 값이에요. 방문 전에 확인하세요.</p>`;
 }
@@ -1135,7 +1146,13 @@ const A = {
       A.goHome();
       return;
     }
+    S.sheet = { type: 'pmode' };
+    render();
+  },
+  // 방식 고른 뒤 새 여행 1단계(달력)로
+  newPlanGo(d) {
     S.draft = defaultDraft();
+    S.draft.mode = d.m === 'manual' ? 'manual' : 'auto';
     S.mv = null;
     go('dates');
   },
@@ -1189,7 +1206,7 @@ const A = {
   },
   generate() {
     const D = S.draft;
-    S.plan = createPlan(
+    S.plan = (D.mode === 'manual' ? createPlanManual : createPlanWish)(
       {
         start: D.start,
         end: D.end,
@@ -1210,7 +1227,11 @@ const A = {
     S.undo = [];
     S.banner = null;
     go('plan');
-    toast('일정을 만들었어요. 마음에 들면 저장하세요.');
+    toast(
+      D.mode === 'manual'
+        ? L('빈 일정표를 만들었어요. 「장소 추가」로 직접 채워 보세요.', '空の予定表を作りました。「場所を追加」で自分で入れてください。')
+        : '일정을 만들었어요. 마음에 들면 저장하세요.'
+    );
   },
   openPlan(d) {
     const p = S.plans.find(x => x.id === d.id);

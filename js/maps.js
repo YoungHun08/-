@@ -226,6 +226,14 @@ function drawRegion(el, deco) {
     g.p = p;
     obstacles.push({ x0: p[0] - 12 * k, x1: p[0] + 12 * k, y0: p[1] - 31 * k, y1: p[1] + 2 * k });
   });
+  // 가고 싶은 곳 별 핀 (당일치기 동네 장소는 지도 밖이라 빼요)
+  const wItems = deco
+    ? []
+    : wishPts(true).map(w => {
+        const p = fish(w.lat, w.lng);
+        obstacles.push({ x0: p[0] - 10 * k, x1: p[0] + 10 * k, y0: p[1] - 10 * k, y1: p[1] + 10 * k });
+        return { wp: w, x: p[0], y: p[1], r: 10 * k, w: textEm(w.n) * 11 * k + 4 * k, hgt: 11 * k * 1.25, gap: 3 * k };
+      });
   // 숙소 이름표 먼저, 그다음 고른 동네, 나머지 순서
   const hItems = hp.map(g => ({
     kind: 'h',
@@ -237,7 +245,7 @@ function drawRegion(el, deco) {
     hgt: 12.5 * k * 1.25,
     gap: 3 * k
   }));
-  const order = [...hItems, ...items.filter(i => i.on), ...items.filter(i => !i.on)];
+  const order = [...hItems, ...items.filter(i => i.on), ...wItems, ...items.filter(i => !i.on)];
   const bounds = { x0: mv.x + 2 * k, x1: mv.x + mv.w - 2 * k, y0: mv.y + 2 * k, y1: mv.y + mv.h - 2 * k };
   placeLabels(order, obstacles, bounds);
   items.forEach(it => {
@@ -258,6 +266,7 @@ function drawRegion(el, deco) {
       <svg x="-7.5" y="-26.5" width="15" height="15" viewBox="0 0 24 24" class="hpin-ic">${ICON.home}</svg>
       <text class="hpin-t" x="${f1((t.tx - x) / k)}" y="${f1((t.ty - y) / k)}" style="text-anchor:${t.ax}">${esc(g.lab)}</text></g>`;
   });
+  wItems.forEach(it => (h += wishPinSVG(it, k)));
   el.innerHTML = `<svg viewBox="${f1(mv.x)} ${f1(mv.y)} ${f1(mv.w)} ${f1(mv.h)}" role="img" aria-label="후쿠오카 안내 지도"${deco ? '' : ' class="pan"'}>${h}</svg>`;
   if (!deco) enablePan(el.querySelector('svg'), W);
 }
@@ -513,6 +522,14 @@ function rgOverlay() {
     })
     .filter(g => g.x > 8 && g.x < W - 8 && g.y > 26 && g.y < H + 2);
   hp.forEach(g => obstacles.push({ x0: g.x - 12, x1: g.x + 12, y0: g.y - 31, y1: g.y + 2 }));
+  // 가고 싶은 곳 별 핀 (화면 안에 있는 것만)
+  const wItems = wishPts(false)
+    .map(w => {
+      const p = map.project([w.lng, w.lat]);
+      return { wp: w, x: p.x, y: p.y, r: 10, w: textEm(w.n) * 11 + 4, hgt: 11 * 1.25, gap: 3 };
+    })
+    .filter(it => it.x > 10 && it.x < W - 10 && it.y > 10 && it.y < H - 10);
+  wItems.forEach(it => obstacles.push({ x0: it.x - 10, x1: it.x + 10, y0: it.y - 10, y1: it.y + 10 }));
   // 지도 오른쪽 위 확대 버튼 자리도 피해요
   obstacles.push({ x0: W - 54, x1: W, y0: 0, y1: 96 });
   const hItems = hp.map(g => ({
@@ -524,7 +541,7 @@ function rgOverlay() {
     hgt: 12.5 * 1.25,
     gap: 3
   }));
-  placeLabels([...hItems, ...items.filter(i => i.on), ...items.filter(i => !i.on)], obstacles, {
+  placeLabels([...hItems, ...items.filter(i => i.on), ...wItems, ...items.filter(i => !i.on)], obstacles, {
     x0: 2,
     x1: W - 2,
     y0: 2,
@@ -552,6 +569,7 @@ function rgOverlay() {
       <svg x="-7.5" y="-26.5" width="15" height="15" viewBox="0 0 24 24" class="hpin-ic">${ICON.home}</svg>
       <text class="hpin-t" x="${f1(t.tx - g.x)}" y="${f1(t.ty - g.y)}" style="text-anchor:${t.ax}">${esc(g.lab)}</text></g>`;
   });
+  wItems.forEach(it => (h += wishPinSVG(it, 1)));
   R.ov.innerHTML = `<svg class="rg-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${h}</svg>`;
 }
 // 2단계 지도의 숙소 핀 (같은 자리면 하나로 합쳐요)

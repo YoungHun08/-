@@ -75,7 +75,7 @@ function h3NavV(on) {
 // 「지금 이동 / 오늘 일정」(여행 전이면 「다가오는 여행 / 첫날 일정」) 카드가 나오고 제목은 한 줄로 줄어요
 function h3HomeV() {
   const p = h3Plan();
-  const top = `<header class="h3-top"><span class="h3-logo" data-notr${p ? '' : ' hidden'}><span class="j" lang="ja">福岡</span><b>${L('후쿠오카', 'ふくおか')}</b></span>${langBtn(true)}</header>`;
+  const top = `<header class="h3-top"><span class="h3-logo" data-notr${p ? '' : ' hidden'}><span class="j" lang="ja">福岡</span><b>${L('후쿠오카', 'ふくおか')}</b></span><span class="h3-tools">${langBtn(true)}${themeBtn()}</span></header>`;
   const hero = `<section class="h3-p1">
       <div class="h3-hero" data-notr>
         <div class="j" lang="ja">福岡</div>
@@ -111,6 +111,7 @@ function h3HomeV() {
         <div class="h3-car" id="h3car">${cards.join('')}</div>
         <div class="h3-dots" aria-hidden="true"><i class="${pg ? '' : 'on'}"></i><i class="${pg ? 'on' : ''}"></i></div>
       </div>
+      <button class="h3-start h3-add" data-act="newPlan">${ic('plus')}${L('새 계획 추가하기', '新しい計画を追加')}</button>
     </section>
   </main>`;
 }
@@ -302,9 +303,9 @@ function h3BandSVG() {
 <rect y="155" width="390" height="15" style="fill:var(--bg)"/>
 </svg>`;
 }
-function h3BandV(t, s) {
+function h3BandV(t, s, extra = '') {
   return `<header class="h3-band">${S.photoBroken ? h3BandSVG() : h3Bg()}<span class="h3-bshade"></span>
-    <div class="h3-bt"><h1>${t}</h1>${s ? `<p>${s}</p>` : ''}</div><span class="h3-bl">${langBtn(true)}</span></header>`;
+    <div class="h3-bt"><h1>${t}</h1>${s ? `<p>${s}</p>` : ''}</div><span class="h3-bl">${langBtn(true)}</span>${extra}</header>`;
 }
 
 // 여행 준비 탭
@@ -328,9 +329,10 @@ function h3AreasV() {
     segs = [
       ['city', L('시내', '市内')],
       ['outer', L('근교', '近郊')],
-      ['trip', L('당일치기', '日帰り')]
+      ['trip', L('당일치기', '日帰り')],
+      ['wish', L('가고 싶은 곳', '行きたい所')]
     ];
-  const list = AREAS.filter(a => (a.kind || 'city') === seg);
+  const list = seg === 'wish' ? [] : AREAS.filter(a => (a.kind || 'city') === seg);
   const card = a => {
     const n = SPOTS.filter(s => s.a === a.id).length,
       [c1, c2] = AREA_TONE[a.id] || ['#F0703A', '#B92E1C'],
@@ -342,15 +344,19 @@ function h3AreasV() {
       <span class="h3-ab"><b>${a.n}</b><small>${esc(a.sub)}</small><em>${span} · ${L(`${n}곳`, `${n}か所`)}</em></span>
     </button>`;
   };
-  return `${h3BandV(L('동네', 'エリア'), L(`후쿠오카 동네 ${AREAS.length}곳 · 눌러서 명소 보기`, `福岡のエリア${AREAS.length}か所 · タップで見どころ`))}
+  return `${h3BandV(
+    L('동네', 'エリア'),
+    L(`후쿠오카 동네 ${AREAS.length}곳 · 눌러서 명소 보기`, `福岡のエリア${AREAS.length}か所 · タップで見どころ`),
+    `<button class="h3-addp" data-act="wAddOpen">${ic('plus')}<span>${L('직접 장소 추가', '場所を追加')}</span></button>`
+  )}
   <main class="h3-page">
-    <div class="h3-seg" role="tablist">${segs
+    <div class="h3-seg n4" role="tablist">${segs
       .map(([k, t]) => {
-        const n = AREAS.filter(a => (a.kind || 'city') === k).length;
+        const n = k === 'wish' ? wishAll().length : AREAS.filter(a => (a.kind || 'city') === k).length;
         return `<button role="tab" aria-selected="${seg === k}" class="${seg === k ? 'on' : ''}" data-act="aseg" data-k="${k}">${t} ${n}</button>`;
       })
       .join('')}</div>
-    <div class="h3-alist">${list.map(card).join('')}</div>
+    ${seg === 'wish' ? wishTabV() : `<div class="h3-alist">${list.map(card).join('')}</div>`}
   </main>`;
 }
 
