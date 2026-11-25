@@ -7793,4 +7793,402 @@ body {
   flex: none;
   color: var(--bad);
 }
+/* 홈 두 번째 화면: 카드 아래 「새 계획 추가하기」 */
+.h3-p2 .h3-add {
+  align-self: center;
+  margin-top: 12px;
+  padding: 9px 16px;
+  font-size: 13.5px;
+}
+/* 키가 작은 화면: 카드·버튼이 아래 메뉴에 가리지 않게 위아래 여백을 줄여요 */
+@media (max-height: 700px) {
+  .h3-p2 {
+    padding-top: calc(58px + env(safe-area-inset-top));
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+  .h3-p2 .h3-dots,
+  .h3-p2 .h3-add {
+    margin-top: 8px;
+  }
+}
 
+/* ===== 홈 아래 메뉴: 홈 화면에서는 위쪽 줄무늬(끈 장식) 없이 (메뉴 크기는 그대로) ===== */
+.h3-home .h3-nav::before {
+  display: none;
+}
+/* ===== 홈 오른쪽 위: 日本語 + 해/달 테마 버튼 ===== */
+.h3-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.th-tg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 42px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.th-tg button {
+  width: 34px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.85);
+  transition: background 0.2s, color 0.2s;
+}
+.th-tg button.on {
+  background: #fff;
+  color: #1f2b4d;
+}
+.th-tg .ic {
+  width: 18px;
+  height: 18px;
+}
+/* 다크 모드 직접 골랐을 때: 기기 다크와 같은 색 */
+:root[data-theme='dark'] .tl-ic {
+  color: color-mix(in srgb, var(--c) 60%, #fff);
+}
+/* ===== 동네 탭: 「직접 장소 추가」 버튼 · 4칸 탭 ===== */
+.h3-addp {
+  position: absolute;
+  right: 16px;
+  bottom: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 12px 0 9px;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.h3-addp .ic {
+  width: 16px;
+  height: 16px;
+}
+.h3-areas .h3-bt {
+  right: 150px;
+}
+.h3-seg.n4 {
+  display: flex;
+}
+.h3-seg.n4 button {
+  flex: 1 1 auto;
+  padding: 0 8px;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+/* ===== 가고 싶은 곳: ☆ 버튼 · 목록 ===== */
+.wl-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wl-row > .ar-tc,
+.wl-row > .arl-b {
+  flex: 1;
+  min-width: 0;
+}
+.wl-star {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+}
+.wl-star .ic {
+  width: 22px;
+  height: 22px;
+}
+.wl-star.on {
+  color: #e8a317;
+}
+.wl-star.on .ic {
+  fill: currentColor;
+}
+.wl-del {
+  color: var(--ink-3);
+}
+.sp-star {
+  position: absolute;
+  top: 12px;
+  right: 56px;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+.sp-star .ic {
+  width: 20px;
+  height: 20px;
+}
+.sp-star.on {
+  color: #ffd35a;
+}
+.sp-star.on .ic {
+  fill: currentColor;
+}
+.wl-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.wl-c {
+  box-sizing: border-box;
+}
+.ct.wl-pin {
+  --c: #d63a1f;
+  background: color-mix(in srgb, var(--c) 13%, var(--surface));
+  color: var(--c);
+}
+.wl-c small {
+  font-family: 'Noto Sans JP', var(--font);
+  word-break: break-all;
+}
+.wl-empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  line-height: 1.6;
+}
+.wl-empty > .ic {
+  width: 28px;
+  height: 28px;
+  color: #e8a317;
+}
+.wl-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+/* 직접 장소 추가 시트 */
+.wadd {
+  display: grid;
+  gap: 12px;
+}
+.wadd textarea {
+  min-height: 84px;
+  border-radius: 14px;
+  border: 0;
+  padding: 12px 14px;
+  background: var(--surface);
+  box-shadow: var(--sh);
+  font-family: 'Noto Sans JP', var(--font);
+  font-size: 15px;
+  color: var(--ink);
+  resize: vertical;
+}
+/* 계획 화면: 보류함 위 「가고 싶은 곳」 (보류함과 같은 모양) */
+.wishbox {
+  margin-top: 16px;
+  padding: 0;
+}
+.wishbox summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.wishbox summary::-webkit-details-marker {
+  display: none;
+}
+.wishbox summary > .ic:first-child {
+  color: #e8a317;
+}
+.wishbox summary b {
+  flex: 1;
+}
+.wishbox summary .chev {
+  color: var(--ink-3);
+  transition: transform 0.2s;
+}
+.wishbox[open] summary .chev {
+  transform: rotate(180deg);
+}
+.wishbox .sub {
+  padding: 0 16px;
+  margin-top: 0;
+}
+.wishbox ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px 10px 16px;
+}
+.wishbox li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.wishbox + .parked {
+  margin-top: 12px;
+}
+
+/* ===== 동네·장소 시트 「가고 싶은 곳에 추가」 버튼 ===== */
+.wl-btn .ic {
+  width: 18px;
+  height: 18px;
+}
+.wl-btn.on {
+  background: color-mix(in srgb, #e8a317 16%, var(--surface));
+  color: #b77a00;
+}
+.wl-btn.on .ic {
+  fill: currentColor;
+}
+/* ===== 새 여행 2단계: 가고 싶은 곳 ===== */
+.wl-sec {
+  align-items: center;
+}
+.wl-sec > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.wl-sec > span .ic {
+  width: 18px;
+  height: 18px;
+  color: #e8a317;
+  fill: currentColor;
+}
+.wl-add {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 34px;
+  padding: 0 12px 0 9px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.wl-add .ic {
+  width: 16px;
+  height: 16px;
+}
+.wl-draft {
+  margin-top: 10px;
+}
+.wl-note {
+  margin: 10px 2px 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.55;
+}
+/* 지도 별 핀 */
+.wpin-hit {
+  fill: transparent;
+}
+.wpin-c {
+  fill: #e8a317;
+  stroke: #fff;
+  stroke-width: 2;
+}
+.wpin-s {
+  fill: #fff;
+}
+.wpin[data-act] {
+  cursor: pointer;
+}
+.wpin-t {
+  font-size: 11px;
+  font-weight: 800;
+  fill: #9a6400;
+  paint-order: stroke;
+  stroke: var(--land);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+:root[data-theme='dark'] .wpin-t {
+  fill: #ffcf66;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .wpin-t {
+    fill: #ffcf66;
+  }
+}
+/* ===== 새 여행: 자동 / 직접 고르기 ===== */
+.pm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 6px 0 8px;
+}
+.pm-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px 18px;
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--sh);
+  color: var(--ink);
+  text-align: center;
+}
+.pm-c {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--pri) 12%, var(--surface));
+  color: var(--pri);
+  margin-bottom: 4px;
+}
+.pm-opt + .pm-opt .pm-c {
+  background: color-mix(in srgb, #2f5d9a 12%, var(--surface));
+  color: #2f5d9a;
+}
+.pm-c .ic {
+  width: 34px;
+  height: 34px;
+}
+.pm-opt b {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.pm-opt small {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+.pm-opt:active {
+  transform: scale(0.98);
+}
+
+:root[data-theme='dark'] .pm-opt + .pm-opt .pm-c {
+  color: #8fb4ff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .pm-opt + .pm-opt .pm-c {
+    color: #8fb4ff;
+  }
+}

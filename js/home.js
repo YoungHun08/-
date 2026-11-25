@@ -579,7 +579,7 @@ function areaSheetV(sh) {
     <ul class="ar-top">${top
       .map(
         s =>
-          `<li><button class="ar-tc" data-act="spotSheet" data-id="${s.id}">${catTile(s.c)}<span class="ar-tt"><b>${esc(s.n)}</b><small>${esc(firstSentence(s.d))}</small></span><span class="ar-time">${dur(s.s)}</span></button></li>`
+          `<li class="wl-row"><button class="ar-tc" data-act="spotSheet" data-id="${s.id}">${catTile(s.c)}<span class="ar-tt"><b>${esc(s.n)}</b><small>${esc(firstSentence(s.d))}</small></span><span class="ar-time">${dur(s.s)}</span></button>${wishStar(s)}</li>`
       )
       .join('')}</ul>
     ${
@@ -601,14 +601,14 @@ function areaSheetV(sh) {
     <ul class="ar-list">${shown
       .map(
         s =>
-          `<li><button class="arl-b" data-act="spotSheet" data-id="${s.id}"><i class="arl-dot c-${s.c}"></i><span class="arl-n">${esc(s.n)}</span><span class="arl-m"><span>${CATS[s.c].n}</span> · <span>${dur(s.s)}</span></span>${ic('next', 'chev')}</button></li>`
+          `<li class="wl-row"><button class="arl-b" data-act="spotSheet" data-id="${s.id}"><i class="arl-dot c-${s.c}"></i><span class="arl-n">${esc(s.n)}</span><span class="arl-m"><span>${CATS[s.c].n}</span> · <span>${dur(s.s)}</span></span>${ic('next', 'chev')}</button>${wishStar(s)}</li>`
       )
       .join('')}</ul>`
         : ''
     }
     <p class="ar-tip">${L('이름을 누르면 설명·가는 법·일본어 이름이 나와요', '名前を押すと説明・行き方・日本語名が出ます')}</p>
     ${ph ? `<p class="ph-cr">${L('사진', '写真')} <a href="https://unsplash.com/photos/${AREA_PHOTOS[a.id][1]}" target="_blank" rel="noopener">${AREA_PHOTOS[a.id][0]}</a> · Unsplash</p>` : ''}
-    <div class="sh-foot"><button class="btn soft" data-act="closeSheet">닫기</button><button class="btn pri" data-act="planArea" data-id="${a.id}">${L('이 동네로 계획 세우기', 'このエリアで計画を作る')}</button></div>`
+    <div class="sh-foot"><button class="btn soft" data-act="closeSheet">닫기</button>${wishAreaBtn(a.id)}</div>`
   );
 }
 // 설명의 첫 문장만 (동네 둘러보기의 짧은 소개). 일본어 화면은 옮긴 뒤 자르기
@@ -1238,10 +1238,11 @@ function spotSheetV(sh) {
     ? inDay >= 0
       ? `<span class="btn soft in-day">${ic('check')}${L(`${inDay + 1}일차 일정에 있어요`, `${inDay + 1}日目の予定に入っています`)}</span>`
       : `<button class="btn pri" data-act="spotAdd" data-id="${s.id}">${ic('plus')}${L(`${S.di + 1}일차에 넣기`, `${S.di + 1}日目に入れる`)}</button>`
-    : `<button class="btn pri" data-act="planArea" data-id="${s.a}">${L('이 동네로 계획 세우기', 'プランを作る')}</button>`;
+    : wishSpotBtn(s.id);
   return `<div class="sp-hero" style="--c1:${c1};--c2:${c2}">
       <span class="sp-cat">${ic(s.c)}${LANG === 'ja' ? NAME_JA_CAT[s.c] : CATS[s.c].n}</span>
       <span class="sp-ja" lang="ja">${esc(s.j)}</span>
+      ${wishStar(s, 'sp-star')}
       <button class="ib sm sp-x" data-act="closeSheet" aria-label="${L('닫기', '閉じる')}">${ic('close')}</button>
     </div>
     <div class="sp-h"><h2>${esc(LANG === 'ja' ? s.j : s.n)}</h2><p>${LANG === 'ja' ? AREA_JA[s.a] || a.n : a.n}${s.g ? L(' · 여러 가게 중 골라서', ' · 何軒かから選べます') : ''}</p></div>
