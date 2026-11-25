@@ -708,7 +708,7 @@ Object.assign(A, {
   phrase(d) {
     S.sheet.i = Number(d.i);
     render();
-    const s = document.querySelector('.sheet');
+    const s = document.querySelector('.sheet:not(.sh-ghost)');
     if (s) s.scrollTo({ top: 0, behavior: 'smooth' });
   },
   areaSheet(d) {
@@ -1311,7 +1311,7 @@ Object.assign(A, {
           : null;
     S.sheet = { type: 'spot', id: d.id, h: prev && prev.type === 'spot' ? prev.h : h, o: null, back };
     render();
-    const sh = document.querySelector('.sheet');
+    const sh = document.querySelector('.sheet:not(.sh-ghost)');
     if (sh) sh.scrollTo(0, 0);
   },
   spotHotel(d) {
