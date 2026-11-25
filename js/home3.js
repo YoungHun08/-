@@ -87,6 +87,7 @@ function h3ShowMake(sc) {
         if (!rest.length) {
           S.photoBroken = true;
           h3ShowDrop();
+          if (typeof introPhoto === 'function') introPhoto(); // 사진이 하나도 없으면 기다리지 말고 그림으로 시작
         } else if (wasOn) {
           H3SHOW.i = 0;
           h3ShowGo(rest[0]);
@@ -105,6 +106,7 @@ function h3ShowMake(sc) {
         R.i = Math.max(0, slides().indexOf(img));
         h3ShowGo(img);
       }
+      if (typeof introPhoto === 'function') introPhoto();
       h3ShowReveal();
     };
     if (img.complete) setTimeout(ok, 0);

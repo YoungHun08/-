@@ -36,37 +36,72 @@ function introRunning() {
   return INTRO.run;
 }
 // 펼침 장식 층: 표지 그림을 세 조각으로 나눠 복사해요 (그림 안 색 이름(id)이 겹치지 않게 조각마다 뒤에 붙여요)
-function introFoldMake() {
+function introFoldMake(photo) {
   const el = document.createElement('div');
   el.className = 'h3-fold';
   el.setAttribute('aria-hidden', 'true');
   el.inert = true;
+  // 사진이 있으면 사진을, 없으면 그림을 세 조각으로 (그림 안 색 이름(id)이 겹치지 않게 조각마다 뒤에 붙여요)
+  const face = i =>
+    photo
+      ? `<img class="h3-fimg" src="${esc(photo)}" alt=""><span class="h3-pshade"></span>`
+      : `${h3Scene(undefined, undefined, '-f' + i)}<span class="h3-paper"></span>`;
   const pane = i =>
-    `<div class="h3-fp p${i}"><div class="h3-ff"><div class="h3-fi" style="left:${-i * 100}%">${h3Scene(undefined, undefined, '-f' + i)}<span class="h3-paper"></span><span class="h3-shade"></span></div><span class="h3-fs"></span></div>${i < 2 ? pane(i + 1) : ''}</div>`;
+    `<div class="h3-fp p${i}"><div class="h3-ff"><div class="h3-fi" style="left:${-i * 100}%">${face(i)}<span class="h3-shade"></span></div><span class="h3-fs"></span></div>${i < 2 ? pane(i + 1) : ''}</div>`;
   el.innerHTML = `<div class="h3-fw">${pane(0)}</div>`;
   return el;
 }
 const INTRO_STOP = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
+// 처음에 그림이 잠깐 보였다가 사진으로 바뀌지 않도록, 첫 사진이 준비될 때까지(최대 MOTION.photoWait) 표지를 비워 두고 기다려요
+// 사진이 준비되면 그 사진으로 바로 등장 효과를 시작하고, 사진이 없거나 늦으면 그림으로 시작해요
 function introStart() {
-  const mode = INTRO_MODE === 'soft' ? (motionReduced() ? 'soft-r' : 'soft') : motionReduced() ? '' : 'fold3d';
-  if (!mode) return; // 동작 줄이기: 3D 모드는 완성된 표지를 바로 보여 줘요
+  const R = motionReduced(),
+    mode = INTRO_MODE === 'soft' ? (R ? 'soft-r' : 'soft') : R ? 'none' : 'fold3d';
   INTRO.run = true;
   INTRO.mode = mode;
+  INTRO.wait = true;
   INTRO.t0 = performance.now();
   const tok = ++INTRO.token;
-  if (mode === 'fold3d') INTRO.fold = introFoldMake();
+  INTRO_STOP.forEach(t => document.addEventListener(t, introFinish, { capture: true, passive: true }));
   introApply();
-  const total = mode === 'fold3d' ? MOTION.foldMs + 2 * MOTION.foldStagger : mode === 'soft' ? MOTION.softMs + 240 : 300;
+  if ((typeof H3SHOW !== 'undefined' && H3SHOW && H3SHOW.loaded) || S.photoBroken) introGo();
+  else
+    INTRO.timer = setTimeout(() => {
+      if (tok === INTRO.token) introGo();
+    }, MOTION.photoWait);
+}
+// 사진 준비됨(또는 모두 실패) → home3.js 가 불러요
+function introPhoto() {
+  if (INTRO.run && INTRO.wait) introGo();
+}
+function introGo() {
+  if (!INTRO.run || !INTRO.wait) return;
+  INTRO.wait = false;
+  clearTimeout(INTRO.timer);
+  INTRO.t0 = performance.now();
+  const tok = ++INTRO.token,
+    show = typeof H3SHOW !== 'undefined' && H3SHOW && H3SHOW.loaded ? H3SHOW : null;
+  // 사진이 있으면 바로 그 사진으로 (흐림 효과 없이 지금 모습 그대로, 서서히 나타나지 않고 바로)
+  if (show) show.el.classList.add('ready', 'now', 'still');
+  const cur = show && show.el.querySelector('.h3-slide.show');
+  if (INTRO.mode === 'none') return introFinish(); // 동작 줄이기 + 3D: 사진이 준비되면 완성 화면을 바로
+  if (INTRO.mode === 'fold3d') INTRO.fold = introFoldMake(cur && cur.naturalWidth ? cur.currentSrc || cur.src : '');
+  introApply();
+  const total = INTRO.mode === 'fold3d' ? MOTION.foldMs + 2 * MOTION.foldStagger : INTRO.mode === 'soft' ? MOTION.softMs + 240 : 300;
   INTRO.timer = setTimeout(() => {
     if (tok === INTRO.token) introFinish();
   }, total + 60);
-  INTRO_STOP.forEach(t => document.addEventListener(t, introFinish, { capture: true, passive: true }));
 }
 // 지금 화면에 등장 효과를 붙여요. 등장 중에 화면이 다시 그려져도(저장된 계획을 늦게 불러온 경우 등) 이어서 진행돼요
 function introApply() {
   const root = document.querySelector('.shell > .h3.h3-home'),
     bg = root && root.querySelector('.h3-bg');
   if (!root || !root.querySelector('.h3-hero')) return introFinish();
+  if (INTRO.wait) {
+    root.classList.add('intro-wait');
+    return;
+  }
+  root.classList.remove('intro-wait');
   root.classList.add('intro-' + INTRO.mode);
   root.style.setProperty('--it', -Math.round(performance.now() - INTRO.t0) + 'ms');
   if (INTRO.fold && bg) {
@@ -83,8 +118,9 @@ function introFinish() {
   INTRO_STOP.forEach(t => document.removeEventListener(t, introFinish, { capture: true }));
   if (INTRO.fold) INTRO.fold.remove();
   INTRO.fold = null;
-  document.querySelectorAll('.h3.intro-fold3d, .h3.intro-soft, .h3.intro-soft-r').forEach(r => {
-    r.classList.remove('intro-fold3d', 'intro-soft', 'intro-soft-r');
+  INTRO.wait = false;
+  document.querySelectorAll('.h3.intro-fold3d, .h3.intro-soft, .h3.intro-soft-r, .h3.intro-wait').forEach(r => {
+    r.classList.remove('intro-fold3d', 'intro-soft', 'intro-soft-r', 'intro-wait', 'intro-none');
     r.style.removeProperty('--it');
   });
   document.querySelectorAll('.h3-bg.folding').forEach(b => b.classList.remove('folding'));
