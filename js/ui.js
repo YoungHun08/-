@@ -1330,7 +1330,7 @@ const A = {
     S.sel = S.mapSel;
     render();
     const el = document.querySelector('.sp.on');
-    if (el) el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    if (el) el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: scrollMode() });
   },
   hideHint() {
     S.hintOff = true;
@@ -1407,7 +1407,7 @@ const A = {
     render();
     const el = document.querySelector('.banner');
     if (el)
-      window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 130), behavior: 'smooth' });
+      window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 130), behavior: scrollMode() });
   },
   walkOnly() {
     const sh = S.sheet,

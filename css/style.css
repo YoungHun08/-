@@ -8525,25 +8525,22 @@ body {
 /* soft + 동작 줄이기: 움직임 없이 짧게 나타나기만 */
 .intro-soft-r .h3-hero, .intro-soft-r .h3-p1b { animation: h3op 240ms ease var(--it) both; }
 
-/* ===================== 화면 전환 · 시트 ===================== */
-/* 바뀐 화면의 내용만 살짝 밀려 들어와요 (고정된 메뉴·버튼·시트는 그대로) */
-.pg-in { animation: h3pg var(--pg-ms) cubic-bezier(.2, .7, .2, 1) both; }
-@keyframes h3pg { from { opacity: 0; transform: translateX(var(--pg-dx, 0px)); } to { opacity: 1; transform: none; } }
-/* 시트: 다시 그릴 때마다 튀어 오르지 않게, 처음 열 때만 */
+/* ===================== 화면 전환 · 시트 (움직임은 motion.js 가 Web Animations 로 붙여요) ===================== */
+/* 시트·배경은 다시 그릴 때마다 튀어 오르지 않게 CSS 애니메이션을 끄고, 열릴 때만 motion.js 가 움직여요 */
 .scrim, .sheet { animation: none; }
-.scrim.sh-in { animation: fade var(--sh-ms) ease-out; }
-.sheet.sh-in { animation: up var(--sh-ms) cubic-bezier(.2, .8, .2, 1); }
-.sh-ghostwrap { position: fixed; inset: 0; z-index: 42; pointer-events: none; }
-.sh-ghostwrap .scrim { animation: h3fadeout var(--sh-ms) ease-in both; }
-.sh-ghostwrap .sheet { animation: h3down var(--sh-ms) cubic-bezier(.4, 0, .8, .4) both; overflow: hidden; }
-@keyframes h3fadeout { to { opacity: 0; } }
-@keyframes h3down { to { transform: translate(-50%, 48px); opacity: 0; } }
+/* 사라지는 이전 화면·시트: 눌리지 않는 장식 층 */
+.mv-ghost { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+/* 옆으로 살짝 밀려 들어오는 동안 가로 스크롤이 생기지 않게 (고정 메뉴·시트에는 영향 없음) */
+#app > .shell { overflow-x: clip; }
+.mv-ghost * { pointer-events: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
   .h3-fold { display: none; }
   .h3-bg.folding > :not(.h3-fold) { visibility: visible; }
   .intro-fold3d .h3-hero > *, .intro-fold3d .h3-p1b, .intro-fold3d .h3-top, .intro-soft .h3-hero > *, .intro-soft .h3-p1b { animation: none; }
-  .pg-in { animation-name: h3op; animation-duration: 160ms; }
-  .sheet.sh-in, .scrim.sh-in { animation: h3op 160ms ease-out; }
-  .sh-ghostwrap { display: none; }
+  .mv-ghost { display: none; }
 }
+
+/* 홈 사진: 자리만 옮겨 붙였을 땐 흐림→또렷 효과를 다시 하지 않고 지금 모습 그대로 */
+.h3-show.still .h3-slide { animation: none !important; }
+.h3-show.still .h3-slide.show { transform: scale(1.04); filter: saturate(1.08) contrast(1.06); }

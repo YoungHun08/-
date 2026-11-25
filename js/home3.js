@@ -135,6 +135,7 @@ function h3ShowMake(sc) {
 function h3ShowGo(next, first) {
   const R = H3SHOW;
   if (!R || !next) return;
+  if (!first) R.el.classList.remove('still');
   const prev = R.el.querySelector('.h3-slide.show:not(.leave)');
   if (prev === next) return;
   next.classList.remove('kb', 'leave', 'enter');
@@ -187,7 +188,12 @@ function h3Mount() {
   const sc = heroScene();
   if (H3SHOW && H3SHOW.sc !== sc) h3ShowDrop();
   if (!H3SHOW) h3ShowMake(sc);
-  slot.appendChild(H3SHOW.el);
+  // 다시 그릴 때마다 자리를 옮기면 사진 등장 효과(흐림→또렷)가 처음부터 다시 나와요. 옮겨 붙일 땐 지금 모습 그대로
+  if (H3SHOW.el.parentElement !== slot) {
+    if (H3SHOW.placed) H3SHOW.el.classList.add('still');
+    slot.appendChild(H3SHOW.el);
+    H3SHOW.placed = true;
+  }
   // 언어를 바꿨으면 설명도 바꿔요
   const cur = H3SHOW.el.querySelector('.h3-slide.show:not(.leave)');
   if (cur) h3Caption(cur, false);
@@ -591,7 +597,7 @@ function h3Wire() {
 // 첫 화면으로 / 카드 화면으로
 function h3GoPage(n) {
   const pages = document.getElementById('h3pages');
-  if (pages) pages.scrollTo({ top: n ? pages.clientHeight : 0, behavior: 'smooth' });
+  if (pages) pages.scrollTo({ top: n ? pages.clientHeight : 0, behavior: scrollMode() });
 }
 function h3Paint(n) {
   const tb = document.querySelector('.h3-tabs');
@@ -629,7 +635,7 @@ Object.assign(A, {
       n = Number(d.n) || 0;
     S.hpage = n;
     h3Paint(n);
-    if (car) car.scrollTo({ left: n * car.clientWidth, behavior: 'smooth' });
+    if (car) car.scrollTo({ left: n * car.clientWidth, behavior: scrollMode() });
   },
   aseg(d) {
     S.aseg = d.k;
