@@ -28,6 +28,7 @@ js/
   guide.js              길안내 탭, 일본어로 보여주기 카드
   here.js               지금 위치(GPS)에서 길찾기
   live.js               현재 시각에 맞춰 남은 일정 조정
+  home3.js              새 홈 화면 (모모치 바다 그림, 아래 5칸 메뉴: 홈·여행 준비·새 여행·동네·내 여행)
   maps.js               지역 지도, 일정 지도, 걷기 추천 지도
   bootstrap.js          모든 파일이 준비된 뒤 첫 실행 (가장 마지막)
 docs/
@@ -66,7 +67,7 @@ python -m http.server 8000
 
 ```
 config → data → spot_info → engine → i18n → ui → home → stays → alt → parked
-→ custom → drag → nav → guide → here → live → maps → bootstrap
+→ custom → drag → nav → guide → here → live → home3 → maps → bootstrap
 ```
 
 - 모든 파일은 `type="module"` 없이 **일반 스크립트**예요. 그래서 한 파일에서 만든 `const`·`function` 이름을 다른 파일이 그대로 써요.
@@ -124,7 +125,8 @@ config → data → spot_info → engine → i18n → ui → home → stays → 
 | 이런 걸 바꿀 때 | 고칠 파일 |
 |---|---|
 | 색, 글꼴, 간격, 버튼 모양, 다크 모드, 화면 크기별 모양 | `css/style.css` (끝에 추가) |
-| 홈 화면, 여행 준비(공항→시내, 교통 패스, 타는 법, 여행 일본어) 시트 | `js/home.js` |
+| 새 홈 화면, 아래 5칸 메뉴(홈·여행 준비·새 여행·동네·내 여행), 홈 그림 | `js/home3.js` |
+| 여행 준비(공항→시내, 교통 패스, 타는 법, 여행 일본어) 시트, 동네 시트 | `js/home.js` |
 | 일본어 번역 문구 | `js/i18n.js` 의 `JA` 사전, 또는 새 문구에 `L()` |
 | 새 여행 1·2단계 화면 모양, 일정·지도·교통비 탭 모양 | `js/ui.js` ⚠ B와 조율 |
 | 앱 이름·아이콘·사진 | `index.html` 머리 부분, `icons/`, `photos/` |

@@ -403,6 +403,28 @@ function monthV(first) {
 function selT(id, val, label) {
   return `<label class="fld"><span>${label}</span><select id="${id}" data-change="${id}">${TIMES.map(t => `<option${t === val ? ' selected' : ''}>${t}</option>`).join('')}</select></label>`;
 }
+// 후쿠오카 공항은 비행기가 7:00~22:00 에만 뜨고 내려요 → 그 밖의 시간을 고르면 안내
+function airNoteV() {
+  const D = S.draft,
+    out = x => x < 420 || x > 1320,
+    a = out(toMin(D.arrive)),
+    d = out(toMin(D.depart));
+  const t = [
+    a
+      ? L(
+          '후쿠오카 공항은 비행기가 오전 7시~밤 10시에만 뜨고 내려요. 이 시간 도착은 지연됐을 때예요 — 지하철·버스가 끊긴 시간이면 일정에서 택시로 안내해요.',
+          '福岡空港の発着は朝7時〜夜10時のみです。この時間の到着は遅延時など — 地下鉄・バスが終わった時間ならタクシーで案内します。'
+        )
+      : '',
+    d
+      ? L(
+          '마지막 날 비행기 시간이 공항 운영 시간(오전 7시~밤 10시) 밖이에요. 한 번 더 확인해 주세요.',
+          '最終日の便の時刻が空港の運用時間(朝7時〜夜10時)の外です。もう一度ご確認ください。'
+        )
+      : ''
+  ].filter(Boolean);
+  return `<p class="note air-note" id="airNote"${t.length ? '' : ' hidden'}>${ic('alert')}<span>${t.map(esc).join('<br>')}</span></p>`;
+}
 // ★ 화면: 새 여행 1단계 (날짜·숙소·시간)
 function datesV() {
   const D = S.draft,
@@ -428,6 +450,7 @@ function datesV() {
     <section class="card">
       <h2 class="h-s">시간</h2>
       <div class="grid2">${selT('arrive', D.arrive, '첫날 공항 도착')}${selT('depart', D.depart, '마지막 날 비행기')}${selT('dayStart', D.dayStart, '하루 시작')}${selT('dayEnd', D.dayEnd, '하루 마무리')}</div>
+      ${airNoteV()}
     </section>
   </main>
   <div class="cta"><button class="btn pri big" data-act="toAreas" ${D.start && D.end ? '' : 'disabled'}>다음 · 가고 싶은 곳 고르기</button></div>`
@@ -524,14 +547,34 @@ function anchorLabel(an, isEnd) {
   const moving = di < p.days.length - 1 && !sameHotel(nightHotel(p, di - 1), nightHotel(p, di));
   return `${moving ? L('체크아웃하고 출발', 'チェックアウトして出発') : '숙소에서 출발'} · ${esc(hotelLabelT(nightHotel(p, di - 1)))}`;
 }
+// 이동 수단 이름 (일본어 화면이면 일본어로)
+function modeNm(m) {
+  const n = (MODE[m] || MODE.walk).n;
+  return LANG === 'ja' ? NAME_FIX[n] || n : n;
+}
+// 첫차·막차 태그: 「첫차 05:30 · 25분 대기」 / 「막차 끝남」
+function svcLegTag(leg) {
+  if (leg.swapFrom || leg.svcGone) return `<i class="nxt gone">${L('막차 끝남', '最終便終了')}</i>`;
+  if (leg.firstWait && !leg.tt)
+    return `<i class="nxt">${L(`첫차 ${fmt(leg.firstAt % 1440)} · ${leg.firstWait}분 대기`, `始発 ${fmt(leg.firstAt % 1440)} · ${leg.firstWait}分待ち`)}</i>`;
+  return '';
+}
+// 막차가 끝나 다른 방법으로 바꾼 이동의 설명 한 줄
+function svcSwapTxt(leg) {
+  const f = leg.swapFrom;
+  if (f) return L(`${f.n} 막차(약 ${fmt(f.last % 1440)})가 끝났어요 → ${modeNm(leg.mode)}`, `${f.n}の最終(約${fmt(f.last % 1440)})が終了 → ${modeNm(leg.mode)}`);
+  if (leg.svcGone) return L(`${leg.svcName} 막차(약 ${fmt(leg.svcLast % 1440)})가 끝났어요 · 갈 수 있는 차가 없어요`, `${leg.svcName}の最終(約${fmt(leg.svcLast % 1440)})が終了 · 使える便がありません`);
+  return '';
+}
 // 일정 사이 이동 칸 (지하철 12분 ¥210 등)
 function legRow(leg, li) {
   if (leg.mode === 'none') return `<li class="leg none"><span class="rail"></span></li>`;
-  const ft = fareTxt(leg.fare, true);
+  const ft = fareTxt(leg.fare, true),
+    sw = svcSwapTxt(leg);
   return `<li class="leg m-${leg.mode}" style="--m:${MODE[leg.mode].color}"><span class="rail"></span>
     <button class="lchip" data-act="leg" data-li="${li}" aria-label="이동 방법 바꾸기: ${MODE[leg.mode].n} ${leg.min}분 ${ft}">
-      ${modeIc(leg.mode, 'sm')}<span class="lc-m"><b>${MODE[leg.mode].n} ${leg.min}분</b>${ft ? `<em>${ft}</em>` : ''}${leg.chosen ? '<i class="mine">직접 고름</i>' : ''}${liveLegTag(leg)}</span>
-      <span class="lc-l">${esc(leg.mode === 'walk' ? dist(leg.km) : leg.label)}</span>${ic('next', 'chev')}
+      ${modeIc(leg.mode, 'sm')}<span class="lc-m"><b>${MODE[leg.mode].n} ${leg.min}분</b>${ft ? `<em>${ft}</em>` : ''}${leg.chosen ? '<i class="mine">직접 고름</i>' : ''}${liveLegTag(leg)}${svcLegTag(leg)}</span>
+      <span class="lc-l${sw ? ' warn' : ''}">${esc(sw || (leg.mode === 'walk' ? dist(leg.km) : leg.label))}</span>${ic('next', 'chev')}
     </button></li>`;
 }
 // ★ 일정 카드 한 장 (펼치면 시간·순서·메모 등)
@@ -801,14 +844,19 @@ function fareTab() {
     </div>`;
 }
 // 계획 화면 아래 탭 (일정·지도·길안내·교통비)
-function bottomNav() {
+// 계획 화면 위쪽 탭 (일정·지도·길안내·교통비)
+function planTabs() {
   const T = [
-    ['sched', 'list', '일정'],
-    ['map', 'map', '지도'],
-    ['guide', 'nav', '길안내'],
-    ['fare', 'wallet', '교통비']
+    ['sched', 'list', L('일정', '予定')],
+    ['map', 'map', L('지도', '地図')],
+    ['guide', 'nav', L('길안내', '道案内')],
+    ['fare', 'wallet', L('교통비', '交通費')]
   ];
-  return `<nav class="tabbar" aria-label="화면 전환">${T.map(([k, i, l]) => `<button class="${S.tab === k ? 'on' : ''}" data-act="tab" data-t="${k}" aria-pressed="${S.tab === k}">${ic(i)}<span>${l}</span></button>`).join('')}</nav>`;
+  return `<nav class="ptabs" aria-label="${L('계획 화면', '計画の画面')}">${T.map(([k, i, l]) => `<button class="${S.tab === k ? 'on' : ''}" data-act="tab" data-t="${k}" aria-pressed="${S.tab === k}">${ic(i)}<span>${l}</span></button>`).join('')}</nav>`;
+}
+// 계획 화면 아래 바: 홈과 같은 5칸 메뉴 (home3.js 의 h3NavV, 「내 여행」이 켜져 있어요)
+function bottomNav() {
+  return h3NavV('trips');
 }
 // ★ 화면: 계획 (위 제목 + 탭 내용)
 function planV() {
@@ -821,7 +869,9 @@ function planV() {
       title: `<button class="ab-title" data-act="rename">${esc(p.title)}${ic('pen')}</button>`,
       sub: `${mds(p.set.start)} – ${mds(p.set.end)} · ${nights(N)}`,
       right
-    }) +
+    })
+      .replace('<header class="appbar">', '<header class="appbar has-pt">')
+      .replace(/<\/header>$/, `${planTabs()}</header>`) +
     (S.isNew ? progress(3) : '') +
     `<main class="scr plan t-${S.tab}">${S.tab !== 'fare' ? dayPills() : ''}${S.tab === 'sched' ? schedTab() : S.tab === 'map' ? mapTab() : S.tab === 'guide' ? guideTab() : fareTab()}</main>` +
     bottomNav()
@@ -895,7 +945,15 @@ function legSheet(sh) {
         <span class="o2"><b>${o.min}분</b><em>${ft}</em></span>
         <span class="ol">${esc(o.label)}</span>
         ${o.steps && o.steps.length ? `<ol class="osteps">${o.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : ''}
-        ${o.isOff ? `<span class="onote">${esc(o.off.note)}</span>` : o.note ? `<span class="onote">${esc(o.note)}</span>` : ''}</span></button>`;
+        ${
+          o.isOff
+            ? `<span class="onote">${esc(o.offNote || (o.off && o.off.note) || '')}</span>`
+            : o.firstWait && !o.tt
+              ? `<span class="onote">${esc(L(`첫차 ${fmt(o.firstAt % 1440)}까지 ${o.firstWait}분 기다려요 (기다리는 시간 포함)`, `始発${fmt(o.firstAt % 1440)}まで${o.firstWait}分待ちます(待ち時間込み)`))}</span>`
+              : o.note
+                ? `<span class="onote">${esc(o.note)}</span>`
+                : ''
+        }</span></button>`;
       })
       .join('')}</div>
     ${!hasWalk ? `<p class="note">${ic('alert')}<span>${A.z !== B.z ? '다른 지역으로 넘어가는 구간이라 걷기는 고를 수 없어요.' : '이 구간은 걸어가기 어려워요.'}</span></p>` : ''}
@@ -1000,6 +1058,7 @@ function render() {
   window.scrollTo(0, y);
   drawMaps();
   wireHero();
+  if (typeof h3Wire === 'function') h3Wire();
   if (typeof navSync === 'function') navSync();
 }
 // 아래에 떠 있는 버튼 칸(.cta)만큼 화면 아래 여백을 줘요. 그래야 맨 아래 카드가 버튼 뒤에 가려지지 않아요
@@ -1017,6 +1076,12 @@ function go(view) {
   window.scrollTo(0, 0);
 }
 
+// 「저장하지 않고 나갈까요?」에서 고른 뒤 원래 가려던 곳으로 (새 여행 등)
+function afterLeave() {
+  const f = S.afterLeave;
+  S.afterLeave = null;
+  if (f && A[f]) A[f]();
+}
 // ---- 동작 ----
 const A = {
   goHome() {
@@ -1041,11 +1106,13 @@ const A = {
     S.plan = null;
     S.saved = true;
     go('home');
+    afterLeave();
   },
   saveLeave() {
     A.save();
     S.plan = null;
     go('home');
+    afterLeave();
   },
   saveGuide() {
     A.save(null, null, null, true);
@@ -1062,6 +1129,12 @@ const A = {
     if (el) window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 140) });
   },
   newPlan() {
+    // 저장 안 한 계획을 보는 중이면 먼저 저장할지 물어요
+    if (S.view === 'plan' && !S.saved) {
+      S.afterLeave = 'newPlan';
+      A.goHome();
+      return;
+    }
     S.draft = defaultDraft();
     S.mv = null;
     go('dates');
@@ -1149,7 +1222,8 @@ const A = {
     S.banner = null;
     S.sel = null;
     S.tab = d.tab || 'sched';
-    S.di = Math.min(planStatus(p).di, p.days.length - 1);
+    S.di =
+      d.di != null ? Math.min(Number(d.di) || 0, p.days.length - 1) : Math.min(planStatus(p).di, p.days.length - 1);
     go('plan');
   },
   save(d, el, e, toGuide) {
@@ -1197,6 +1271,11 @@ const A = {
     store.writeLocal(S.plans);
     store.remove(d.id);
     S.sheet = null;
+    // 홈 두 번째 화면에서 지웠는데 보여줄 계획이 더 없으면 첫 화면으로
+    if (typeof h3Plan === 'function' && !h3Plan()) {
+      S.h3p2 = false;
+      S.hpage = 0;
+    }
     render();
     toast('계획을 삭제했어요.');
   },
@@ -1491,6 +1570,7 @@ const A = {
     render();
   },
   closeSheet() {
+    S.afterLeave = null;
     S.sheet = null;
     render();
   }
@@ -1561,7 +1641,11 @@ $app.addEventListener('change', e => {
     stayFromChange(t);
     return;
   }
-  if (['arrive', 'depart', 'dayStart', 'dayEnd'].includes(k)) S.draft[k] = t.value;
+  if (['arrive', 'depart', 'dayStart', 'dayEnd'].includes(k)) {
+    S.draft[k] = t.value;
+    const n = document.getElementById('airNote');
+    if (n && (k === 'arrive' || k === 'depart')) n.outerHTML = airNoteV();
+  }
   else if (k === 'moveDay' && t.value !== '') {
     const to = Number(t.value),
       p = S.plan,
