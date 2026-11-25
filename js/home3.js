@@ -39,20 +39,102 @@ function h3Scene(vb = '0 0 390 760', ratio = 'xMidYMin slice') {
 <path style="fill:${v('deck')}" d="M315 200h44l2 22h-48z"/>
 <rect x="321" y="206" width="34" height="6" rx="2" style="fill:${v('deckw')}"/>
 <path style="fill:none;stroke:${v('palm')};stroke-width:4;stroke-linecap:round" d="M260 402q4-46 14-74"/>
-<path style="fill:none;stroke:${v('palm')};stroke-width:4.5;stroke-linecap:round" d="M274 328q-22-6-36 8M274 328q-14-16-30-14M274 328q20-12 34-2M274 328q16 2 24 18M274 328q2-18 14-26"/>
+<path class="h3-palm" style="fill:none;stroke:${v('palm')};stroke-width:4.5;stroke-linecap:round;transform-origin:274px 328px" d="M274 328q-22-6-36 8M274 328q-14-16-30-14M274 328q20-12 34-2M274 328q16 2 24 18M274 328q2-18 14-26"/>
 <path style="fill:none;stroke:${v('palm2')};stroke-width:3;stroke-linecap:round" d="M286 406q0-30 10-52"/>
-<path style="fill:none;stroke:${v('palm2')};stroke-width:3.5;stroke-linecap:round" d="M296 354q-16-2-24 8M296 354q12-10 24-4M296 354q4-12 12-16"/>
+<path class="h3-palm p2" style="fill:none;stroke:${v('palm2')};stroke-width:3.5;stroke-linecap:round;transform-origin:296px 354px" d="M296 354q-16-2-24 8M296 354q12-10 24-4M296 354q4-12 12-16"/>
 <path style="fill:${v('sand')}" d="M0 404q120-8 240 0t150 2v18H0z"/>
 <rect y="420" width="390" height="340" fill="url(#h3sea)"/>
-<path style="stroke:${v('refl')};stroke-width:2;stroke-linecap:round;opacity:.75" d="M324 436h30M328 448h24M326 460h26M330 472h20M332 484h16M28 460h42M150 448h56M240 476h40"/>
+<path class="h3-refl" style="stroke:${v('refl')};stroke-width:2;stroke-linecap:round;opacity:.75" d="M324 436h30M328 448h24M326 460h26M330 472h20M332 484h16M28 460h42M150 448h56M240 476h40"/>
+<g class="h3-waves" style="stroke:${v('refl')};stroke-width:1.6;stroke-linecap:round;fill:none;opacity:.45"><path d="M-40 520q20-6 40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0"/><path class="w2" d="M-40 580q24-7 48 0t48 0t48 0t48 0t48 0t48 0t48 0t48 0t48 0t48 0"/><path class="w3" d="M-40 650q30-8 60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0"/></g>
+<g class="h3-boat"><path style="fill:${v('city')}" d="M70 506h40l-6 8h-28z"/><path style="fill:${v('refl')};opacity:.9" d="M88 504v-22l14 20z"/></g>
 </svg>`;
 }
 
-// 배경: 전에 넣었던 상단 사진 (시간에 따라 낮/밤 사진). 사진을 못 불러오면 그림으로
-function h3Bg(cls = '') {
+// 배경: 낮/밤 사진이 천천히 확대·이동하면서 7초마다 다음 사진으로 넘어가요. 사진을 못 불러오면 움직이는 그림으로
+// 화면을 다시 그려도 사진이 처음부터 다시 시작하지 않도록, 사진 묶음(H3SHOW)은 한 번 만들어 계속 옮겨 써요
+function h3Bg() {
   if (S.photoBroken) return h3Scene();
-  const hp = heroPhoto(heroScene());
-  return `<img class="hero-img stock h3-photo ${cls}" src="${hp.src}" alt="${esc(hp.altT)}">`;
+  return `<div class="h3-slot"></div>`;
+}
+let H3SHOW = null;
+const H3_STEP = 7000;
+function h3ShowMake(sc) {
+  const list = HERO_PHOTOS[sc] || HERO_PHOTOS.day,
+    n = list.length,
+    start = (HERO_PICK[sc] || 0) % n,
+    el = document.createElement('div');
+  el.className = 'h3-show';
+  el.setAttribute('aria-hidden', 'true');
+  let h = '';
+  for (let k = 0; k < n; k++) {
+    const f = list[(start + k) % n];
+    h += `<img class="h3-slide kb${k % 3}" src="photos/${f.f}" alt="" decoding="async">`;
+  }
+  // 떠다니는 작은 빛 (보케)
+  for (let k = 0; k < 9; k++) h += `<i class="h3-bokeh b${k}"></i>`;
+  el.innerHTML = h;
+  const slides = () => [...el.querySelectorAll('.h3-slide')];
+  // 못 불러온 사진은 빼고, 하나도 없으면 그림으로
+  slides().forEach(img =>
+    img.addEventListener(
+      'error',
+      () => {
+        const wasOn = img.classList.contains('show');
+        img.remove();
+        const rest = slides();
+        if (!rest.length) {
+          S.photoBroken = true;
+          h3ShowDrop();
+          render();
+        } else if (wasOn) h3ShowGo(rest[0]);
+      },
+      { once: true }
+    )
+  );
+  const first = slides()[0];
+  if (first) first.classList.add('show', 'kb');
+  const R = { sc, el, i: 0, timer: 0 };
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
+    R.timer = setInterval(() => {
+      if (!el.isConnected || document.hidden) return;
+      const s = slides();
+      if (s.length < 2) return;
+      R.i = (R.i + 1) % s.length;
+      h3ShowGo(s[R.i]);
+    }, H3_STEP);
+  return R;
+}
+// 다음 사진: 새 사진이 위에서 천천히 나타나고, 앞 사진은 나타난 뒤에 내려가요
+function h3ShowGo(next) {
+  const R = H3SHOW;
+  if (!R || !next) return;
+  const prev = R.el.querySelector('.h3-slide.show:not(.leave)');
+  if (prev === next) return;
+  next.classList.remove('kb', 'leave');
+  void next.offsetWidth;
+  next.classList.add('show', 'kb', 'top');
+  if (prev) {
+    prev.classList.remove('top');
+    prev.classList.add('leave');
+    setTimeout(() => {
+      prev.classList.remove('show', 'kb', 'leave');
+    }, 1800);
+  }
+}
+function h3ShowDrop() {
+  if (!H3SHOW) return;
+  clearInterval(H3SHOW.timer);
+  H3SHOW.el.remove();
+  H3SHOW = null;
+}
+// 화면을 그린 뒤: 사진 묶음을 빈 자리(.h3-slot)에 옮겨 넣어요
+function h3Mount() {
+  const slot = document.querySelector('.h3-slot');
+  if (!slot) return;
+  const sc = heroScene();
+  if (H3SHOW && H3SHOW.sc !== sc) h3ShowDrop();
+  if (!H3SHOW) H3SHOW = h3ShowMake(sc);
+  slot.appendChild(H3SHOW.el);
 }
 
 // 지금 보여줄 계획 (여행 중이거나 다가오는 것). 다녀온 여행만 있으면 없음
@@ -409,6 +491,7 @@ function homeV() {
 // - 세로: 첫 화면(큰 제목) ↔ 카드 화면. 넘길수록 사진이 살짝 어두워지고 큰 제목이 사라지며 한 줄 제목이 나타나요
 // - 가로: 카드 두 장. 손가락으로 밀면 위 제목·점이 따라 바뀌어요
 function h3Wire() {
+  h3Mount();
   const pages = document.getElementById('h3pages');
   if (pages) {
     const root = pages.closest('.h3'),
