@@ -68,10 +68,10 @@ function h3ShowMake(sc) {
   let h = '';
   for (let k = 0; k < n; k++) {
     const f = list[(start + k) % n];
-    h += `<img class="h3-slide kb${k % 3}" src="photos/${f.f}" alt="" decoding="async">`;
+    h += `<img class="h3-slide kb${k % 3}" src="photos/${f.f}" alt="" decoding="async" data-ko="${esc(f.alt[0])}" data-ja="${esc(f.alt[1])}">`;
   }
-  // 떠다니는 작은 빛 (보케)
-  for (let k = 0; k < 9; k++) h += `<i class="h3-bokeh b${k}"></i>`;
+  // 필름 질감 · 위쪽 진행 막대(스토리처럼) · 지금 사진 설명
+  h += `<span class="h3-vb top"></span><span class="h3-vb bot"></span><span class="h3-grain"></span><div class="h3-bars">${'<i><b></b></i>'.repeat(n)}</div><div class="h3-cap"><span class="h3-cap-t"></span></div>`;
   el.innerHTML = h;
   const slides = () => [...el.querySelectorAll('.h3-slide')];
   // 못 불러온 사진은 빼고, 하나도 없으면 그림으로
@@ -81,19 +81,25 @@ function h3ShowMake(sc) {
       () => {
         const wasOn = img.classList.contains('show');
         img.remove();
+        const bars = el.querySelectorAll('.h3-bars i');
+        if (bars.length) bars[bars.length - 1].remove();
         const rest = slides();
         if (!rest.length) {
           S.photoBroken = true;
           h3ShowDrop();
           render();
-        } else if (wasOn) h3ShowGo(rest[0]);
+        } else if (wasOn) {
+          H3SHOW.i = 0;
+          h3ShowGo(rest[0]);
+        }
       },
       { once: true }
     )
   );
-  const first = slides()[0];
-  if (first) first.classList.add('show', 'kb');
   const R = { sc, el, i: 0, timer: 0 };
+  H3SHOW = R;
+  const first = slides()[0];
+  if (first) h3ShowGo(first, true);
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
     R.timer = setInterval(() => {
       if (!el.isConnected || document.hidden) return;
@@ -104,22 +110,42 @@ function h3ShowMake(sc) {
     }, H3_STEP);
   return R;
 }
-// 다음 사진: 새 사진이 위에서 천천히 나타나고, 앞 사진은 나타난 뒤에 내려가요
-function h3ShowGo(next) {
+// 다음 사진: 흐릿하게 크게 → 또렷하게 들어오고, 앞 사진은 그 뒤에 내려가요. 진행 막대·설명도 함께
+function h3ShowGo(next, first) {
   const R = H3SHOW;
   if (!R || !next) return;
   const prev = R.el.querySelector('.h3-slide.show:not(.leave)');
   if (prev === next) return;
-  next.classList.remove('kb', 'leave');
+  next.classList.remove('kb', 'leave', 'enter');
   void next.offsetWidth;
-  next.classList.add('show', 'kb', 'top');
+  next.classList.add('show', 'kb', 'top', 'enter');
   if (prev) {
     prev.classList.remove('top');
     prev.classList.add('leave');
-    setTimeout(() => {
-      prev.classList.remove('show', 'kb', 'leave');
-    }, 1800);
+    setTimeout(() => prev.classList.remove('show', 'kb', 'leave', 'enter'), 1600);
   }
+  // 진행 막대
+  const idx = [...R.el.querySelectorAll('.h3-slide')].indexOf(next);
+  R.el.querySelectorAll('.h3-bars i').forEach((b, k) => {
+    b.className = k < idx ? 'done' : '';
+    if (k === idx) {
+      void b.offsetWidth;
+      b.className = 'run';
+    }
+  });
+  h3Caption(next, !first);
+}
+function h3Caption(img, anim) {
+  const R = H3SHOW;
+  if (!R || !img) return;
+  const cap = R.el.querySelector('.h3-cap'),
+    t = R.el.querySelector('.h3-cap-t');
+  t.textContent = LANG === 'ja' ? img.dataset.ja : img.dataset.ko;
+  if (anim) {
+    cap.classList.remove('in');
+    void cap.offsetWidth;
+  }
+  cap.classList.add('in');
 }
 function h3ShowDrop() {
   if (!H3SHOW) return;
@@ -133,8 +159,17 @@ function h3Mount() {
   if (!slot) return;
   const sc = heroScene();
   if (H3SHOW && H3SHOW.sc !== sc) h3ShowDrop();
-  if (!H3SHOW) H3SHOW = h3ShowMake(sc);
+  if (!H3SHOW) h3ShowMake(sc);
   slot.appendChild(H3SHOW.el);
+  // 언어를 바꿨으면 설명도 바꿔요
+  const cur = H3SHOW.el.querySelector('.h3-slide.show:not(.leave)');
+  if (cur) h3Caption(cur, false);
+  // 첫 화면 제목은 앱을 처음 열 때 한 번만 등장 효과
+  const hero = document.querySelector('.h3-hero');
+  if (hero && !S.h3intro) {
+    S.h3intro = true;
+    hero.classList.add('intro');
+  }
 }
 
 // 지금 보여줄 계획 (여행 중이거나 다가오는 것). 다녀온 여행만 있으면 없음
@@ -160,7 +195,7 @@ function h3HomeV() {
   const top = `<header class="h3-top"><span class="h3-logo" data-notr${p ? '' : ' hidden'}><span class="j" lang="ja">福岡</span><b>${L('후쿠오카', 'ふくおか')}</b></span><span class="h3-tools">${langBtn(true)}${themeBtn()}</span></header>`;
   const hero = `<section class="h3-p1">
       <div class="h3-hero" data-notr>
-        <div class="j" lang="ja">福岡</div>
+        <div class="j" lang="ja"><span>福</span><span>岡</span></div>
         <h1>${L('후쿠오카', 'ふくおか')}</h1>
         <div class="en">FUKUOKA</div>
         <p lang="ja">海と屋台と、ラーメンの街。<br>アジアの玄関口へようこそ。</p>
