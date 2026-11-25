@@ -709,7 +709,7 @@ Object.assign(A, {
     S.sheet.i = Number(d.i);
     render();
     const s = document.querySelector('.sheet:not(.sh-ghost)');
-    if (s) s.scrollTo({ top: 0, behavior: 'smooth' });
+    if (s) s.scrollTo({ top: 0, behavior: scrollMode() });
   },
   areaSheet(d) {
     S.sheet = { type: 'area', id: d.id };

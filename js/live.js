@@ -92,7 +92,7 @@ function liveSet(uid, key) {
 function scrollToBanner() {
   const el = document.querySelector('.banner');
   if (el)
-    window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 130), behavior: 'smooth' });
+    window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 130), behavior: scrollMode() });
 }
 
 // 일정 탭 위쪽 안내 바: 오늘이면 지금 시각과 '지금 출발', 맞춘 시각이 있으면 '지우기'

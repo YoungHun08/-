@@ -15,14 +15,33 @@ const INTRO_MODE = (() => {
   return q === 'soft' || q === 'fold3d' ? q : INTRO_PRESET;
 })();
 
-// MOTION: 움직임 세기·속도는 여기서만 바꾸면 돼요 (ms = 1000분의 1초)
+// MOTION: 움직임 세기·속도는 여기서만 바꾸면 돼요 (ms = 1000분의 1초, Shift = 움직이는 거리 px)
 const MOTION = {
-  foldMs: 950, //      펼쳐지는 시간 (전체 약 800~1100ms 권장)
-  foldStagger: 80, //  면마다 시작 간격 (60~100ms)
-  foldAngle: 72, //    처음 접혀 있는 각도 (클수록 더 많이 접혀 있다가 펼쳐져요)
-  softMs: 450, //      soft 모드: 글자가 떠오르는 시간 (300~600ms)
-  softShift: 14, //    soft 모드: 아래에서 올라오는 거리(px)
-  pageMs: 240, //      화면 전환 시간 (200~300ms)
-  pageShift: 16, //    화면 전환 때 옆으로 미끄러지는 거리(px)
-  sheetMs: 240 //      아래 시트가 열리고 닫히는 시간
+  // 첫 화면 등장
+  foldMs: 950, //        펼쳐지는 시간 (전체 약 800~1100ms 권장)
+  foldStagger: 80, //    면마다 시작 간격 (60~100ms)
+  foldAngle: 72, //      처음 접혀 있는 각도 (클수록 더 많이 접혀 있다가 펼쳐져요)
+  softMs: 450, //        soft 모드: 글자가 떠오르는 시간 (300~600ms)
+  softShift: 14, //      soft 모드: 아래에서 올라오는 거리
+  // 화면 전환
+  pageMs: 270, //        큰 화면 앞·뒤 이동 (홈 ↔ 새 여행 단계 ↔ 계획, 다른 여행 열기)
+  pageShift: 18, //      큰 화면 이동 거리
+  tabMs: 220, //         같은 화면의 탭 이동 (홈 아래 메뉴, 계획의 일정·지도·길안내·교통비)
+  tabShift: 12, //       탭 이동 거리
+  subMs: 190, //         일차·하위 내용 바뀜 (동네 분류, 달력 달, 시트 안 탭·카테고리, 일본어 표현)
+  subShift: 8, //        하위 내용 이동 거리
+  sheetMs: 250, //       시트 열기·닫기
+  sheetRise: 36, //      시트가 올라오는 거리
+  sheetInnerMs: 220, //  열린 시트 안에서 상세로 들어가기·돌아오기
+  sheetInnerShift: 16, //시트 안 상세 이동 거리
+  expandMs: 200, //      펼치기·접기 (일정 카드, 보류함 등)
+  outPart: 0.45, //      이전 화면이 빠지는 시간 비율 (전환 시간 × 이 값). 작을수록 겹쳐 보이는 시간이 짧아요
+  inDelay: 0, //         새 화면이 들어오기 시작하는 시점 (ms)
+  ease: 'cubic-bezier(.2, .8, .2, 1)', //   들어올 때: 빨리 반응하고 부드럽게 멈춤
+  easeOut: 'cubic-bezier(.2, .6, .4, 1)' // 나갈 때: 누르자마자 바로 빠지기 시작
 };
+
+// 스크롤도 '동작 줄이기' 설정을 따라요 (부드럽게 / 바로)
+function scrollMode() {
+  return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
