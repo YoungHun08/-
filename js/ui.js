@@ -1057,12 +1057,13 @@ function sheetV() {
 // ---- 렌더 ----
 function render() {
   const y = window.scrollY,
-    shEl = document.querySelector('.sheet'),
+    shEl = document.querySelector('.sheet:not(.sh-ghost)'),
     shY = shEl ? shEl.scrollTop : 0;
+  if (typeof motionBefore === 'function') motionBefore();
   const v = S.view === 'home' ? homeV() : S.view === 'dates' ? datesV() : S.view === 'areas' ? areasV() : planV();
   $app.innerHTML = `<div class="shell v-${S.view}">${v}${sheetV()}<div class="toasts" id="toasts" aria-live="polite"></div></div>`;
   document.body.classList.toggle('locked', !!S.sheet);
-  const sh = document.querySelector('.sheet');
+  const sh = document.querySelector('.sheet:not(.sh-ghost)');
   if (sh && S.keepSheetScroll) sh.scrollTop = shY;
   S.keepSheetScroll = false;
   fitCta();
@@ -1071,6 +1072,7 @@ function render() {
   wireHero();
   if (typeof h3Wire === 'function') h3Wire();
   if (typeof navSync === 'function') navSync();
+  if (typeof motionAfter === 'function') motionAfter();
 }
 // 아래에 떠 있는 버튼 칸(.cta)만큼 화면 아래 여백을 줘요. 그래야 맨 아래 카드가 버튼 뒤에 가려지지 않아요
 function fitCta() {

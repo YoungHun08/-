@@ -8385,3 +8385,165 @@ body {
 .h3-vb.bot { bottom: 0; height: 34%; background: linear-gradient(0deg, rgba(8, 12, 28, .55), rgba(8, 12, 28, 0));
   -webkit-mask-image: linear-gradient(0deg, #000 0%, #000 35%, transparent 100%); mask-image: linear-gradient(0deg, #000 0%, #000 35%, transparent 100%); }
 .h3-band .h3-vb { display: none; }
+
+/* ===================== 홈 표지 v3: 포스터처럼 정돈 (motion.js · config.js 와 함께) ===================== */
+/* 색: 바다·하늘·후쿠오카 타워 그림 + 따뜻한 종이색(--bg) 바탕 + 남색·주홍 포인트 */
+.h3 { --h3-ink: #1f2b4d; --h3-red: #e5482a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .h3 { --h3-ink: #f4f1ea; --h3-red: #ff6a4d; } }
+:root[data-theme='dark'] .h3 { --h3-ink: #f4f1ea; --h3-red: #ff6a4d; }
+
+/* 덜어 내기: 흐림 유리 · 필름 질감 · 반짝임 · 진행 막대는 빼고, 움직임은 구름과 물결 두 가지만 */
+.h3-grain, .h3-vb, .h3-bars, .h3-bokeh { display: none !important; }
+.h3-start::after { content: none; }
+.h3-svg .h3-stars circle, .h3-svg .h3-bird, .h3-svg .h3-sun, .h3-svg .h3-twlight, .h3-svg .h3-win rect,
+.h3-svg .h3-palm, .h3-svg .h3-refl, .h3-svg .h3-boat { animation: none; }
+.h3-svg .h3-cloud ellipse { animation-duration: 60s; }
+.h3-svg .h3-cloud ellipse:nth-child(2) { animation-duration: 84s; }
+.h3-svg .h3-cloud ellipse:nth-child(3) { animation-duration: 48s; }
+.h3-svg .h3-waves path { animation-duration: 10s; }
+.h3-svg .h3-waves .w2 { animation-duration: 13s; }
+.h3-svg .h3-waves .w3 { animation-duration: 17s; }
+.h3-bg .h3-sun, .h3-fold .h3-sun { opacity: .5; }
+
+/* 사진 층: 그림 위에 있고, 실제로 불러온 뒤에만 천천히 나타나요 */
+.h3-show { background: transparent; opacity: 0; transition: opacity .9s ease; }
+.h3-show.ready { opacity: 1; }
+.h3-bg { background: var(--h3-s1); }
+
+/* 위는 제목이 또렷하게 남색으로 살짝, 아래는 종이색으로 자연스럽게 이어져요 */
+.h3-bg .h3-shade {
+  background: linear-gradient(180deg, rgba(14, 22, 48, .62) 0%, rgba(14, 22, 48, .4) 24%, rgba(14, 22, 48, .16) 40%, rgba(14, 22, 48, 0) 52%);
+}
+.h3-slot { z-index: 0; }
+.h3-paper, .h3-pshade { position: absolute; inset: 0; pointer-events: none; }
+.h3-paper { background: linear-gradient(0deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 92%, transparent) 14%, color-mix(in srgb, var(--bg) 55%, transparent) 26%, transparent 40%); }
+/* 사진이 있을 때: 아래는 종이색 대신 깊은 남색으로 (사진과 함께 천천히) · 특징 글씨는 흰색 */
+.h3-pshade { z-index: 2; background: linear-gradient(0deg, rgba(10, 14, 30, .86) 0%, rgba(10, 14, 30, .55) 20%, rgba(10, 14, 30, 0) 42%); }
+.h3-feats, .h3-cue { transition: color .9s ease; }
+.h3-home:has(.h3-show.ready) .h3-feats, .h3-home:has(.h3-show.ready) .h3-cue { color: #fff; }
+.h3-home:has(.h3-show.ready) .h3-feats li + li { border-left-color: rgba(255, 255, 255, .35); }
+.h3-cap { bottom: calc(214px + env(safe-area-inset-bottom)); }
+.h3-cap-t { background: rgba(14, 22, 48, .42); border-color: rgba(255, 255, 255, .18); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+
+/* 제목 위계: 福岡(크게) → 후쿠오카 → ― FUKUOKA → 한 줄 소개 */
+.h3-p1 { padding-top: calc(62px + env(safe-area-inset-top)); }
+.h3-hero { margin-top: clamp(4px, 3vh, 30px); padding-left: 6px; text-shadow: 0 2px 14px rgba(8, 14, 34, .35); }
+.h3-hero .j { position: relative; display: inline-flex; align-items: flex-start; font-weight: 300; font-size: min(25vw, 13vh, 108px); letter-spacing: .02em; line-height: .95; }
+.h3-hero .j span { display: inline-block; }
+.h3-seal {
+  align-self: flex-start; display: grid; place-items: center; margin: .5em 0 0 .45em;
+  width: 1.5em; height: 1.5em; border-radius: .18em; font-size: .2em; font-style: normal; font-weight: 600; line-height: 1; letter-spacing: 0;
+  background: var(--h3-red); color: #fff; text-shadow: none;
+}
+.h3-hero h1 { margin: .32em 0 0; font-size: min(9.4vw, 4.8vh, 40px); font-weight: 800; letter-spacing: -.01em; line-height: 1.05; }
+.h3-hero .en { display: flex; align-items: center; gap: 12px; margin-top: 14px; font-size: 11.5px; font-weight: 700; letter-spacing: .58em; }
+.h3-hero .en::before { content: ''; flex: none; width: 26px; height: 2px; border-radius: 2px; background: var(--h3-red); }
+.h3-hero p { margin-top: 16px; max-width: 21em; font-size: 13.5px; line-height: 1.75; opacity: .94; }
+
+/* 아래: 특징 한 줄(남색 글씨) + 주홍 버튼 하나 */
+.h3-p1b { gap: 16px; }
+.h3-feats { color: var(--h3-ink); text-shadow: none; font-size: 13px; }
+.h3-feats li { opacity: 1; }
+.h3-feats li + li { border-left-color: color-mix(in srgb, var(--h3-ink) 22%, transparent); }
+.h3-feats .ic { color: var(--h3-red); }
+.h3-start {
+  justify-content: center; width: min(100%, 320px); box-sizing: border-box;
+  padding: 16px 26px; border-radius: 999px; font-size: 15.5px; color: #fff;
+  background: #d63a1f; box-shadow: 0 12px 26px -8px rgba(160, 40, 18, .55);
+}
+.h3-start .ic { color: #fff; }
+.h3-start:active { transform: scale(.98); }
+.h3-cue { color: var(--h3-ink); text-shadow: none; }
+.on-p2 .h3-cue { color: #fff; }
+
+/* 오른쪽 위 日本語 · 테마 버튼: 반짝이는 유리 대신 차분한 반투명 */
+.v-home .h3-home .lang-btn.light, .v-home .h3-home .th-tg {
+  background: rgba(14, 22, 48, .26); border: 1px solid rgba(255, 255, 255, .28); box-shadow: none;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+
+/* 작은 화면(낮은 높이): 겹치지 않게 조금씩 줄여요 */
+@media (max-height: 640px) {
+  .h3-p1 { padding-top: calc(52px + env(safe-area-inset-top)); padding-bottom: calc(86px + env(safe-area-inset-bottom)); }
+  .h3-hero p { margin-top: 10px; font-size: 12.5px; line-height: 1.6; }
+  .h3-hero .en { margin-top: 10px; }
+  .h3-p1b { gap: 10px; }
+  .h3-start { padding: 13px 22px; }
+}
+@media (max-width: 340px) { .h3-feats { font-size: 12px; } .h3-feats li { padding: 0 7px; } }
+
+/* 예전 등장 효과는 쓰지 않아요 (motion.js 하나로) */
+.h3-hero.intro *, .h3-p1:has(.h3-hero.intro) .h3-p1b { animation: none; }
+
+/* ===================== 첫 화면 등장 (config.js INTRO_MODE) ===================== */
+/* 공통: 등장 중 다시 그려져도 이어지도록 모든 지연에 --it(지난 시간, 음수)을 더해요 */
+.h3 { --it: 0ms; }
+
+/* A. fold3d: 3면 팸플릿 펼침 — 장식 층(.h3-fold)만 움직이고, 끝나면 지워져요 */
+.h3-bg.folding { background: var(--bg); }
+.h3-bg.folding > :not(.h3-fold) { visibility: hidden; }
+.h3-fold { position: absolute; inset: 0; z-index: 3; overflow: hidden; pointer-events: none; perspective: 1500px; perspective-origin: 50% 40%; }
+.h3-fw { position: absolute; inset: 0; transform-style: preserve-3d;
+  animation: h3fw var(--fold-ms) cubic-bezier(.22, .8, .24, 1) var(--it) both; }
+@keyframes h3fw { from { transform: translateX(var(--fold-x)) translateZ(-90px); } to { transform: none; } }
+.h3-fp { position: absolute; top: 0; bottom: 0; width: 100%; transform-style: preserve-3d; transform-origin: 0 50%;
+  animation: h3fp var(--fold-ms) cubic-bezier(.22, .8, .24, 1) both; backface-visibility: hidden; }
+.h3-fp.p0 { left: 0; width: 33.3334%; --r: var(--fold-r0); animation-delay: var(--it); }
+.h3-fp.p1, .h3-fp.p2 { left: 100%; }
+.h3-fp.p1 { --r: var(--fold-r1); animation-delay: calc(var(--it) + var(--fold-st)); }
+.h3-fp.p2 { --r: var(--fold-r2); animation-delay: calc(var(--it) + 2 * var(--fold-st)); }
+@keyframes h3fp { from { transform: rotateY(var(--r)); } to { transform: rotateY(0deg); } }
+.h3-ff { position: absolute; top: 0; bottom: 0; left: 0; width: calc(100% + 1px); overflow: hidden; }
+.h3-fi { position: absolute; top: 0; bottom: 0; width: 300%; }
+.h3-fi .h3-svg { width: 100%; height: 100%; }
+/* 접힌 자국: 얇은 그림자와 빛 — 펼쳐지면서 사라져요 */
+.h3-fs { position: absolute; inset: 0; pointer-events: none; animation: h3fs var(--fold-ms) ease-out both; }
+.h3-fp.p0 .h3-fs { background: linear-gradient(90deg, rgba(10, 16, 36, 0) 40%, rgba(10, 16, 36, .38)); animation-delay: var(--it); }
+.h3-fp.p1 .h3-fs { background: linear-gradient(90deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 45%, rgba(10, 16, 36, .12)); animation-delay: calc(var(--it) + var(--fold-st)); }
+.h3-fp.p2 .h3-fs { background: linear-gradient(90deg, rgba(10, 16, 36, .06), rgba(10, 16, 36, .34)); animation-delay: calc(var(--it) + 2 * var(--fold-st)); }
+.h3-fp.p1 .h3-fs::before, .h3-fp.p2 .h3-fs::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: rgba(255, 255, 255, .55); }
+@keyframes h3fs { from { opacity: 1; } 70% { opacity: .25; } to { opacity: 0; } }
+/* 글자: 풍경이 거의 펼쳐질 즈음 나타나요 (버튼은 처음부터 눌러져요) */
+.intro-fold3d .h3-hero > *, .intro-fold3d .h3-p1b { animation: h3up calc(var(--fold-ms) * .45) cubic-bezier(.2, .8, .2, 1) both; }
+.intro-fold3d .h3-hero .j { animation-delay: calc(var(--it) + var(--fold-ms) * .42); }
+.intro-fold3d .h3-hero h1 { animation-delay: calc(var(--it) + var(--fold-ms) * .5); }
+.intro-fold3d .h3-hero .en { animation-delay: calc(var(--it) + var(--fold-ms) * .56); }
+.intro-fold3d .h3-hero p { animation-delay: calc(var(--it) + var(--fold-ms) * .62); }
+.intro-fold3d .h3-p1b { animation-delay: calc(var(--it) + var(--fold-ms) * .3); }
+.intro-fold3d .h3-top { animation: h3op calc(var(--fold-ms) * .4) ease calc(var(--it) + var(--fold-ms) * .3) both; }
+@keyframes h3up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes h3op { from { opacity: 0; } to { opacity: 1; } }
+
+/* B. soft: 3D 없이 제목 → 설명 → 버튼 순서로 살짝 떠올라요 */
+.intro-soft .h3-hero > *, .intro-soft .h3-p1b { animation: h3soft var(--soft-ms) cubic-bezier(.2, .8, .2, 1) both; }
+.intro-soft .h3-hero .j { animation-delay: var(--it); }
+.intro-soft .h3-hero h1 { animation-delay: calc(var(--it) + 60ms); }
+.intro-soft .h3-hero .en { animation-delay: calc(var(--it) + 110ms); }
+.intro-soft .h3-hero p { animation-delay: calc(var(--it) + 160ms); }
+.intro-soft .h3-p1b { animation-delay: calc(var(--it) + 220ms); }
+@keyframes h3soft { from { opacity: 0; transform: translateY(var(--soft-y)); } to { opacity: 1; transform: none; } }
+/* soft + 동작 줄이기: 움직임 없이 짧게 나타나기만 */
+.intro-soft-r .h3-hero, .intro-soft-r .h3-p1b { animation: h3op 240ms ease var(--it) both; }
+
+/* ===================== 화면 전환 · 시트 ===================== */
+/* 바뀐 화면의 내용만 살짝 밀려 들어와요 (고정된 메뉴·버튼·시트는 그대로) */
+.pg-in { animation: h3pg var(--pg-ms) cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes h3pg { from { opacity: 0; transform: translateX(var(--pg-dx, 0px)); } to { opacity: 1; transform: none; } }
+/* 시트: 다시 그릴 때마다 튀어 오르지 않게, 처음 열 때만 */
+.scrim, .sheet { animation: none; }
+.scrim.sh-in { animation: fade var(--sh-ms) ease-out; }
+.sheet.sh-in { animation: up var(--sh-ms) cubic-bezier(.2, .8, .2, 1); }
+.sh-ghostwrap { position: fixed; inset: 0; z-index: 42; pointer-events: none; }
+.sh-ghostwrap .scrim { animation: h3fadeout var(--sh-ms) ease-in both; }
+.sh-ghostwrap .sheet { animation: h3down var(--sh-ms) cubic-bezier(.4, 0, .8, .4) both; overflow: hidden; }
+@keyframes h3fadeout { to { opacity: 0; } }
+@keyframes h3down { to { transform: translate(-50%, 48px); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .h3-fold { display: none; }
+  .h3-bg.folding > :not(.h3-fold) { visibility: visible; }
+  .intro-fold3d .h3-hero > *, .intro-fold3d .h3-p1b, .intro-fold3d .h3-top, .intro-soft .h3-hero > *, .intro-soft .h3-p1b { animation: none; }
+  .pg-in { animation-name: h3op; animation-duration: 160ms; }
+  .sheet.sh-in, .scrim.sh-in { animation: h3op 160ms ease-out; }
+  .sh-ghostwrap { display: none; }
+}

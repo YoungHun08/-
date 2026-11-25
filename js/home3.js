@@ -9,17 +9,17 @@
 // ======================================================================
 
 // 홈 그림 (viewBox 로 잘라 쓰면 다른 탭 위쪽 띠에도 써요)
-function h3Scene(vb = '0 0 390 760', ratio = 'xMidYMin slice') {
+function h3Scene(vb = '0 0 390 760', ratio = 'xMidYMin slice', sfx = '') {
   const v = n => `var(--h3-${n})`;
   return `<svg class="h3-svg" viewBox="${vb}" preserveAspectRatio="${ratio}" aria-hidden="true">
 <defs>
-<linearGradient id="h3sky" x1="0" y1="0" x2="0" y2="760" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:${v('s0')}"/><stop offset=".25" style="stop-color:${v('s1')}"/><stop offset=".45" style="stop-color:${v('s2')}"/><stop offset=".56" style="stop-color:${v('s3')}"/></linearGradient>
-<radialGradient id="h3glow" cx="58" cy="118" r="120" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:${v('glow')};stop-opacity:.9"/><stop offset="1" style="stop-color:${v('glow')};stop-opacity:0"/></radialGradient>
-<linearGradient id="h3sea" x1="0" y1="420" x2="0" y2="760" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:${v('sea0')}"/><stop offset=".45" style="stop-color:${v('sea1')}"/><stop offset="1" style="stop-color:var(--bg)"/></linearGradient>
-<linearGradient id="h3tw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:${v('tw0')}"/><stop offset=".55" style="stop-color:${v('tw1')}"/><stop offset=".56" style="stop-color:${v('tw2')}"/><stop offset="1" style="stop-color:${v('tw3')}"/></linearGradient>
+<linearGradient id="h3sky${sfx}" x1="0" y1="0" x2="0" y2="760" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:${v('s0')}"/><stop offset=".25" style="stop-color:${v('s1')}"/><stop offset=".45" style="stop-color:${v('s2')}"/><stop offset=".56" style="stop-color:${v('s3')}"/></linearGradient>
+<radialGradient id="h3glow${sfx}" cx="58" cy="118" r="120" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:${v('glow')};stop-opacity:.9"/><stop offset="1" style="stop-color:${v('glow')};stop-opacity:0"/></radialGradient>
+<linearGradient id="h3sea${sfx}" x1="0" y1="420" x2="0" y2="760" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:${v('sea0')}"/><stop offset=".45" style="stop-color:${v('sea1')}"/><stop offset="1" style="stop-color:var(--bg)"/></linearGradient>
+<linearGradient id="h3tw${sfx}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:${v('tw0')}"/><stop offset=".55" style="stop-color:${v('tw1')}"/><stop offset=".56" style="stop-color:${v('tw2')}"/><stop offset="1" style="stop-color:${v('tw3')}"/></linearGradient>
 </defs>
-<rect width="390" height="760" fill="url(#h3sky)"/>
-<rect width="390" height="480" fill="url(#h3glow)"/>
+<rect width="390" height="760" fill="url(#h3sky${sfx})"/>
+<rect width="390" height="480" fill="url(#h3glow${sfx})"/>
 <g class="h3-stars"><circle cx="40" cy="40" r="1.2"/><circle cx="110" cy="22" r="1"/><circle cx="170" cy="60" r="1.4"/><circle cx="240" cy="30" r="1"/><circle cx="196" cy="150" r="1.2"/><circle cx="120" cy="120" r=".9"/><circle cx="20" cy="150" r="1"/><circle cx="140" cy="250" r="1.1"/><circle cx="260" cy="190" r=".9"/><circle cx="375" cy="60" r="1.1"/><circle cx="60" cy="210" r="1"/></g>
 <circle class="h3-sun" cx="58" cy="118" r="30"/>
 <g class="h3-cloud"><ellipse cx="210" cy="236" rx="64" ry="7"/><ellipse cx="392" cy="140" rx="44" ry="10"/><ellipse cx="0" cy="182" rx="16" ry="6"/></g>
@@ -33,7 +33,7 @@ function h3Scene(vb = '0 0 390 760', ratio = 'xMidYMin slice') {
 <path style="fill:${v('hawk2')}" d="M222 262q18 6 18 18v130h-18z"/>
 <path style="stroke:${v('hwin')};stroke-width:1.4" d="M196 286h18M196 297h18M196 308h18M196 319h18M196 330h18M196 341h18M196 352h18M196 363h18M196 374h18M196 385h18"/>
 <path style="fill:none;stroke:${v('lat')};stroke-width:2.2;stroke-linejoin:round" d="M337 4v22M323 92l14-66l14 66M326 76l22-22M348 76l-22-22M329 52l16-14M345 52l-16-14"/>
-<path d="M318 94h38l8 316h-54z" fill="url(#h3tw)"/>
+<path d="M318 94h38l8 316h-54z" fill="url(#h3tw${sfx})"/>
 <path style="stroke:${v('twl')};stroke-width:1;opacity:.55" d="M314 120h46M314 140h46M314 160h47M313 182h48M312 246h50M311 266h51M311 286h52M310 306h53M310 326h53M309 346h55M309 366h55M308 386h56"/>
 <path class="h3-twlight" d="M319 96l-9 312M355 96l9 312"/>
 <path style="fill:${v('deck')}" d="M315 200h44l2 22h-48z"/>
@@ -43,18 +43,18 @@ function h3Scene(vb = '0 0 390 760', ratio = 'xMidYMin slice') {
 <path style="fill:none;stroke:${v('palm2')};stroke-width:3;stroke-linecap:round" d="M286 406q0-30 10-52"/>
 <path class="h3-palm p2" style="fill:none;stroke:${v('palm2')};stroke-width:3.5;stroke-linecap:round;transform-origin:296px 354px" d="M296 354q-16-2-24 8M296 354q12-10 24-4M296 354q4-12 12-16"/>
 <path style="fill:${v('sand')}" d="M0 404q120-8 240 0t150 2v18H0z"/>
-<rect y="420" width="390" height="340" fill="url(#h3sea)"/>
+<rect y="420" width="390" height="340" fill="url(#h3sea${sfx})"/>
 <path class="h3-refl" style="stroke:${v('refl')};stroke-width:2;stroke-linecap:round;opacity:.75" d="M324 436h30M328 448h24M326 460h26M330 472h20M332 484h16M28 460h42M150 448h56M240 476h40"/>
 <g class="h3-waves" style="stroke:${v('refl')};stroke-width:1.6;stroke-linecap:round;fill:none;opacity:.45"><path d="M-40 520q20-6 40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0"/><path class="w2" d="M-40 580q24-7 48 0t48 0t48 0t48 0t48 0t48 0t48 0t48 0t48 0t48 0"/><path class="w3" d="M-40 650q30-8 60 0t60 0t60 0t60 0t60 0t60 0t60 0t60 0"/></g>
 <g class="h3-boat"><path style="fill:${v('city')}" d="M70 506h40l-6 8h-28z"/><path style="fill:${v('refl')};opacity:.9" d="M88 504v-22l14 20z"/></g>
 </svg>`;
 }
 
-// 배경: 낮/밤 사진이 천천히 확대·이동하면서 7초마다 다음 사진으로 넘어가요. 사진을 못 불러오면 움직이는 그림으로
+// 배경: 움직이는 그림(SVG)이 항상 바탕에 깔리고, 사진은 실제로 불러온 뒤에만 그 위에 천천히 나타나요
+// 사진을 하나도 못 불러오면 사진 층만 조용히 치워요 (제목이 사라지거나 등장 효과가 다시 시작되지 않게)
 // 화면을 다시 그려도 사진이 처음부터 다시 시작하지 않도록, 사진 묶음(H3SHOW)은 한 번 만들어 계속 옮겨 써요
 function h3Bg() {
-  if (S.photoBroken) return h3Scene();
-  return `<div class="h3-slot"></div>`;
+  return `${h3Scene()}<span class="h3-paper"></span><div class="h3-slot"></div>`;
 }
 let H3SHOW = null;
 const H3_STEP = 7000;
@@ -71,7 +71,7 @@ function h3ShowMake(sc) {
     h += `<img class="h3-slide kb${k % 3}" src="photos/${f.f}" alt="" decoding="async" data-ko="${esc(f.alt[0])}" data-ja="${esc(f.alt[1])}">`;
   }
   // 필름 질감 · 위쪽 진행 막대(스토리처럼) · 지금 사진 설명
-  h += `<span class="h3-vb top"></span><span class="h3-vb bot"></span><span class="h3-grain"></span><div class="h3-bars">${'<i><b></b></i>'.repeat(n)}</div><div class="h3-cap"><span class="h3-cap-t"></span></div>`;
+  h += `<span class="h3-vb top"></span><span class="h3-vb bot"></span><span class="h3-grain"></span><span class="h3-pshade"></span><div class="h3-bars">${'<i><b></b></i>'.repeat(n)}</div><div class="h3-cap"><span class="h3-cap-t"></span></div>`;
   el.innerHTML = h;
   const slides = () => [...el.querySelectorAll('.h3-slide')];
   // 못 불러온 사진은 빼고, 하나도 없으면 그림으로
@@ -87,7 +87,6 @@ function h3ShowMake(sc) {
         if (!rest.length) {
           S.photoBroken = true;
           h3ShowDrop();
-          render();
         } else if (wasOn) {
           H3SHOW.i = 0;
           h3ShowGo(rest[0]);
@@ -96,7 +95,22 @@ function h3ShowMake(sc) {
       { once: true }
     )
   );
-  const R = { sc, el, i: 0, timer: 0 };
+  // 처음 한 장이라도 불러오면 사진 층을 보여 줘요 (첫 화면 등장 효과 중이면 끝난 뒤에)
+  slides().forEach(img => {
+    const ok = () => {
+      if (!img.naturalWidth || R.loaded) return;
+      R.loaded = true;
+      S.photoOk = true;
+      if (R.i !== slides().indexOf(img) && img.isConnected) {
+        R.i = Math.max(0, slides().indexOf(img));
+        h3ShowGo(img);
+      }
+      h3ShowReveal();
+    };
+    if (img.complete) setTimeout(ok, 0);
+    else img.addEventListener('load', ok, { once: true });
+  });
+  const R = { sc, el, i: 0, timer: 0, loaded: false };
   H3SHOW = R;
   const first = slides()[0];
   if (first) h3ShowGo(first, true);
@@ -104,9 +118,16 @@ function h3ShowMake(sc) {
     R.timer = setInterval(() => {
       if (!el.isConnected || document.hidden) return;
       const s = slides();
-      if (s.length < 2) return;
-      R.i = (R.i + 1) % s.length;
-      h3ShowGo(s[R.i]);
+      if (s.length < 2 || !R.loaded) return;
+      // 아직 다 못 받은 사진은 건너뛰어요 (빈 화면이 끼지 않게)
+      for (let k = 1; k < s.length; k++) {
+        const j = (R.i + k) % s.length;
+        if (s[j].complete && s[j].naturalWidth) {
+          R.i = j;
+          h3ShowGo(s[j]);
+          return;
+        }
+      }
     }, H3_STEP);
   return R;
 }
@@ -147,6 +168,12 @@ function h3Caption(img, anim) {
   }
   cap.classList.add('in');
 }
+function h3ShowReveal() {
+  const R = H3SHOW;
+  if (!R || !R.loaded) return;
+  if (typeof introRunning === 'function' && introRunning()) return; // 등장 효과가 끝나면 motion.js 가 다시 불러요
+  R.el.classList.add('ready');
+}
 function h3ShowDrop() {
   if (!H3SHOW) return;
   clearInterval(H3SHOW.timer);
@@ -164,12 +191,8 @@ function h3Mount() {
   // 언어를 바꿨으면 설명도 바꿔요
   const cur = H3SHOW.el.querySelector('.h3-slide.show:not(.leave)');
   if (cur) h3Caption(cur, false);
-  // 첫 화면 제목은 앱을 처음 열 때 한 번만 등장 효과
-  const hero = document.querySelector('.h3-hero');
-  if (hero && !S.h3intro) {
-    S.h3intro = true;
-    hero.classList.add('intro');
-  }
+  h3ShowReveal();
+  // 첫 화면 등장 효과(펼침 / 살짝 떠오름)는 motion.js 에서 한 번만 해요
 }
 
 // 지금 보여줄 계획 (여행 중이거나 다가오는 것). 다녀온 여행만 있으면 없음
@@ -195,7 +218,7 @@ function h3HomeV() {
   const top = `<header class="h3-top"><span class="h3-logo" data-notr${p ? '' : ' hidden'}><span class="j" lang="ja">福岡</span><b>${L('후쿠오카', 'ふくおか')}</b></span><span class="h3-tools">${langBtn(true)}${themeBtn()}</span></header>`;
   const hero = `<section class="h3-p1">
       <div class="h3-hero" data-notr>
-        <div class="j" lang="ja"><span>福</span><span>岡</span></div>
+        <div class="j" lang="ja"><span>福</span><span>岡</span><i class="h3-seal" aria-hidden="true">旅</i></div>
         <h1>${L('후쿠오카', 'ふくおか')}</h1>
         <div class="en">FUKUOKA</div>
         <p lang="ja">海と屋台と、ラーメンの街。<br>アジアの玄関口へようこそ。</p>
@@ -421,7 +444,7 @@ function h3BandSVG() {
 </svg>`;
 }
 function h3BandV(t, s, extra = '') {
-  return `<header class="h3-band">${S.photoBroken ? h3BandSVG() : h3Bg()}<span class="h3-bshade"></span>
+  return `<header class="h3-band">${h3BandSVG()}<div class="h3-slot"></div><span class="h3-bshade"></span>
     <div class="h3-bt"><h1>${t}</h1>${s ? `<p>${s}</p>` : ''}</div><span class="h3-bl">${langBtn(true)}</span>${extra}</header>`;
 }
 
@@ -511,7 +534,7 @@ function h3TripsV() {
     ${rest.length ? `<h2 class="h3-sec">${L('다른 계획', 'ほかの計画')}</h2><ul class="plist">${rest.map(planRow).join('')}</ul>` : ''}
     <button class="h3-recv" data-act="recvOpen">${ic('save')}<span>${L('공유받은 계획 불러오기', '受け取った計画を取り込む')}</span></button>
     <p class="store-note" id="storeNote">${storeNote()}</p>
-    ${S.photoBroken ? '' : `<p class="credit">${L('배경 사진', '背景の写真')} <a href="${heroPhoto(heroScene()).url}" target="_blank" rel="noopener">${heroPhoto(heroScene()).by}</a> · Unsplash</p>`}
+    ${!S.photoOk ? '' : `<p class="credit">${L('배경 사진', '背景の写真')} <a href="${heroPhoto(heroScene()).url}" target="_blank" rel="noopener">${heroPhoto(heroScene()).by}</a> · Unsplash</p>`}
   </main>`;
 }
 
