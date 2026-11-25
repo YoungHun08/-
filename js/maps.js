@@ -355,6 +355,7 @@ function rgInit(gl) {
   }
   map.touchZoomRotate.disableRotation();
   R.map = map;
+  mapReveal(map, R.box);
   R.fit = () => {
     const pad = { top: 46, bottom: 40, left: 80, right: 56 },
       b = [
@@ -768,6 +769,7 @@ function dmInit(gl) {
   }
   map.touchZoomRotate.disableRotation();
   R.map = map;
+  mapReveal(map, R.box);
   map.on('load', () => {
     if (DMV !== R) return;
     R.loaded = true;

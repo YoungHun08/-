@@ -8192,3 +8192,25 @@ body {
     color: #8fb4ff;
   }
 }
+
+/* ===== 지도: 다 그려질 때까지 가려 두고 한 번에 보여 주기 ===== */
+.ml-wait > *,
+.ml-wait > .maplibregl-canvas-container,
+.ml-wait > .maplibregl-control-container { opacity: 0 !important; }
+.ml-ready > * { transition: opacity .35s ease; }
+.ml-wait::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  border-top-color: var(--pri);
+  animation: mlSpin .8s linear infinite;
+  z-index: 5;
+}
+@keyframes mlSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ml-wait::after { animation-duration: 2s; } }

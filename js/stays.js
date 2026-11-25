@@ -432,6 +432,30 @@ function loadMapLibre() {
   MLP.catch(() => (MLP = null));
   return MLP;
 }
+// 지도를 다 그릴 때까지(바탕·색 바꾸기·선·핀) 가려 두었다가 한 번에 보여 줘요
+function mapReveal(map, box) {
+  box.classList.add('ml-wait');
+  box.classList.remove('ml-ready');
+  let done = false;
+  const show = () => {
+    if (done) return;
+    done = true;
+    box.classList.remove('ml-wait');
+    box.classList.add('ml-ready');
+  };
+  map.once('load', () => map.once('idle', show));
+  setTimeout(show, 8000);
+}
+// 앱을 연 뒤 한가할 때 지도 프로그램과 지도 모양(스타일)을 미리 받아 둬요 → 지도 화면이 바로 떠요
+function mapPrewarm() {
+  if (navigator.onLine === false) return;
+  const go = () =>
+    loadMapLibre()
+      .then(() => fetch(HP_STYLE).catch(() => {}))
+      .catch(() => {});
+  if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 2500 });
+  else setTimeout(go, 1200);
+}
 function hpVecDrop() {
   if (!HPV) return;
   try {
@@ -490,6 +514,7 @@ function hpVecInit(gl, sh) {
   }
   map.touchZoomRotate.disableRotation();
   HPV.map = map;
+  mapReveal(map, HPV.box);
   map.on('load', () => {
     if (!HPV || HPV.map !== map) return;
     HPV.loaded = true;
