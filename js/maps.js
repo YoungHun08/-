@@ -1,6 +1,7 @@
 // ======================================================================
 // maps.js · 지도 그리기
 // 새 여행 2단계 지도(drawRegion), 계획의 지도 탭(drawDay), 걷기 추천 지도(drawWalk)
+// 셋 다 진짜 지도(MapLibre)로 그리고, 못 불러오면(인터넷 없음 등) 앱이 그린 안내 지도로 바꿔요.
 // 바다·강·지하철 모양 데이터는 data.js 의 GEO 에 있어요.
 // 고치는 법: docs/수정가이드.md
 // ======================================================================
@@ -101,6 +102,7 @@ function drawMaps() {
   if (d) drawDay(d);
   const w = document.getElementById('wmap');
   if (w) drawWalk(w);
+  else if (WMV) wmDrop();
   const hm = document.getElementById('hpmap');
   if (hm) drawHpMap(hm);
 }
@@ -226,14 +228,6 @@ function drawRegion(el, deco) {
     g.p = p;
     obstacles.push({ x0: p[0] - 12 * k, x1: p[0] + 12 * k, y0: p[1] - 31 * k, y1: p[1] + 2 * k });
   });
-  // 가고 싶은 곳 별 핀 (당일치기 동네 장소는 지도 밖이라 빼요)
-  const wItems = deco
-    ? []
-    : wishPts(true).map(w => {
-        const p = fish(w.lat, w.lng);
-        obstacles.push({ x0: p[0] - 10 * k, x1: p[0] + 10 * k, y0: p[1] - 10 * k, y1: p[1] + 10 * k });
-        return { wp: w, x: p[0], y: p[1], r: 10 * k, w: textEm(w.n) * 11 * k + 4 * k, hgt: 11 * k * 1.25, gap: 3 * k };
-      });
   // 숙소 이름표 먼저, 그다음 고른 동네, 나머지 순서
   const hItems = hp.map(g => ({
     kind: 'h',
@@ -245,7 +239,7 @@ function drawRegion(el, deco) {
     hgt: 12.5 * k * 1.25,
     gap: 3 * k
   }));
-  const order = [...hItems, ...items.filter(i => i.on), ...wItems, ...items.filter(i => !i.on)];
+  const order = [...hItems, ...items.filter(i => i.on), ...items.filter(i => !i.on)];
   const bounds = { x0: mv.x + 2 * k, x1: mv.x + mv.w - 2 * k, y0: mv.y + 2 * k, y1: mv.y + mv.h - 2 * k };
   placeLabels(order, obstacles, bounds);
   items.forEach(it => {
@@ -266,7 +260,6 @@ function drawRegion(el, deco) {
       <svg x="-7.5" y="-26.5" width="15" height="15" viewBox="0 0 24 24" class="hpin-ic">${ICON.home}</svg>
       <text class="hpin-t" x="${f1((t.tx - x) / k)}" y="${f1((t.ty - y) / k)}" style="text-anchor:${t.ax}">${esc(g.lab)}</text></g>`;
   });
-  wItems.forEach(it => (h += wishPinSVG(it, k)));
   el.innerHTML = `<svg viewBox="${f1(mv.x)} ${f1(mv.y)} ${f1(mv.w)} ${f1(mv.h)}" role="img" aria-label="후쿠오카 안내 지도"${deco ? '' : ' class="pan"'}>${h}</svg>`;
   if (!deco) enablePan(el.querySelector('svg'), W);
 }
@@ -301,6 +294,7 @@ function rgFail() {
   RGV_FAIL = true;
   rgDrop();
   dmDrop();
+  wmDrop();
   render();
 }
 function rgVector(el) {
@@ -523,14 +517,6 @@ function rgOverlay() {
     })
     .filter(g => g.x > 8 && g.x < W - 8 && g.y > 26 && g.y < H + 2);
   hp.forEach(g => obstacles.push({ x0: g.x - 12, x1: g.x + 12, y0: g.y - 31, y1: g.y + 2 }));
-  // 가고 싶은 곳 별 핀 (화면 안에 있는 것만)
-  const wItems = wishPts(false)
-    .map(w => {
-      const p = map.project([w.lng, w.lat]);
-      return { wp: w, x: p.x, y: p.y, r: 10, w: textEm(w.n) * 11 + 4, hgt: 11 * 1.25, gap: 3 };
-    })
-    .filter(it => it.x > 10 && it.x < W - 10 && it.y > 10 && it.y < H - 10);
-  wItems.forEach(it => obstacles.push({ x0: it.x - 10, x1: it.x + 10, y0: it.y - 10, y1: it.y + 10 }));
   // 지도 오른쪽 위 확대 버튼 자리도 피해요
   obstacles.push({ x0: W - 54, x1: W, y0: 0, y1: 96 });
   const hItems = hp.map(g => ({
@@ -542,7 +528,7 @@ function rgOverlay() {
     hgt: 12.5 * 1.25,
     gap: 3
   }));
-  placeLabels([...hItems, ...items.filter(i => i.on), ...wItems, ...items.filter(i => !i.on)], obstacles, {
+  placeLabels([...hItems, ...items.filter(i => i.on), ...items.filter(i => !i.on)], obstacles, {
     x0: 2,
     x1: W - 2,
     y0: 2,
@@ -570,7 +556,6 @@ function rgOverlay() {
       <svg x="-7.5" y="-26.5" width="15" height="15" viewBox="0 0 24 24" class="hpin-ic">${ICON.home}</svg>
       <text class="hpin-t" x="${f1(t.tx - g.x)}" y="${f1(t.ty - g.y)}" style="text-anchor:${t.ax}">${esc(g.lab)}</text></g>`;
   });
-  wItems.forEach(it => (h += wishPinSVG(it, 1)));
   R.ov.innerHTML = `<svg class="rg-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${h}</svg>`;
 }
 // 2단계 지도의 숙소 핀 (같은 자리면 하나로 합쳐요)
@@ -1116,9 +1101,227 @@ function dmOverlay() {
   R.ov.innerHTML = `<svg class="rg-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${h}</svg>`;
 }
 // 걷기 추천 지도
+// ======================================================================
+// ★ 걷기 추천 지도 (이동 방법 시트 「걸어가는 길에 들를 만한 곳」) — 지도 탭과 같은 진짜 지도.
+//    걷는 길(점선)·길 양옆 범위(연한 초록)는 지도 위에, 번호 핀·출발/도착은 앱이 위에 그려요.
+// ======================================================================
+let WMV = null;
+function wmDrop() {
+  if (!WMV) return;
+  try {
+    if (WMV.map) WMV.map.remove();
+  } catch (_) {}
+  WMV = null;
+}
 function drawWalk(el) {
   const sh = S.sheet;
   if (!sh || !sh.recs || sh.recs.err) return;
+  if (rgMode() === 'vector') return wmVector(el, sh);
+  if (WMV) wmDrop();
+  el.classList.remove('vector');
+  drawWalkSvg(el, sh);
+}
+function wmVector(el, sh) {
+  const key = `${hpDark() ? 'd' : 'l'}${LANG}`;
+  if (WMV && (WMV.key !== key || WMV.R !== sh.recs)) wmDrop();
+  if (!WMV) {
+    const box = document.createElement('div'),
+      gl = document.createElement('div'),
+      ov = document.createElement('div');
+    box.className = 'rg-vmap';
+    gl.className = 'rg-gl';
+    ov.className = 'rg-ov';
+    box.append(gl, ov);
+    WMV = { key, R: sh.recs, box, gl, ov, map: null };
+    loadMapLibre().then(wmInit).catch(rgFail);
+  }
+  el.classList.add('vector');
+  if (WMV.box.parentNode !== el) {
+    el.innerHTML = '';
+    el.appendChild(WMV.box);
+  }
+  if (WMV.map) {
+    WMV.map.resize();
+    wmOverlay();
+  }
+}
+// 출발·도착·추천 장소가 다 보이는 범위
+function wmBounds(R) {
+  const pts = [R.A, R.B, ...R.recs.map(r => r.s)],
+    lats = pts.map(p => p.lat),
+    lngs = pts.map(p => p.lng);
+  return [
+    [Math.min(...lngs) - 0.0012, Math.min(...lats) - 0.0009],
+    [Math.max(...lngs) + 0.0012, Math.max(...lats) + 0.0009]
+  ];
+}
+// 걷는 길(곧은 선)과 길 양옆 범위(양끝이 둥근 띠)
+function wmGeo(R) {
+  const A0 = R.A,
+    x = p => (p.lng - A0.lng) * KX,
+    y = p => (p.lat - A0.lat) * KY,
+    back = (px, py) => [A0.lng + px / KX, A0.lat + py / KY],
+    bx = x(R.B),
+    by = y(R.B),
+    th = Math.atan2(by, bx),
+    r = R.corridor,
+    ring = [];
+  for (let i = 0; i <= 16; i++) {
+    const a = th + Math.PI / 2 + (Math.PI * i) / 16;
+    ring.push(back(r * Math.cos(a), r * Math.sin(a)));
+  }
+  for (let i = 0; i <= 16; i++) {
+    const a = th - Math.PI / 2 + (Math.PI * i) / 16;
+    ring.push(back(bx + r * Math.cos(a), by + r * Math.sin(a)));
+  }
+  ring.push(ring[0]);
+  return {
+    type: 'FeatureCollection',
+    features: [
+      { type: 'Feature', properties: { k: 'corr' }, geometry: { type: 'Polygon', coordinates: [ring] } },
+      {
+        type: 'Feature',
+        properties: { k: 'walk' },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [A0.lng, A0.lat],
+            [R.B.lng, R.B.lat]
+          ]
+        }
+      }
+    ]
+  };
+}
+function wmInit(gl) {
+  const V = WMV;
+  if (!V || V.map) return;
+  const R = V.R;
+  let map;
+  try {
+    map = new gl.Map({
+      container: V.gl,
+      style: HP_STYLE,
+      bounds: wmBounds(R),
+      fitBoundsOptions: { padding: { top: 30, bottom: 30, left: 30, right: 30 }, maxZoom: 16.5 },
+      minZoom: 10,
+      maxZoom: 18,
+      dragRotate: false,
+      pitchWithRotate: false,
+      touchPitch: false,
+      attributionControl: { compact: true },
+      fadeDuration: 0
+    });
+  } catch (e) {
+    rgFail();
+    return;
+  }
+  map.touchZoomRotate.disableRotation();
+  V.map = map;
+  map.on('load', () => {
+    if (WMV !== V) return;
+    V.loaded = true;
+    try {
+      hpVecStyle(map);
+      hpVecOverlay(map);
+      if (map.getLayer('fk-st-label')) map.setLayerZoomRange('fk-st-label', 15, 24);
+      const C = hpPalette(),
+        green = MODE.walk.color;
+      map.addSource('wm', { type: 'geojson', data: wmGeo(R) });
+      map.addLayer({
+        id: 'wm-corr',
+        type: 'fill',
+        source: 'wm',
+        filter: ['==', ['get', 'k'], 'corr'],
+        paint: { 'fill-color': green, 'fill-opacity': hpDark() ? 0.16 : 0.12 }
+      });
+      map.addLayer({
+        id: 'wm-halo',
+        type: 'line',
+        source: 'wm',
+        filter: ['==', ['get', 'k'], 'walk'],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': C.halo, 'line-width': 9, 'line-opacity': 0.9 }
+      });
+      map.addLayer({
+        id: 'wm-walk',
+        type: 'line',
+        source: 'wm',
+        filter: ['==', ['get', 'k'], 'walk'],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': green, 'line-width': 5, 'line-dasharray': [0.01, 1.7] }
+      });
+    } catch (e) {
+      console.warn('walk map style', e);
+    }
+    wmOverlay();
+  });
+  setTimeout(() => {
+    if (WMV === V && !V.loaded) rgFail();
+  }, 10000);
+  map.on('move', wmOverlay);
+  map.on('resize', wmOverlay);
+}
+// 번호 핀(고르면 주황)·출발/도착 이름표
+function wmOverlay() {
+  const V = WMV,
+    sh = S.sheet;
+  if (!V || !V.map || !sh || sh.recs !== V.R) return;
+  const map = V.map,
+    R = V.R,
+    W = V.box.clientWidth,
+    H = V.box.clientHeight;
+  if (!W || !H) return;
+  const pins = R.recs.map((r, k) => {
+    const q = map.project([r.s.lng, r.s.lat]);
+    return { k, r, ox: q.x, oy: q.y, x: q.x, y: q.y, on: sh.picks.includes(r.s.id) };
+  });
+  // 겹치는 번호 핀은 살짝 펼쳐요
+  for (let it = 0; it < 40; it++) {
+    let moved = false;
+    for (let a = 0; a < pins.length; a++)
+      for (let b = a + 1; b < pins.length; b++) {
+        const P1 = pins[a],
+          P2 = pins[b];
+        let dx = P2.x - P1.x,
+          dy = P2.y - P1.y,
+          d = Math.hypot(dx, dy);
+        if (d < 25) {
+          if (d < 0.01) {
+            dx = Math.cos(b);
+            dy = Math.sin(b);
+            d = 1;
+          }
+          const m = (25 - d) / 2;
+          P1.x -= (dx / d) * m;
+          P1.y -= (dy / d) * m;
+          P2.x += (dx / d) * m;
+          P2.y += (dy / d) * m;
+          moved = true;
+        }
+      }
+    if (!moved) break;
+  }
+  let h = '';
+  pins.forEach(q => {
+    if (Math.hypot(q.x - q.ox, q.y - q.oy) > 3)
+      h += `<line class="np-lead" x1="${f1(q.ox)}" y1="${f1(q.oy)}" x2="${f1(q.x)}" y2="${f1(q.y)}"/><circle class="np-dot" cx="${f1(q.ox)}" cy="${f1(q.oy)}" r="2.5"/>`;
+  });
+  [
+    [R.A, L('출발', '出発')],
+    [R.B, L('도착', '到着')]
+  ].forEach(([pt, t]) => {
+    const q = map.project([pt.lng, pt.lat]),
+      w = textEm(t) * 11.5 + 18;
+    h += `<g class="ab-pin" transform="translate(${f1(q.x)},${f1(q.y)})"><rect x="${f1(-w / 2)}" y="-11" width="${f1(w)}" height="22" rx="11"/><text y="4">${t}</text></g>`;
+  });
+  pins.forEach(q => {
+    h += `<g class="rpin${q.on ? ' on' : ''}" data-act="recToggle" data-id="${q.r.s.id}" transform="translate(${f1(q.x)},${f1(q.y)})" role="button" tabindex="0" aria-pressed="${q.on}" aria-label="${q.k + 1}. ${esc(q.r.s.n)}"><circle r="12"/><text y="4">${q.k + 1}</text></g>`;
+  });
+  V.ov.innerHTML = `<svg class="rg-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${L('걷는 길 추천 지도', '歩く道のおすすめ地図')}">${h}</svg>`;
+}
+// 진짜 지도를 못 불러올 때: 앱이 그린 안내 지도
+function drawWalkSvg(el, sh) {
   const W = el.clientWidth,
     H = el.clientHeight;
   if (!W || !H) return;

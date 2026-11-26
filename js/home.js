@@ -313,7 +313,7 @@ function heroV(f) {
   return `<section class="hero t-${sc}${stock ? ' has-photo' : ''}">
     ${stock ? `<img class="hero-img stock" src="${hp.src}" alt="${esc(hp.altT)}">` : heroSVG()}
     <div class="hero-shade"></div>
-    <div class="hero-top"><span class="brand light">${logoSVG()}후쿠오카 플래너</span><span class="ht-r">${langBtn(true)}</span></div>
+    <div class="hero-top"><span class="brand light">${logoSVG()}후쿠오카 플래너</span><span class="ht-r">${themeBtn(true)}${langBtn(true)}</span></div>
     <div class="hero-txt">${txt}</div>
   </section>`;
 }
@@ -399,19 +399,60 @@ function shHead(t, p) {
 }
 
 // 시트: 공항 → 시내
+// 공항에서 갈 곳: 내 숙소(계획에 넣은 숙소) · 숙소 동네 · 역 근처
+function airDest(sh) {
+  if (sh.h === 'me' && sh.me) return { ...hotelPt(sh.me), n: sh.me.name || `숙소 (${hotelWhere(sh.me)} 근처)` };
+  if (String(sh.h).startsWith('st:')) {
+    const id = sh.h.slice(3);
+    return { ...hotelPt({ st: id }), n: `${STATIONS[id].n}역 근처 숙소` };
+  }
+  return { ...PLACES.hotel[sh.h], n: `${HOTEL_LABEL[sh.h]} 숙소` };
+}
+// 「다른 역」을 누르면 나오는 역 목록 (노선별, 동네 버튼과 같은 역·공항역은 빼요)
+function airStationsV(sh) {
+  const skip = new Set([...Object.values(HOTEL_STATION), 'airport']),
+    seen = new Set();
+  return `<div class="air-st">${Object.values(LINES)
+    .map(ln => {
+      const ids = ln.st.filter(id => !skip.has(id) && !seen.has(id));
+      ids.forEach(id => seen.add(id));
+      return ids.length
+        ? `<p class="hp-line"><i style="--m:${ln.color}"></i>${esc(LANG === 'ja' ? ln.j : ln.n)}</p><div class="chips-sel hp-st">${ids
+            .map(id => {
+              const on = sh.h === 'st:' + id;
+              return `<button class="${on ? 'on' : ''}" data-act="airHotel" data-v="st:${id}" aria-pressed="${on}">${esc(LANG === 'ja' ? STATIONS[id].j : STATIONS[id].n)}</button>`;
+            })
+            .join('')}</div>`
+        : '';
+    })
+    .join('')}</div>`;
+}
 function airSheetV(sh) {
   const A = PLACES.airport,
-    B = { ...PLACES.hotel[sh.h], n: `${HOTEL_LABEL[sh.h]} 숙소` };
+    B = airDest(sh),
+    isSt = String(sh.h).startsWith('st:'),
+    more = sh.more || isSt;
   const opts = legOptions(A, B),
     sel = sh.o || (opts.find(o => o.mode === 'subway') || opts[0]).id;
+  const chip = (v, t, on, act = 'airHotel') =>
+    `<button class="${on ? 'on' : ''}" data-act="${act}" data-v="${v}" aria-pressed="${on}">${t}</button>`;
   return (
-    shHead('공항에서 시내로', '국제선 터미널에 내린 기준이에요. 숙소 동네를 골라 주세요.') +
-    `<div class="chips-sel">${Object.entries(HOTEL_LABEL)
-      .map(
-        ([k, v]) =>
-          `<button class="${sh.h === k ? 'on' : ''}" data-act="airHotel" data-v="${k}" aria-pressed="${sh.h === k}">${v}</button>`
-      )
-      .join('')}</div>
+    shHead('공항에서 시내로', L('국제선 터미널에 내린 기준이에요. 숙소 동네나 가까운 역을 골라 주세요.', '国際線ターミナルに着いた場合です。宿のエリアか最寄り駅を選んでください。')) +
+    `<div class="chips-sel">${
+      sh.me
+        ? chip('me', `${ic('home')}${esc(L(`내 숙소 · ${sh.me.name || hotelWhere(sh.me)}`, `自分の宿 · ${sh.me.name || hotelWhereJ(sh.me)}`))}`, sh.h === 'me')
+        : ''
+    }${Object.entries(HOTEL_LABEL)
+      .map(([k, v]) => chip(k, v, sh.h === k))
+      .join('')}${chip(
+      'more',
+      isSt
+        ? `${esc(L(`${STATIONS[sh.h.slice(3)].n}역`, `${STATIONS[sh.h.slice(3)].j}駅`))} ${ic(more ? 'up' : 'down')}`
+        : `${L('다른 역', 'ほかの駅')} ${ic(more ? 'up' : 'down')}`,
+      isSt,
+      'airMore'
+    )}</div>
+    ${more ? airStationsV(sh) : ''}
     <p class="note">${ic('plane')}<span>국제선 터미널에는 지하철역이 없어요. 무료 셔틀버스로 국내선 터미널(지하철역)까지 가거나, 터미널 앞에서 바로 버스·택시를 타요.</span></p>
     <div class="aopts">${opts
       .map(o => {
@@ -424,7 +465,7 @@ function airSheetV(sh) {
           : [];
         return `<div class="aopt${on ? ' on' : ''}"><button class="opt${on ? ' on' : ''}" data-act="airOpt" data-o="${o.id}" aria-expanded="${on}">
           ${modeIc(o.mode)}<span class="ob"><span class="o1"><b>${MODE[o.mode].n}</b>${o.mode === 'subway' ? '<span class="tag cheap">가장 쌈</span>' : o.mode === 'taxi' ? '<span class="tag fast">가장 빠름</span>' : ''}</span>
-          <span class="o2"><b>${o.min}분</b><em>${ft}</em></span><span class="ol">${esc(o.label)}</span></span>${ic(on ? 'up' : 'down', 'chev')}</button>
+          <span class="o2"><b>${o.min}분</b><em>${ft}</em></span>${optLabel(o) ? `<span class="ol">${esc(optLabel(o))}</span>` : ''}</span>${ic(on ? 'up' : 'down', 'chev')}</button>
         ${on ? `<ol class="gsteps">${steps.map(stepHTML).join('')}</ol>` : ''}</div>`;
       })
       .join('')}</div>
@@ -439,57 +480,82 @@ const PASSES = [
     p: () => `하루 최대 ${yen(FARE.subwayCap)}`,
     ok: '지하철을 하루 3번 넘게 타면 저절로 이득',
     d: 'Visa·Mastercard·JCB 등 컨택리스 카드를 개찰구에 대기만 하면 돼요. 표를 따로 살 필요가 없어요.',
-    ic: 'card'
+    ic: 'card',
+    url: ['https://gofukuoka.jp/articles/detail/3dcb93e5-7367-47e3-b16c-e0b00f29fd5f', 'https://subway.city.fukuoka.lg.jp/'],
+    pl: ['en', 'ja']
   },
   {
     t: '지하철 1일권',
     p: () => yen(FARE.subwayCap),
     ok: '터치 결제 카드가 없을 때',
     d: '역 발매기에서 사요. 카드 터치 상한과 값이 같아요.',
-    ic: 'subway'
+    ic: 'subway',
+    url: ['https://subway.city.fukuoka.lg.jp/kor/fare/one', 'https://subway.city.fukuoka.lg.jp/'],
+    pl: ['ko', 'ja']
   },
   {
     t: '투어리스트 시티패스',
     p: () => `${yen(FARE.cityPass)} · 다자이후 포함 ${yen(FARE.cityPassDz)}`,
     ok: '다자이후를 오가거나 지하철·버스를 많이 타는 날',
     d: '지하철·니시테츠 버스·니시테츠 전철·시영 도선이 하루 무제한. 외국인 여행자 전용이라 여권이 필요해요.',
-    ic: 'wallet'
+    ic: 'wallet',
+    url: ['https://yokanavi.com/en/tourist-city-pass/', 'https://yokanavi.com/en/tourist-city-pass/'],
+    pl: ['en', 'en']
   },
   {
     t: '니시테츠 버스 1일권',
     p: () => `약 ${yen(FARE.busDay)}`,
     ok: '버스만 여러 번 타는 날',
     d: '시내버스 하루 무제한이에요.',
-    ic: 'bus'
+    ic: 'bus',
+    url: ['https://www.nishitetsu.jp/kr/1daypass/', 'https://www.nishitetsu.jp/en/ticket/1daypass/'],
+    pl: ['ko', 'en']
   },
   {
     t: '다자이후·야나가와 관광 티켓',
     p: () => yen(FARE.dzYanagawa),
     ok: '하루에 다자이후와 야나가와를 한 방향으로 돌 때',
     d: '니시테츠 전철과 야나가와 뱃놀이가 들어 있어요. 텐진 → 다자이후 → 야나가와 → 텐진 순서로만 쓸 수 있어요.',
-    ic: 'train'
+    ic: 'train',
+    url: ['https://www.crossroadfukuoka.jp/feature/dazaifu_yanagawa', 'https://www.crossroadfukuoka.jp/feature/dazaifu_yanagawa'],
+    pl: ['ja', 'ja']
   },
   {
     t: 'JR 큐슈 레일패스 북큐슈 3일',
     p: () => yen(FARE.jrNorth3),
     ok: '유후인·벳푸·모지코 같은 먼 곳을 3일 안에 2곳 넘게',
     d: '외국인 여행자 전용. 특급·규슈 신칸센 포함, 하카타~고쿠라 신칸센은 빠져요.',
-    ic: 'train'
+    ic: 'train',
+    url: ['https://www.jrkyushu.co.jp/korean/railpass/railpass.html', 'https://www.jrkyushu.co.jp/english/railpass/railpass.html'],
+    pl: ['ko', 'en']
   },
   {
     t: 'SUNQ 패스 북큐슈 3일',
     p: () => yen(FARE.sunq3),
     ok: '고속버스로 유후인·벳푸를 다녀올 때',
     d: '북큐슈 고속버스·시내버스 3일 무제한. 고속버스는 좌석 예약이 필요해요.',
-    ic: 'bus'
+    ic: 'bus',
+    url: ['https://www.sunqpass.jp/kr/', 'https://www.sunqpass.jp/'],
+    pl: ['ko', 'ja']
   }
 ];
-// 시트: 교통 패스
+// 패스 카드 아래 「공식 안내」 줄. 화면 언어와 다른 쪽이면 (영어)처럼 붙여요
+const PASS_LANG = { ko: ['한국어', '韓国語'], ja: ['일본어', '日本語'], en: ['영어', '英語'] };
+function passLink(x) {
+  const k = LANG === 'ja' ? 1 : 0,
+    pl = x.pl[k],
+    tag = pl === (LANG === 'ja' ? 'ja' : 'ko') ? '' : ` <i>· ${L(PASS_LANG[pl][0], PASS_LANG[pl][1])}</i>`;
+  return { href: x.url[k], line: `<span class="ps-go">${L('공식 안내 보기', '公式サイトで見る')}${tag}${ic('out')}</span>` };
+}
+// 시트: 교통 패스 (카드를 누르면 그 패스의 공식 안내 페이지가 새 창으로 열려요)
 function passSheetV() {
   const f = sortedPlans()[0];
   return (
-    shHead('교통 패스 한눈에', '어른 1명 기준 · 가격은 바뀔 수 있어요') +
-    `<ul class="passl">${PASSES.map(x => `<li><span class="ps-ic">${ic(x.ic)}</span><span class="rb"><span class="ps-t"><b>${x.t}</b><em>${x.p()}</em></span><span class="ps-ok">${ic('check')}${x.ok}</span><small>${x.d}</small></span></li>`).join('')}</ul>
+    shHead('교통 패스 한눈에', L('어른 1명 기준 · 가격은 바뀔 수 있어요. 누르면 공식 안내가 열려요', '大人1人分 · 料金は変わることがあります。タップで公式サイトが開きます')) +
+    `<ul class="passl">${PASSES.map(x => {
+      const g = passLink(x);
+      return `<li><a href="${g.href}" target="_blank" rel="noopener"><span class="ps-ic">${ic(x.ic)}</span><span class="rb"><span class="ps-t"><b>${x.t}</b><em>${x.p()}</em></span><span class="ps-ok">${ic('check')}${x.ok}</span><small>${x.d}</small>${g.line}</span></a></li>`;
+    }).join('')}</ul>
     <div class="sh-foot col">${f ? `<button class="btn pri" data-act="openPlan" data-id="${f.id}" data-tab="fare">${ic('wallet')}'${esc(f.title)}' 일정으로 계산해 보기</button>` : `<button class="btn pri" data-act="newPlan">${ic('plus')}계획 세우고 내 일정으로 계산하기</button>`}</div>`
   );
 }
@@ -579,7 +645,7 @@ function areaSheetV(sh) {
     <ul class="ar-top">${top
       .map(
         s =>
-          `<li class="wl-row"><button class="ar-tc" data-act="spotSheet" data-id="${s.id}">${catTile(s.c)}<span class="ar-tt"><b>${esc(s.n)}</b><small>${esc(firstSentence(s.d))}</small></span><span class="ar-time">${dur(s.s)}</span></button>${wishStar(s)}</li>`
+          `<li><button class="ar-tc" data-act="spotSheet" data-id="${s.id}">${catTile(s.c)}<span class="ar-tt"><b>${esc(s.n)}</b><small>${esc(firstSentence(s.d))}</small></span><span class="ar-time">${dur(s.s)}</span></button>${wishPlusBtn(s.id)}</li>`
       )
       .join('')}</ul>
     ${
@@ -601,14 +667,14 @@ function areaSheetV(sh) {
     <ul class="ar-list">${shown
       .map(
         s =>
-          `<li class="wl-row"><button class="arl-b" data-act="spotSheet" data-id="${s.id}"><i class="arl-dot c-${s.c}"></i><span class="arl-n">${esc(s.n)}</span><span class="arl-m"><span>${CATS[s.c].n}</span> · <span>${dur(s.s)}</span></span>${ic('next', 'chev')}</button>${wishStar(s)}</li>`
+          `<li><button class="arl-b" data-act="spotSheet" data-id="${s.id}"><i class="arl-dot c-${s.c}"></i><span class="arl-n">${esc(s.n)}</span><span class="arl-m"><span>${CATS[s.c].n}</span> · <span>${dur(s.s)}</span></span>${ic('next', 'chev')}</button>${wishPlusBtn(s.id)}</li>`
       )
       .join('')}</ul>`
         : ''
     }
-    <p class="ar-tip">${L('이름을 누르면 설명·가는 법·일본어 이름이 나와요', '名前を押すと説明・行き方・日本語名が出ます')}</p>
+    <p class="ar-tip">${L('＋를 누르면 「가고 싶은 곳」에 담겨요 · 이름을 누르면 설명·가는 법·일본어 이름이 나와요', '＋を押すと「行きたい所」に入ります · 名前を押すと説明・行き方・日本語名が出ます')}</p>
     ${ph ? `<p class="ph-cr">${L('사진', '写真')} <a href="https://unsplash.com/photos/${AREA_PHOTOS[a.id][1]}" target="_blank" rel="noopener">${AREA_PHOTOS[a.id][0]}</a> · Unsplash</p>` : ''}
-    <div class="sh-foot"><button class="btn soft" data-act="closeSheet">닫기</button>${wishAreaBtn(a.id)}</div>`
+    <div class="sh-foot"><button class="btn soft" data-act="closeSheet">닫기</button><button class="btn pri" data-act="planArea" data-id="${a.id}">${L('이 동네로 계획 세우기', 'このエリアで計画を作る')}</button></div>`
   );
 }
 // 설명의 첫 문장만 (동네 둘러보기의 짧은 소개). 일본어 화면은 옮긴 뒤 자르기
@@ -670,13 +736,22 @@ function wireHero() {
 
 Object.assign(A, {
   airSheet() {
-    const f = sortedPlans()[0];
-    S.sheet = { type: 'air', h: f ? hotelKeyOf(nightHotel(f, 0)) : 'hakata', o: null };
+    // 다가오는 계획에 숙소를 정해 뒀으면(이름·핀·역) 「내 숙소」를 먼저 골라 둬요
+    const f = sortedPlans()[0],
+      h = f ? nightHotel(f, 0) : null,
+      me = h && (hotelPin(h) || h.st || h.name) ? clone(h) : null;
+    S.sheet = { type: 'air', h: me ? 'me' : h ? hotelKeyOf(h) : 'hakata', me, o: null };
     render();
   },
   airHotel(d) {
     S.sheet.h = d.v;
     S.sheet.o = null;
+    if (!String(d.v).startsWith('st:')) S.sheet.more = false;
+    S.keepSheetScroll = true;
+    render();
+  },
+  airMore() {
+    S.sheet.more = !(S.sheet.more || String(S.sheet.h).startsWith('st:'));
     S.keepSheetScroll = true;
     render();
   },
@@ -1127,6 +1202,15 @@ Object.assign(A, {
 if (IS_APP && navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
 Object.assign(A, {
+  toggleTheme() {
+    THEME = isDark() ? 'light' : 'dark';
+    lsSet('fk-theme', THEME);
+    applyTheme();
+    const y = window.scrollY;
+    S.keepSheetScroll = true;
+    render();
+    window.scrollTo(0, y);
+  },
   toggleLang() {
     LANG = LANG === 'ja' ? 'ko' : 'ja';
     lsSet('fk-lang', LANG);
@@ -1238,11 +1322,10 @@ function spotSheetV(sh) {
     ? inDay >= 0
       ? `<span class="btn soft in-day">${ic('check')}${L(`${inDay + 1}일차 일정에 있어요`, `${inDay + 1}日目の予定に入っています`)}</span>`
       : `<button class="btn pri" data-act="spotAdd" data-id="${s.id}">${ic('plus')}${L(`${S.di + 1}일차에 넣기`, `${S.di + 1}日目に入れる`)}</button>`
-    : wishSpotBtn(s.id);
+    : `<button class="btn pri" data-act="planArea" data-id="${s.a}">${L('이 동네로 계획 세우기', 'プランを作る')}</button>`;
   return `<div class="sp-hero" style="--c1:${c1};--c2:${c2}">
       <span class="sp-cat">${ic(s.c)}${LANG === 'ja' ? NAME_JA_CAT[s.c] : CATS[s.c].n}</span>
       <span class="sp-ja" lang="ja">${esc(s.j)}</span>
-      ${wishStar(s, 'sp-star')}
       <button class="ib sm sp-x" data-act="closeSheet" aria-label="${L('닫기', '閉じる')}">${ic('close')}</button>
     </div>
     <div class="sp-h"><h2>${esc(LANG === 'ja' ? s.j : s.n)}</h2><p>${LANG === 'ja' ? AREA_JA[s.a] || a.n : a.n}${s.g ? L(' · 여러 가게 중 골라서', ' · 何軒かから選べます') : ''}</p></div>
@@ -1279,7 +1362,7 @@ function spotSheetV(sh) {
             )
           : [];
         return `<div class="aopt${on ? ' on' : ''}"><button class="opt${on ? ' on' : ''}" data-act="spotOpt" data-o="${o.id}" aria-expanded="${on}">
-          ${modeIc(o.mode)}<span class="ob"><span class="o1"><b>${MODE[o.mode].n}</b></span><span class="o2"><b>${dur(o.min)}</b>${ft ? `<em>${ft}</em>` : ''}</span><span class="ol">${esc(o.label)}</span></span>${ic(on ? 'up' : 'down', 'chev')}</button>
+          ${modeIc(o.mode)}<span class="ob"><span class="o1"><b>${MODE[o.mode].n}</b></span><span class="o2"><b>${dur(o.min)}</b>${ft ? `<em>${ft}</em>` : ''}</span>${optLabel(o) ? `<span class="ol">${esc(optLabel(o))}</span>` : ''}</span>${ic(on ? 'up' : 'down', 'chev')}</button>
         ${on ? `<ol class="gsteps">${steps.map(stepHTML).join('')}</ol>` : ''}</div>`;
       })
       .join('')}</div>

@@ -4,7 +4,7 @@
 // ======================================================================
 const IS_APP = true;
 // 배포 묶음 표시: index.html 의 ?v= 값, motion.js 의 MOTION_VERSION 과 같아야 해요 (파일을 고치면 세 곳을 함께 올려요)
-const APP_VERSION = '2026.11.26-4';
+const APP_VERSION = '2026.11.26-5';
 
 // ---- 첫 화면 등장 효과 (motion.js) ----
 // INTRO_MODE: 앱을 처음 열 때 표지가 나타나는 방식 (한 번만)

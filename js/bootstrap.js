@@ -1,12 +1,13 @@
 // ======================================================================
 // bootstrap.js · 모든 파일을 다 불러온 다음 맨 마지막에 한 번 실행해요
 // 원래 index.html 맨 끝에 있던 첫 실행 순서를 그대로 옮겼어요.
-//   applyLang() → startTr() → render() → store.init()
+//   applyLang() → applyTheme() → startTr() → render() → store.init()
 // 공유 링크(#share=) 첫 확인도 여기서 해요. (예전엔 home.js 가운데에 있어서,
 // 파일을 나누면 다른 파일이 준비되기 전에 실행될 수 있었어요)
 // hashchange 감시는 home.js 에서 한 번만 등록해요. 여기서 또 등록하지 않아요.
 // ======================================================================
 applyLang();
+applyTheme(); // 밝은/어두운 화면 (ui.js)
 startTr();
 render();
 store.init();
