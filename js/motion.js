@@ -9,6 +9,66 @@
 // 세기·속도는 config.js 의 MOTION 에서 바꿔요. render() (ui.js) 가 앞뒤로 motionBefore / motionAfter 를 불러요
 // ======================================================================
 
+// ---------------------------------------------------------------- 설정값 점검 (가장 먼저)
+// config.js 가 예전 것이거나 값이 비었거나 잘못돼도(빈 값·NaN·음수·글자) 움직임이 앱을 멈추지 않게 기본값으로 채워요.
+// 0 처럼 「일부러 넣은 올바른 값」은 그대로 둬요. 무엇을 고쳤는지는 MV_CFG_ISSUES 에 남겨요 (dev/motion-check.html 에서 보여요)
+const MOTION_VERSION = '2026.11.26-2';
+const MV_DEFAULTS = {
+  foldMs: 950, foldStagger: 80, foldAngle: 72, softMs: 450, softShift: 14, photoWait: 1200,
+  pageMs: 300, pageShift: 24, tabMs: 260, tabShift: 18, subMs: 240, subShift: 12,
+  sheetMs: 300, sheetRise: 48, sheetInnerMs: 240, sheetInnerShift: 16,
+  expandMs: 220, panelMs: 240, noteMs: 220, outPart: 0.6, inDelay: 0, gateMax: 150,
+  ease: 'cubic-bezier(.25, .7, .3, 1)', easeOut: 'cubic-bezier(.2, .6, .4, 1)'
+};
+// 허용 범위 [최소, 최대] (시간 ms · 거리 px · 비율)
+const MV_RANGE = {
+  foldAngle: [0, 89], outPart: [0.05, 1], inDelay: [0, 1000], gateMax: [16, 1000], photoWait: [0, 10000],
+  foldStagger: [0, 1000], softShift: [0, 200], pageShift: [0, 200], tabShift: [0, 200], subShift: [0, 200], sheetRise: [0, 400], sheetInnerShift: [0, 200]
+};
+const MV_CFG_ISSUES = [];
+if (typeof MOTION === 'undefined' || !MOTION || typeof MOTION !== 'object') {
+  window.MOTION = {};
+  MV_CFG_ISSUES.push('MOTION 없음 → 기본값 사용');
+}
+(function mvNormalize() {
+  const okEase = v => typeof v === 'string' && v.trim() && (!window.CSS || !CSS.supports || CSS.supports('transition-timing-function', v));
+  Object.keys(MV_DEFAULTS).forEach(k => {
+    const d = MV_DEFAULTS[k],
+      v = MOTION[k];
+    if (typeof d === 'string') {
+      if (!okEase(v)) {
+        if (v !== undefined) MV_CFG_ISSUES.push(`${k}: 잘못된 곡선 ${JSON.stringify(v)} → 기본값`);
+        else MV_CFG_ISSUES.push(`${k}: 없음 → 기본값`);
+        MOTION[k] = d;
+      }
+      return;
+    }
+    let n = typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN;
+    if (!Number.isFinite(n)) {
+      MV_CFG_ISSUES.push(v === undefined ? `${k}: 없음 → ${d}` : `${k}: 잘못된 값 ${typeof v === 'string' ? JSON.stringify(v) : String(v)} → ${d}`);
+      n = d;
+    }
+    const [lo, hi] = MV_RANGE[k] || [0, 5000]; // 시간 값은 0~5000ms
+    if (n < lo) {
+      // 음수 시간·거리처럼 아래로 벗어난 값은 실수로 보고 기본값으로 (0 은 「효과 없음」으로 일부러 쓸 수 있어 그대로 둬요)
+      MV_CFG_ISSUES.push(`${k}: ${n} 은 ${lo} 보다 작음 → ${d}`);
+      n = d;
+    } else if (n > hi) {
+      MV_CFG_ISSUES.push(`${k}: ${n} 은 너무 큼 → ${hi}`);
+      n = hi;
+    }
+    MOTION[k] = n;
+  });
+})();
+// 함께 배포된 파일인지 확인 (config.js 의 APP_VERSION 과 이 파일의 MOTION_VERSION). 다르면 「섞였을 수 있음」으로만 기록해요
+const MV_VERSION_NOTE =
+  typeof APP_VERSION === 'undefined' ? 'config.js 에 APP_VERSION 없음 (예전 config.js 일 수 있음)' : APP_VERSION !== MOTION_VERSION ? `버전 다름: config ${APP_VERSION} / motion ${MOTION_VERSION}` : '';
+if (MV_VERSION_NOTE) console.warn('[motion] ' + MV_VERSION_NOTE + (MV_CFG_ISSUES.length ? ' · 고친 설정: ' + MV_CFG_ISSUES.join(', ') : ''));
+// 예전 config.js 에 없을 수 있는 것들
+const MV_INTRO = typeof INTRO_MODE === 'string' && (INTRO_MODE === 'soft' || INTRO_MODE === 'fold3d') ? INTRO_MODE : 'fold3d';
+if (typeof scrollMode !== 'function')
+  window.scrollMode = () => (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
+
 const MQ_REDUCE = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 function motionReduced() {
   return !!MQ_REDUCE.matches;
@@ -56,7 +116,7 @@ const INTRO_STOP = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
 // 사진이 준비되면 그 사진으로 바로 등장 효과를 시작하고, 사진이 없거나 늦으면 그림으로 시작해요
 function introStart() {
   const R = motionReduced(),
-    mode = INTRO_MODE === 'soft' ? (R ? 'soft-r' : 'soft') : R ? 'none' : 'fold3d';
+    mode = MV_INTRO === 'soft' ? (R ? 'soft-r' : 'soft') : R ? 'none' : 'fold3d';
   INTRO.run = true;
   INTRO.mode = mode;
   INTRO.wait = true;
@@ -127,7 +187,10 @@ function introFinish() {
   if (typeof h3ShowReveal === 'function') h3ShowReveal();
 }
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) introFinish();
+  if (!document.hidden) return;
+  introFinish();
+  // 탭이 뒤로 숨으면 진행 중인 전환은 끝 모습으로 보내고 잔상을 치워요 (돌아왔을 때 투명·멈춤 상태가 남지 않게)
+  if (typeof mvCancel === 'function') mvCancel(true);
 });
 window.addEventListener('popstate', introFinish);
 window.addEventListener('hashchange', introFinish);
@@ -143,7 +206,7 @@ if (MQ_REDUCE.addEventListener) MQ_REDUCE.addEventListener('change', introFinish
 //   sel   : 일정 카드 펼치기·접기 (높이가 부드럽게)
 //   sheet : 열기 / 닫기 / 상세로 들어가기 / 이전으로 돌아오기 / 같은 종류 다른 내용 / 시트 안 탭
 // 빠르게 여러 번 누르면 진행 중인 효과는 바로 정리하고 마지막 목적지만 보여 줘요
-const MV = { last: null, plan: null, anims: [], ghosts: [], timers: [], live: null, opener: null };
+const MV = { last: null, plan: null, anims: [], ghosts: [], timers: [], live: null, opener: null, tok: 0, gate: null, temp: [], log: [], lastError: null };
 const MV_HOME = ['home', 'prep', 'areas', 'trips'],
   MV_PLAN = ['sched', 'map', 'guide', 'fare'],
   MV_SEG = ['city', 'outer', 'trip', 'wish'];
@@ -238,26 +301,119 @@ function mvClassify(a, b) {
 }
 
 // ---- 도우미 ----
+// 시작 문(gate): 한 번의 전환에서 만든 효과들은 「멈춘 채 시작 모습」으로 기다렸다가,
+// 새 화면이 실제로 한 번 그려진 다음 프레임에 함께 재생돼요(rAF 두 번). 무거운 첫 프레임 동안 효과 시간이 흘러가 버리지 않게.
+// 프레임이 안 오는 경우(뒤로 숨은 탭 등)를 위해 MOTION.gateMax 뒤에도 열어요 — 이건 멈춤 방지용 보조 장치예요.
+// 첫 프레임 붙잡기(MV_HOLD)는 시험 결과(같은 빌드에서 켜고 끄고 화면 녹화 비교) 눈에 띄는 차이가 없고
+// 첫 반응만 10~25ms 늦어질 때가 있어 기본으로 꺼 두었어요. 끄면 효과는 만든 즉시 재생되고, 문은 시간 기준으로만 써요
+const MV_HOLD = false;
+function mvGate() {
+  if (MV.gate && !MV.gate.done) return MV.gate;
+  if (!MV_HOLD) {
+    if (MV.gate && MV.gate.tok === MV.tok) return MV.gate;
+    const g = { tok: MV.tok, anims: { push() {} }, done: true, startedAt: performance.now(), open() {} };
+    MV.gate = g;
+    return g;
+  }
+  const g = { tok: MV.tok, anims: [], done: false, startedAt: 0, raf: 0, wd: 0 };
+  g.open = () => {
+    if (g.done) return;
+    g.done = true;
+    cancelAnimationFrame(g.raf);
+    clearTimeout(g.wd);
+    g.startedAt = performance.now();
+    g.anims.forEach(a => {
+      if (!a.__dead && a.playState === 'paused') a.play();
+    });
+    g.anims = [];
+  };
+  g.raf = requestAnimationFrame(() => (g.raf = requestAnimationFrame(g.open)));
+  g.wd = setTimeout(g.open, MOTION.gateMax);
+  MV.gate = g;
+  return g;
+}
+// 지금 진행 중인 전환이 실제로 몇 ms 재생됐는지 (아직 문이 안 열렸으면 0: 기다린 시간을 재생한 시간으로 치지 않아요)
+function mvPlayed(g) {
+  return g && g.done ? performance.now() - g.startedAt : 0;
+}
+// Web Animations 를 못 쓰는 브라우저용 대체: CSS 클래스로 짧게, 끝나면 'finish' 를 알려 줘요
+function mvFallback(el, out) {
+  const h = { playState: 'running', _l: { finish: [], cancel: [] }, onfinish: null, oncancel: null };
+  const fire = t => {
+    if (h.playState !== 'running') return;
+    h.playState = t === 'finish' ? 'finished' : 'idle';
+    el.classList.remove('mv-fb', 'mv-fb-out');
+    h._l[t].forEach(f => f());
+    if (h['on' + t]) h['on' + t]();
+  };
+  h.addEventListener = (t, f) => h._l[t] && h._l[t].push(f);
+  h.finish = () => fire('finish');
+  h.cancel = () => fire('cancel');
+  h.play = h.pause = () => {};
+  el.classList.remove('mv-fb', 'mv-fb-out');
+  void el.offsetWidth;
+  el.classList.add(out ? 'mv-fb-out' : 'mv-fb');
+  el.addEventListener('animationend', function f(e) {
+    if (e.target !== el) return;
+    el.removeEventListener('animationend', f);
+    fire('finish');
+  });
+  setTimeout(() => fire('finish'), 400); // animationend 가 안 와도 정리
+  return h;
+}
 function mvAnim(el, frames, ms, opt = {}) {
   if (!el) return null;
-  if (!el.animate) {
-    // Web Animations 를 못 쓰는 브라우저: 들어올 때만 CSS 로 짧게 흐려졌다 나타나기
-    if (frames[0] && frames[0].opacity === 0) {
-      el.classList.remove('mv-fb');
-      void el.offsetWidth;
-      el.classList.add('mv-fb');
+  let a;
+  try {
+    if (!el.animate) {
+      const first = frames[0] || {},
+        last = frames[frames.length - 1] || {};
+      const out = Number(last.opacity) === 0;
+      if (!out && Number(first.opacity ?? 1) >= 0.99) return null; // 대체 효과는 흐려짐만
+      a = mvFallback(el, out);
+    } else {
+      a = el.animate(frames, { duration: ms, easing: opt.easing || MOTION.ease, fill: opt.fill || 'backwards', delay: opt.delay || 0 });
+      // 이어 재생(음수 delay)은 이미 재생 중인 시간을 반영하니 문을 기다리지 않아요
+      if (!(opt.delay < 0) && !opt.now) {
+        const g = mvGate();
+        if (MV_HOLD) {
+          a.pause();
+          g.anims.push(a);
+        }
+      }
     }
+  } catch (e) {
+    mvReport('anim', e);
     return null;
   }
-  const a = el.animate(frames, { duration: ms, easing: opt.easing || MOTION.ease, fill: opt.fill || 'backwards', delay: opt.delay || 0 });
   MV.anims.push(a);
   const drop = () => {
     const i = MV.anims.indexOf(a);
     if (i >= 0) MV.anims.splice(i, 1);
   };
-  a.onfinish = drop;
-  a.oncancel = drop;
+  a.addEventListener('finish', drop);
+  a.addEventListener('cancel', drop);
   return a;
+}
+// 임시로 바꾼 스타일(높이 접기용 overflow 등)은 목록에 두었다가, 끝나거나 취소·오류 때 꼭 되돌려요
+function mvTemp(el, props) {
+  const keep = {};
+  Object.keys(props).forEach(k => {
+    keep[k] = el.style[k];
+    el.style[k] = props[k];
+  });
+  const t = { el, keep };
+  MV.temp.push(t);
+  return () => {
+    const i = MV.temp.indexOf(t);
+    if (i < 0) return;
+    MV.temp.splice(i, 1);
+    Object.assign(el.style, keep);
+  };
+}
+function mvReport(where, e) {
+  MV.lastError = { where, msg: String((e && e.message) || e), at: new Date().toISOString() };
+  console.error('[motion] ' + where + ' 오류 — 화면은 그대로 쓰고 효과만 건너뛰어요', e);
 }
 function mvLater(fn, ms) {
   const t = setTimeout(() => {
@@ -267,11 +423,32 @@ function mvLater(fn, ms) {
   MV.timers.push(t);
 }
 // 진행 중인 효과를 모두 정리 (새 전환이 시작될 때 · 동작 줄이기로 바뀔 때)
-function mvCancel() {
-  MV.anims.slice().forEach(a => a.cancel());
+// 이 앱의 전환이 만든 것만 정리해요 (첫 화면 등장 효과·배경 물결 같은 CSS 장식은 건드리지 않아요)
+// finish=true 면 끝 모습으로 보내고(탭 숨김 등), 아니면 취소해서 원래(최종) 스타일로 돌아가요
+function mvCancel(finish) {
+  if (MV.gate && !MV.gate.done) {
+    MV.gate.done = true;
+    cancelAnimationFrame(MV.gate.raf);
+    clearTimeout(MV.gate.wd);
+  }
+  MV.gate = null;
+  MV.anims.slice().forEach(a => {
+    a.__dead = true;
+    try {
+      finish ? a.finish() : a.cancel();
+    } catch (e) {
+      try {
+        a.cancel();
+      } catch (e2) {}
+    }
+  });
   MV.anims = [];
   MV.ghosts.forEach(g => g.el.remove());
   MV.ghosts = [];
+  MV.temp.slice().forEach(t => {
+    Object.assign(t.el.style, t.keep);
+  });
+  MV.temp = [];
   MV.timers.forEach(clearTimeout);
   MV.timers = [];
   MV.live = null;
@@ -301,6 +478,20 @@ function mvChanged(old, el, depth, out) {
     return out;
   }
   out.push(el);
+  return out;
+}
+// root 바로 아래(또는 조금 아래)에서 바뀐 「의미 있는 묶음」만 (root 전체·탭 줄·입력칸은 빼요)
+function mvChangedIn(old, root, depth) {
+  const out = [];
+  if (!old || !old.c) return out;
+  const kids = [...root.children];
+  kids.forEach((k, i) => {
+    const o = old.c[i];
+    if (k.matches(MV_SKIP) || k.classList.contains('handle')) return;
+    if (!o) return out.push(k);
+    if (depth > 1) mvChanged(o, k, depth - 2, out);
+    else if (mvHash(k.outerHTML) !== o.h) out.push(k);
+  });
   return out;
 }
 function mvHasFixed(el) {
@@ -359,12 +550,45 @@ function mvGhostDrop(g, ms) {
 
 // ---------------------------------------------------------------- render 바로 전
 function motionBefore() {
+  try {
+    mvBefore();
+  } catch (e) {
+    mvReport('motionBefore', e);
+    mvCancel();
+    MV.t = null;
+    MV.pres = null;
+    MV.out = null;
+  }
+}
+function motionAfter() {
+  try {
+    mvAfter();
+  } catch (e) {
+    mvReport('motionAfter', e);
+    // 쓸 수 있는 최종 화면으로: 남은 효과·잔상·임시 스타일 정리, 다음 비교를 위해 지금 상태 기록
+    mvCancel();
+    try {
+      MV.last = mvState();
+    } catch (e2) {
+      MV.last = null;
+    }
+    MV.t = MV.next = MV.out = MV.subSig = MV.shSig = MV.selH = MV.pres = null;
+    const w = document.getElementById('toasts');
+    if (w && MV.toasts) MV.toasts.forEach(x => w.appendChild(x));
+    MV.toasts = null;
+    if (INTRO.run) introFinish();
+  }
+}
+function mvBefore() {
   const cur = mvState(),
     t = mvClassify(MV.last, cur);
   MV.t = t;
   MV.next = cur;
   const busy = t.page || t.sub || t.sel || (t.sheet && t.sheet !== 'close');
-  if (busy || t.sheet === 'close') mvCancel();
+  if (busy || t.sheet === 'close') {
+    mvCancel();
+    MV.tok++; // 이 전환의 번호: 오래된 콜백은 번호가 달라 무시돼요
+  }
   // 알림(토스트)은 화면을 다시 그려도 사라지지 않게 데려가요
   MV.toasts = [...document.querySelectorAll('#toasts > .toast')];
   // 같은 화면·같은 창에서 일부만 바뀌는 경우: 새로 생기거나 없어지는 칸을 찾으려고 지금 모양을 기억
@@ -388,7 +612,7 @@ function motionBefore() {
   }
   if (t.sub) {
     const z = mvSubZone();
-    MV.subSig = z ? mvSig(z, 4) : null;
+    MV.subSig = z ? mvSig(z, 1) : null;
   }
   if (t.sel) {
     MV.selH = {};
@@ -400,7 +624,7 @@ function motionBefore() {
   const sh = mvSheet();
   if (sh && t.sheet && t.sheet !== 'open') {
     MV.shH = sh.offsetHeight;
-    if (t.sheet === 'in') MV.shSig = mvSig(sh, 4);
+    if (t.sheet === 'in') MV.shSig = mvSig(sh, 3);
   }
   if (t.sheet === 'close' && sh) {
     const sc = sh.previousElementSibling && sh.previousElementSibling.classList.contains('scrim') ? sh.previousElementSibling : null;
@@ -420,7 +644,7 @@ function mvSelector(a) {
 }
 
 // ---------------------------------------------------------------- render 바로 뒤
-function motionAfter() {
+function mvAfter() {
   const cur = MV.next || mvState(),
     prev = MV.last,
     t = MV.t || mvClassify(prev, cur);
@@ -448,20 +672,24 @@ function motionAfter() {
   MV.pres = null;
 
   if (t.page) mvPage(t, R);
-  else if (MV.live && !t.sub && !t.sheet && now - MV.live.t0 < MV.live.ms) {
-    // 전환 도중 데이터가 와서 같은 화면을 다시 그렸으면: 새로 생긴 칸에 남은 만큼 이어서
-    const L = MV.live;
-    mvZones().forEach(el => mvEnterEl(el, L.dx, L.ms, -(now - L.t0), R));
+  else if (MV.live && !t.sub && !t.sheet && mvPlayed(MV.live.g) < MV.live.ms) {
+    // 전환 도중 데이터가 와서 같은 화면을 다시 그렸으면: 새로 생긴 칸에 이어서
+    // 아직 시작 전이면 같은 문에서 함께 시작, 재생 중이면 재생된 만큼만 앞당겨서 (기다린 시간은 빼고)
+    const L = MV.live,
+      p = mvPlayed(L.g);
+    mvZones().forEach(el => mvEnterEl(el, L.dx, L.ms, L.g.done ? -p : 0, R));
   }
   if (t.sub) mvSub(t, R);
   if (t.sel) mvSel(prev, cur, R);
   if (t.sheet === 'open') mvSheetOpen(R);
   else if (t.sheet === 'close') mvSheetClose(R);
   else if (t.sheet) mvSheetMove(t, R);
-  else if (MV.shLive && cur.sh && now - MV.shLive.t0 < MOTION.sheetMs) {
-    // 시트가 올라오는 도중 다시 그려졌으면 이어서 올라오게
-    mvSheetOpen(R, -(now - MV.shLive.t0));
+  else if (MV.shLive && cur.sh && mvPlayed(MV.shLive.g) < MOTION.sheetMs) {
+    // 시트가 올라오는 도중 다시 그려졌으면 이어서 올라오게 (시작 전이면 같은 문에서)
+    const g = MV.shLive.g;
+    mvSheetOpen(R, g.done ? -mvPlayed(g) : 0, true);
   }
+  mvLog(t);
   MV.out = null;
   MV.subSig = null;
   MV.shSig = null;
@@ -521,22 +749,23 @@ function mvPage(t, R) {
       });
       if (an) an.addEventListener('finish', () => mvGhostKill(g));
     });
-    mvGhostDrop(g, ms + 400); // 혹시 끝 알림이 없을 때를 위한 안전장치
+    mvGhostDrop(g, ms + MOTION.gateMax + 400); // 혹시 끝 알림이 없을 때를 위한 안전장치
   }
   mvZones().forEach(el => mvEnterEl(el, dx, ms, R ? 0 : MOTION.inDelay, R));
-  MV.live = { t0: performance.now(), ms, dx };
+  MV.live = { g: mvGate(), ms, dx };
 }
 // 같은 화면 안 내용 바꾸기: 실제로 바뀐 칸만
 function mvSub(t, R) {
   const z = mvSubZone();
   if (!z) return;
-  const els = MV.subSig ? mvChanged(MV.subSig, z, 4, []) : [z];
+  // 글자 몇 개가 아니라 바뀐 묶음(일차 요약 카드, 일정 목록, 달력, 동네 목록)째로
+  const els = MV.subSig ? mvChangedIn(MV.subSig, z, 1) : [z];
   const dx = R ? 0 : t.dir * MOTION.subShift;
   els.forEach(el =>
     mvAnim(
       el,
-      dx ? [{ opacity: 0.2, transform: `translateX(${dx}px)` }, { opacity: 1, transform: 'none' }] : [{ opacity: 0.2 }, { opacity: 1 }],
-      R ? Math.min(MOTION.subMs, 140) : MOTION.subMs
+      dx ? [{ opacity: 0, transform: `translateX(${dx}px)` }, { opacity: 1, transform: 'none' }] : [{ opacity: 0 }, { opacity: 1 }],
+      R ? Math.min(MOTION.subMs, 160) : MOTION.subMs
     )
   );
 }
@@ -562,20 +791,20 @@ function mvSel(prev, cur, R) {
 }
 
 // ---- 시트 ----
-function mvSheetOpen(R, delay = 0) {
+function mvSheetOpen(R, delay = 0, cont) {
   const sh = mvSheet(),
     sc = document.querySelector('#app .scrim');
   if (!sh) return;
   const base = getComputedStyle(sh).transform;
   const b = base && base !== 'none' ? base : '';
-  if (sc) mvAnim(sc, [{ opacity: 0 }, { opacity: 1 }], MOTION.sheetMs, { delay, easing: 'linear' });
+  if (sc) mvAnim(sc, [{ opacity: 0 }, { opacity: 1 }], R ? 160 : MOTION.sheetMs, { delay, easing: 'linear' });
   mvAnim(
     sh,
     R ? [{ opacity: 0 }, { opacity: 1 }] : [{ transform: `${b} translateY(${MOTION.sheetRise}px)`, opacity: 0 }, { transform: b || 'none', opacity: 1 }],
-    R ? 140 : MOTION.sheetMs,
+    R ? 160 : MOTION.sheetMs,
     { delay }
   );
-  if (!delay) MV.shLive = { t0: performance.now() };
+  if (!cont) MV.shLive = { g: mvGate() };
 }
 function mvSheetClose(R) {
   MV.shLive = null;
@@ -608,13 +837,13 @@ function mvSheetClose(R) {
     if (an) an.addEventListener('finish', () => mvGhostKill(g));
   }
   if (sc) sc.getAnimations().forEach(a => (a.effect.updateTiming({ fill: 'forwards' })));
-  mvGhostDrop(g, MOTION.sheetMs + 400);
+  mvGhostDrop(g, MOTION.sheetMs + MOTION.gateMax + 400);
 }
 // 열린 시트 안에서 이동: 틀(배경·위치)은 그대로, 높이는 부드럽게, 내용만 바뀌어요
 function mvSheetMove(t, R) {
   const sh = mvSheet();
   if (!sh) return;
-  const kids = t.sheet === 'in' && MV.shSig ? mvChanged(MV.shSig, sh, 4, []) : [...sh.children].filter(c => !c.classList.contains('handle'));
+  const kids = t.sheet === 'in' && MV.shSig ? mvChangedIn(MV.shSig, sh, 3) : [...sh.children].filter(c => !c.classList.contains('handle'));
   const dx = R ? 0 : t.sheet === 'in' ? t.idir * MOTION.subShift : t.sdir * MOTION.sheetInnerShift;
   const ms = t.sheet === 'in' ? MOTION.subMs : MOTION.sheetInnerMs;
   kids.forEach(el =>
@@ -622,7 +851,7 @@ function mvSheetMove(t, R) {
       el,
       dx
         ? [{ opacity: 0, transform: `translateX(${dx}px)` }, { opacity: 1, transform: 'none' }]
-        : [{ opacity: t.sheet === 'in' ? 0.2 : 0, transform: t.sheet === 'swap' && !R ? 'translateY(6px)' : 'none' }, { opacity: 1, transform: 'none' }],
+        : [{ opacity: 0, transform: t.sheet === 'swap' && !R ? 'translateY(6px)' : 'none' }, { opacity: 1, transform: 'none' }],
       R ? Math.min(ms, 140) : ms
     )
   );
@@ -649,22 +878,37 @@ document.addEventListener(
     if (!sm || mvReduce()) return;
     const d = sm.parentElement;
     if (!d || d.tagName !== 'DETAILS' || d.hasAttribute('data-noanim') || !d.closest('#app')) return;
+    if (!d.animate) return; // 애니메이션을 못 쓰면 원래대로 바로 펼치고 접혀요
     e.preventDefault();
-    if (d._mv) d._mv.cancel();
-    const h0 = d.offsetHeight,
-      opening = !d.open;
-    if (opening) d.open = true;
-    const h1 = opening ? d.offsetHeight : sm.offsetHeight + (parseFloat(getComputedStyle(d).paddingTop) || 0) + (parseFloat(getComputedStyle(d).paddingBottom) || 0) + (parseFloat(getComputedStyle(d).borderTopWidth) || 0) * 2;
-    d.style.overflow = 'hidden';
-    const a = d.animate([{ height: h0 + 'px' }, { height: h1 + 'px' }], { duration: MOTION.expandMs, easing: MOTION.ease });
-    d._mv = a;
-    const end = ok => {
+    try {
+      if (d._mv) d._mv.cancel();
+      const h0 = d.offsetHeight,
+        opening = !d.open;
+      if (opening) d.open = true;
+      const cs = getComputedStyle(d);
+      const h1 = opening ? d.offsetHeight : sm.offsetHeight + (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) + (parseFloat(cs.borderTopWidth) || 0) + (parseFloat(cs.borderBottomWidth) || 0);
+      const undo = mvTemp(d, { overflow: 'hidden' });
+      const a = mvAnim(d, [{ height: h0 + 'px' }, { height: h1 + 'px' }], MOTION.expandMs, { now: true });
+      if (!a) {
+        undo();
+        if (!opening) d.open = false;
+        return;
+      }
+      d._mv = a;
+      let ended = false;
+      const end = ok => {
+        if (ended) return;
+        ended = true;
+        undo();
+        d._mv = null;
+        if (!opening) d.open = false; // 취소돼도 사용자가 누른 결과(접힘)는 지켜요
+      };
+      a.addEventListener('finish', () => end(true));
+      a.addEventListener('cancel', () => end(false));
+    } catch (err) {
+      mvReport('details', err);
       d.style.overflow = '';
-      d._mv = null;
-      if (ok && !opening) d.open = false;
-    };
-    a.onfinish = () => end(true);
-    a.oncancel = () => end(false);
+    }
   },
   true
 );
@@ -681,6 +925,8 @@ const MV_STATE_CLS = /^(on|sel|active|open|show|dis|done|ok|bad|warn|cur|now|rea
 const MV_NODIFF = 'svg,canvas,iframe,input,select,textarea,.maplibregl-map,.h3-bg,.h3-show,.toasts,.h3-fold,.mv-out,[data-mvskip]';
 // 글자가 바뀌면 살짝 바꿔 보여 주는 칸 (공유 코드·안내 문구 등)
 const MV_SWAP = '.sc-code,.sc-ja,.xlabel,.hp-msg,.note,.fd-tx,.q,.desc,.sp-st,.recs';
+// 반드시 효과가 있어야 하는 칸 (많이 바뀌는 경우에도 따로 나타나고 사라져요)
+const MV_MUST = '.banner,.note,.hp-msg,.hp-res,.here-loc,.here-opts,.selchips,.card.parked,.wh-pin,.sh-foot,.recs,.alts,.osteps,.gsteps';
 // 칸의 정체: 태그 + 맨 앞 이름(class) + 버튼 동작·대상. 뒤에 붙는 상태 이름(on, s, e …)은 보지 않아요
 function mvKeyOf(el) {
   const c = [...el.classList].find(x => !MV_STATE_CLS.test(x)) || '',
@@ -693,7 +939,8 @@ function mvPresSnap() {
   let n = 0;
   const walk = (el, depth) => {
     if (++n > 5000) throw 0;
-    const o = { el, k: mvKeyOf(el), h: el.offsetHeight, kids: null, txt: null };
+    const h = el.offsetHeight,
+      o = { el, k: mvKeyOf(el), h, r: h ? el.getBoundingClientRect() : null, kids: null, txt: null };
     if (el.matches(MV_SWAP)) o.txt = el.textContent;
     if (depth < 14 && !el.matches(MV_NODIFF)) o.kids = [...el.children].filter(c => !c.classList.contains('mv-out')).map(c => walk(c, depth + 1));
     return o;
@@ -759,7 +1006,16 @@ function mvPresDiff(old, R) {
     moved = k => k.split('|')[2] && ik.has(k) && rk.has(k);
   const I = ins.filter(e => !moved(mvKeyOf(e)) && e.namespaceURI !== 'http://www.w3.org/2000/svg' && mvBlock(e)),
     X = rem.filter(r => !moved(r.o.k));
-  if (I.length + X.length > 40) return; // 한꺼번에 많이 바뀌면(목록 전체 교체 등) 따로 움직이지 않아요
+  if (I.length + X.length > 40) {
+    // 한꺼번에 많이 바뀌면(목록 전체 교체 등) 항목마다가 아니라 묶음(부모)째로 짧게 흐려졌다 나타나요.
+    // 꼭 보여야 하는 칸(배너·안내·검색 결과 등)은 따로 나타나요
+    const must = I.filter(e => e.matches(MV_MUST));
+    const parents = [...new Set(I.filter(e => !must.includes(e)).map(e => e.parentElement))].filter(p => p && p !== root && !must.some(m => p.contains(m)));
+    parents.slice(0, 6).forEach(p => mvAnim(p, [{ opacity: 0.3 }, { opacity: 1 }], R ? 120 : MOTION.subMs));
+    must.forEach(e => mvPresIn(e, R));
+    X.filter(r => r.o.el.matches && r.o.el.matches(MV_MUST)).forEach(r => mvPresOut(r, R));
+    return;
+  }
   I.forEach(e => mvPresIn(e, R));
   X.forEach(r => mvPresOut(r, R));
   swp.filter(e => !I.some(x => x.contains(e))).forEach(e => mvAnim(e, [{ opacity: 0.25 }, { opacity: 1 }], R ? 120 : MOTION.subMs));
@@ -793,13 +1049,10 @@ function mvPresIn(el, R) {
 function mvCollapse(el, cs, h, open, done) {
   const full = { height: h + 'px', paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, marginTop: cs.marginTop, marginBottom: cs.marginBottom, opacity: 1 },
     zero = { height: '0px', paddingTop: '0px', paddingBottom: '0px', marginTop: '0px', marginBottom: '0px', opacity: 0 };
-  const keep = [el.style.overflow, el.style.boxSizing];
-  el.style.overflow = 'hidden';
-  el.style.boxSizing = 'border-box';
+  const undo = mvTemp(el, { overflow: 'hidden', boxSizing: 'border-box' });
   const a = mvAnim(el, open ? [zero, full] : [full, zero], MOTION.panelMs, { easing: open ? MOTION.ease : MOTION.easeOut, fill: open ? 'backwards' : 'forwards' });
   const end = () => {
-    el.style.overflow = keep[0];
-    el.style.boxSizing = keep[1];
+    undo();
     if (done) done();
   };
   if (a) {
@@ -812,7 +1065,9 @@ function mvCollapse(el, cs, h, open, done) {
 function mvPresOut(r, R) {
   const node = r.o.el,
     h = r.o.h;
-  if (R || !h || h > 360 || !r.parent.isConnected || mvRowParent(r.parent)) return;
+  if (R || !h || !r.parent.isConnected) return;
+  // 가로 줄·격자 안이거나 큰 칸이면: 레이아웃을 밀지 않도록 원래 자리 위에 떠 있는 장식 층으로 흐려지게
+  if (h > 360 || mvRowParent(r.parent)) return mvPresOutOverlay(r);
   if (r.ref && r.ref.parentElement !== r.parent) r.ref = null;
   mvInertCopy(node);
   node.classList.add('mv-out');
@@ -832,32 +1087,86 @@ function mvPresOut(r, R) {
     if (a) a.addEventListener('finish', kill);
     else kill();
   } else if (!mvCollapse(node, cs, h, false, kill)) kill();
-  mvLater(kill, MOTION.panelMs + 400);
+  mvLater(kill, MOTION.panelMs + MOTION.gateMax + 400);
+}
+// 원래 자리(화면 좌표)에 고정된 장식 층으로 남겨 흐려지게 (부모 이름을 똑같이 감싸 모양 유지)
+function mvPresOutOverlay(r) {
+  const node = r.o.el,
+    rect = r.o.r;
+  if (!rect || rect.bottom < 0 || rect.top > innerHeight) return;
+  const chain = [];
+  for (let p = node.parentElement; p && p.id !== 'app' && !p.classList.contains('shell'); p = p.parentElement) chain.unshift(p.className);
+  chain.unshift('shell ' + ((document.querySelector('#app > .shell') || {}).className || '').replace('shell', ''));
+  const g = mvGhostWrap('out', 14);
+  let host = g;
+  chain.forEach(c => {
+    const d = document.createElement('div');
+    d.className = c;
+    d.style.cssText = 'position:static;margin:0;padding:0;min-height:0;height:auto;max-width:none;background:none;border:0;box-shadow:none;display:block';
+    host.appendChild(d);
+    host = d;
+  });
+  mvInertCopy(node);
+  Object.assign(node.style, { position: 'fixed', left: rect.left + 'px', top: rect.top + 'px', width: rect.width + 'px', height: rect.height + 'px', margin: '0' });
+  host.appendChild(node);
+  const a = mvAnim(node, [{ opacity: 1 }, { opacity: 0 }], MOTION.noteMs, { easing: MOTION.easeOut, fill: 'forwards' });
+  const kill = () => {
+    g.remove();
+    MV.ghosts = MV.ghosts.filter(x => x.el !== g);
+  };
+  if (a) a.addEventListener('finish', kill);
+  else kill();
+  mvLater(kill, MOTION.noteMs + MOTION.gateMax + 400);
 }
 
 // ---------------------------------------------------------------- 알림(토스트)
 // 나타날 때 아래에서 살짝 올라오고, 자동으로 사라질 때·다른 알림으로 바뀔 때 내려가며 사라져요
 function mvToastIn(el) {
-  if (mvReduce()) return mvAnim(el, [{ opacity: 0 }, { opacity: 1 }], 120);
-  mvAnim(el, [{ opacity: 0, transform: 'translateY(12px) scale(.98)' }, { opacity: 1, transform: 'none' }], MOTION.noteMs);
+  try {
+    if (mvReduce()) return mvAnim(el, [{ opacity: 0 }, { opacity: 1 }], 120, { now: true });
+    mvAnim(el, [{ opacity: 0, transform: 'translateY(14px) scale(.98)' }, { opacity: 1, transform: 'none' }], MOTION.noteMs, { now: true });
+  } catch (e) {
+    mvReport('toastIn', e);
+  }
 }
 function mvToastOut(el) {
   if (!el || !el.isConnected || el.classList.contains('mv-gone')) return;
   el.classList.add('mv-gone');
   el.setAttribute('aria-hidden', 'true');
   el.inert = true;
-  const gone = () => el.remove();
-  if (mvReduce() || !el.animate) return gone();
-  const a = el.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(10px)' }], { duration: MOTION.noteMs, easing: MOTION.easeOut, fill: 'forwards' });
-  a.onfinish = gone;
-  a.oncancel = gone;
-  setTimeout(gone, MOTION.noteMs + 300);
+  let done = false;
+  const gone = () => {
+    if (done) return;
+    done = true;
+    el.remove();
+  };
+  try {
+    if (mvReduce()) return gone();
+    // 자기 효과만 가진 알림이라 전환 정리(mvCancel)와 무관하게 끝까지 내려가요
+    const a = el.animate
+      ? el.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(12px)' }], { duration: MOTION.noteMs, easing: MOTION.easeOut, fill: 'forwards' })
+      : mvFallback(el, true);
+    a.addEventListener('finish', gone);
+    a.addEventListener('cancel', gone);
+  } catch (e) {
+    mvReport('toastOut', e);
+    gone();
+  }
+  setTimeout(gone, MOTION.noteMs + 400);
 }
 
 // ---------------------------------------------------------------- hidden 으로 켜고 끄는 칸
 // el.hidden = … 대신 mvShow(el, 보일지) 를 쓰면 높이와 흐림이 부드럽게 바뀌어요
 function mvShow(el, show) {
   if (!el) return;
+  try {
+    mvShowImpl(el, show);
+  } catch (e) {
+    mvReport('mvShow', e);
+    el.hidden = !show;
+  }
+}
+function mvShowImpl(el, show) {
   if (el._mvs) el._mvs.cancel();
   el._mvs = null;
   if (show === !el.hidden) return;
@@ -870,7 +1179,7 @@ function mvShow(el, show) {
     if (cs.position === 'absolute' || cs.position === 'fixed' || !h || mvSmall(el, cs)) el._mvs = mvAnim(el, [{ opacity: 0 }, { opacity: 1 }], MOTION.noteMs);
     else el._mvs = mvCollapse(el, cs, h, true);
   } else {
-    if (R || !el.animate) {
+    if (R) {
       el.hidden = true;
       return;
     }
@@ -891,9 +1200,17 @@ function mvShow(el, show) {
       } else hide();
     } else {
       el._mvs = mvCollapse(el, cs, h, false, () => {
-        if (el._mvs) hide();
-        el.getAnimations().forEach(x => x.cancel());
+        hide();
+        if (el.getAnimations) el.getAnimations().forEach(x => MV.anims.includes(x) || x.cancel());
       });
     }
   }
+}
+
+// ---------------------------------------------------------------- 개발용 기록 (dev/motion-check.html 이 읽어요. 앱 화면에는 안 나와요)
+function mvLog(t) {
+  const kind = t.page ? (t.tab ? 'tab' : 'page') : t.sub ? 'sub' : t.sel ? 'expand' : t.sheet ? 'sheet:' + t.sheet : '';
+  if (!kind) return;
+  MV.log.push({ kind, dir: t.dir, at: performance.now(), anims: MV.anims.length, gate: MV.gate });
+  if (MV.log.length > 30) MV.log.shift();
 }
