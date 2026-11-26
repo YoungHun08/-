@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개발용 · 움직임 점검</title>
+<style>
+  /* 개발용 점검 페이지: 앱 화면에는 연결되지 않아요. 왼쪽은 진짜 앱, 오른쪽은 그 앱의 움직임 상태 */
+  :root { color-scheme: light dark; --bg: light-dark(#f2ece2, #0c1120); --ink: light-dark(#1f2b4d, #eef0f5); --sub: light-dark(#5d6680, #a3abc2); --card: light-dark(#fffdf9, #161d31); --line: light-dark(#ddd4c6, #262f4a); --red: #d63a1f; --ok: #1d7a4a; }
+  * { box-sizing: border-box; min-width: 0; }
+  body { margin: 0; padding: 20px; background: var(--bg); color: var(--ink); font: 14px/1.5 system-ui, sans-serif; }
+  h1 { margin: 0 0 4px; font-size: 20px; }
+  p.lead { margin: 0 0 16px; color: var(--sub); }
+  .wrap { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  iframe { width: 390px; height: 844px; border: 0; border-radius: 28px; box-shadow: 0 20px 50px rgba(20, 30, 60, .25); background: #fff; flex: none; }
+  .panel { flex: 1 1 420px; display: grid; gap: 14px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+  h2 { margin: 0 0 8px; font-size: 15px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td, th { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bad { color: var(--red); font-weight: 700; }
+  .good { color: var(--ok); font-weight: 700; }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  button { font: inherit; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+  button.pri { background: var(--red); border-color: var(--red); color: #fff; }
+  code { font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>움직임 점검 (개발용)</h1>
+<p class="lead">왼쪽 앱을 직접 누르거나 아래 버튼으로 전환을 실행하면, 오른쪽에 실제로 만들어진 효과와 「눌러서 재생이 시작되기까지」 시간이 보여요. 이 페이지는 앱 화면에 연결돼 있지 않아요.</p>
+<div class="wrap">
+  <iframe id="app" title="앱" src="../index.html"></iframe>
+  <div class="panel">
+    <section><h2>환경</h2><table id="env"></table></section>
+    <section>
+      <h2>전환 실행</h2>
+      <div class="btns" id="acts"></div>
+    </section>
+    <section><h2>최근 전환 (새것부터)</h2><table id="log"><thead><tr><th>종류</th><th>방향</th><th class="n">효과 수</th><th class="n">재생 시작까지</th><th>상태</th></tr></thead><tbody></tbody></table></section>
+    <section><h2>설정값 (점검 후 실제로 쓰는 값)</h2><table id="cfg"></table></section>
+  </div>
+</div>
+<script>
+{
+  const fr = document.getElementById('app');
+  const W = () => fr.contentWindow;
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const ACTS = [
+    ['홈 → 여행 준비', "A.htab({t:'prep'})"],
+    ['→ 홈', "A.htab({t:'home'})"],
+    ['일본어 시트 열기', 'A.phraseSheet()'],
+    ['시트 안 다른 표현', 'A.phrase({i:2})'],
+    ['시트 닫기', 'A.closeSheet()'],
+    ['알림', "toast('점검용 알림')"],
+    ['새 여행 → 날짜', "A.newPlanGo({m:'auto'})"],
+    ['예시 일정 만들기', "A.newPlanGo({m:'auto'});Object.assign(S.draft,{start:'2026-12-05',end:'2026-12-08'});A.toAreas({});A.toggleArea({id:'hakata'});A.generate({})"],
+    ['2일차', 'A.day({i:1})'],
+    ['1일차', 'A.day({i:0})'],
+    ['지도 탭', "A.tab({t:'map'})"],
+    ['일정 탭', "A.tab({t:'sched'})"]
+  ];
+  const acts = document.getElementById('acts');
+  ACTS.forEach(([t, code]) => {
+    const b = document.createElement('button');
+    b.textContent = t;
+    b.addEventListener('click', () => {
+      try { W().eval(code); } catch (e) { alertBox(e); }
+    });
+    acts.appendChild(b);
+  });
+  const reload = document.createElement('button');
+  reload.className = 'pri';
+  reload.textContent = '앱 다시 열기';
+  reload.addEventListener('click', () => fr.contentWindow.location.reload());
+  acts.appendChild(reload);
+  function alertBox(e) { document.querySelector('#env').insertAdjacentHTML('beforeend', `<tr><td>실행 오류</td><td class="bad">${esc(e.message || e)}</td></tr>`); }
+
+  function draw() {
+    const w = W();
+    let MV;
+    try { MV = w.eval('MV'); } catch (e) { return; } // 앱이 아직 안 떴어요
+    let reduce = false;
+    try { reduce = w.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+    const env = [
+      ['동작 줄이기 (기기 설정)', reduce ? '<span class="bad">켜짐 — 이동 없이 짧게 흐려지기만 해요</span>' : '<span class="good">꺼짐</span>'],
+      ['Web Animations 지원', w.Element.prototype.animate ? '<span class="good">예</span>' : '<span class="bad">아니요 — CSS 대체 효과 사용</span>'],
+      ['config.js APP_VERSION', esc(w.eval("typeof APP_VERSION==='undefined'?'(없음)':APP_VERSION"))],
+      ['motion.js MOTION_VERSION', esc(w.eval('MOTION_VERSION'))],
+      ['파일 버전 메모', w.eval('MV_VERSION_NOTE') ? `<span class="bad">${esc(w.eval('MV_VERSION_NOTE'))}</span>` : '<span class="good">일치</span>'],
+      ['고친 설정값', esc(w.eval('MV_CFG_ISSUES').join(' · ') || '없음')],
+      ['마지막 움직임 오류', MV.lastError ? `<span class="bad">${esc(MV.lastError.where + ': ' + MV.lastError.msg)}</span>` : '없음'],
+      ['남은 장식 층 / 진행 중 효과', `${MV.ghosts.length} / ${MV.anims.length}`]
+    ];
+    document.getElementById('env').innerHTML = env.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('');
+    const rows = MV.log.slice().reverse().slice(0, 12).map(e => {
+      const g = e.gate;
+      const wait = g && g.done ? Math.round(g.startedAt - e.at) + 'ms' : g ? '대기 중' : '—';
+      const state = g && g.done ? '재생됨' : g ? '시작 전' : '효과 없음';
+      return `<tr><td>${esc(e.kind)}</td><td>${e.dir > 0 ? '앞' : e.dir < 0 ? '뒤' : '—'}</td><td class="n">${e.anims}</td><td class="n">${wait}</td><td>${state}</td></tr>`;
+    });
+    document.querySelector('#log tbody').innerHTML = rows.join('') || '<tr><td colspan="5">아직 없음 — 앱을 눌러 보세요</td></tr>';
+    const M = w.eval('MOTION');
+    document.getElementById('cfg').innerHTML = Object.keys(M).map(k => `<tr><td><code>${esc(k)}</code></td><td class="n">${esc(M[k])}</td></tr>`).join('');
+  }
+  setInterval(() => { try { draw(); } catch (e) {} }, 300);
+}
+</script>
+</body>
+</html>

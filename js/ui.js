@@ -327,6 +327,13 @@ function dirty() {
   }
 }
 // 화면 아래 잠깐 뜨는 알림
+// 검색어로 바로 바꾸는 목록: 글자마다 움직이지 않고, 「결과 없음 ↔ 결과 있음」처럼 상태가 바뀔 때만 목록이 살짝 나타나요
+function mvListSwap(el, html, typing) {
+  const kind = h => (/<li|<button/.test(h) ? 'list' : 'empty');
+  const was = kind(el.innerHTML);
+  el.innerHTML = html;
+  if ((!typing || was !== kind(html)) && typeof mvAnim === 'function' && !motionReduced()) mvAnim(el, [{ opacity: 0.3 }, { opacity: 1 }], MOTION.panelMs, { now: true });
+}
 // 알림: 새 알림이 나오면 앞의 알림은 내려가며 사라지고, 4.2초 뒤 저절로 사라질 때도 부드럽게 (motion.js)
 // 타이머는 자기 알림만 치워요 (나중에 나온 알림을 지우지 않게)
 function toast(msg, undo) {
@@ -1575,7 +1582,7 @@ const A = {
     S.sheet.added.push(d.id);
     dirty();
     const list = document.getElementById('addList');
-    if (list) list.innerHTML = addListHTML(S.sheet);
+    if (list) mvListSwap(list, addListHTML(S.sheet), false);
     toast(
       b.ok ? `${SPOT[d.id].n}을(를) ${b.k + 1}번째에 넣었어요 · ${fmt(b.arr)} 도착` : slotToast(p, S.di, it, b),
       true
@@ -1651,7 +1658,7 @@ $app.addEventListener('input', e => {
   } else if (k === 'addQ') {
     S.sheet.q = t.value;
     const l = document.getElementById('addList');
-    if (l) l.innerHTML = addListHTML(S.sheet);
+    if (l) mvListSwap(l, addListHTML(S.sheet), true);
   } else if (k === 'rate') {
     const v = Number(t.value);
     if (v >= 300 && v <= 2000) {

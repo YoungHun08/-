@@ -35,6 +35,7 @@ js/
   bootstrap.js          모든 파일이 준비된 뒤 첫 실행 (가장 마지막)
 dev/
   intro-compare.html    개발용: 두 등장 효과를 나란히 비교·다시 보기 (앱 화면에는 안 나와요)
+  motion-check.html     개발용: 동작 줄이기 여부·파일 버전·실제 쓰는 움직임 값·최근 전환·오류 확인
 docs/
   collaboration-guide.md  이 문서
 ```
@@ -132,7 +133,8 @@ config → data → spot_info → engine → i18n → ui → home → stays → 
 | 색, 글꼴, 간격, 버튼 모양, 다크 모드, 화면 크기별 모양 | `css/style.css` (끝에 추가) |
 | 새 홈 화면, 아래 5칸 메뉴(홈·여행 준비·새 여행·동네·내 여행), 홈 그림 | `js/home3.js` |
 | 라이트·다크 테마 버튼 | `js/wish.js` 의 테마 부분 |
-| 첫 화면 등장 방식(fold3d/soft), 움직임 세기·속도 | `js/config.js` 의 `INTRO_MODE`, `MOTION` |
+| 첫 화면 등장 방식(fold3d/soft), 움직임 세기·속도 | `js/config.js` 의 `INTRO_PRESET`, `MOTION` |
+| 배포 버전 표시 (파일을 고치면 함께 올리기) | `js/config.js` 의 `APP_VERSION`, `js/motion.js` 의 `MOTION_VERSION`, `index.html` 의 `?v=` |
 | 등장 효과·화면 전환·시트 움직임 동작 (무엇이 어떤 전환인지: `mvState`/`mvClassify`) | `js/motion.js` (+ `css/style.css` 맨 끝 블록) |
 | 여행 준비(공항→시내, 교통 패스, 타는 법, 여행 일본어) 시트, 동네 시트 | `js/home.js` |
 | 일본어 번역 문구 | `js/i18n.js` 의 `JA` 사전, 또는 새 문구에 `L()` |
