@@ -13,8 +13,6 @@ const esc = s =>
   );
 const ICON = {
   star: '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/>',
-  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
-  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
   grip: '<path d="M5 8h14M5 12h14M5 16h14"/>',
   phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
   flip: '<path d="M4.5 10a7.5 7.5 0 0 1 13.3-4.2L20 8"/><path d="M20 3.5V8h-4.5"/><path d="M19.5 14a7.5 7.5 0 0 1-13.3 4.2L4 16"/><path d="M4 20.5V16h4.5"/>',
@@ -35,6 +33,9 @@ const ICON = {
   up: '<path d="M6 15l6-6 6 6"/>',
   down: '<path d="M6 9l6 6 6-6"/>',
   next: '<path d="M9 5l7 7-7 7"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/>',
+  moon: '<path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6z"/>',
+  out: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
   undo: '<path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/>',
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
@@ -159,6 +160,37 @@ function lsGet(k, d) {
   }
 }
 // 이 기기에 값 저장하기
+// ---- 화면 밝기 (밝은 화면 · 어두운 화면) ----
+// 'auto' = 휴대폰 설정을 따라가요. 버튼을 한 번 누르면 'light'/'dark' 로 고정되고 기억해요 (저장 이름 fk-theme)
+let THEME = (() => {
+  const t = lsGet('fk-theme', 'auto');
+  return t === 'light' || t === 'dark' ? t : 'auto';
+})();
+const SYS_DARK = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+function isDark() {
+  return THEME === 'dark' || (THEME === 'auto' && !!(SYS_DARK && SYS_DARK.matches));
+}
+function applyTheme() {
+  const r = document.documentElement;
+  if (THEME === 'auto') delete r.dataset.theme;
+  else r.dataset.theme = THEME;
+  // 휴대폰 맨 위 상태 표시줄 색도 같이 바꿔요
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+    const dk = THEME === 'auto' ? /dark/.test(m.media) : THEME === 'dark';
+    m.content = dk ? '#0E1424' : '#F7F3ED';
+  });
+}
+// 홈 화면(모든 탭) 언어 버튼 옆 작은 버튼: 지금 밝으면 달, 어두우면 해
+// 계획 화면 위쪽 줄은 제목 자리가 좁아서 넣지 않았어요. 고른 밝기는 모든 화면에 적용돼요
+function themeBtn(light) {
+  const d = isDark();
+  return `<button class="theme-btn${light ? ' light' : ''}" data-act="toggleTheme" aria-label="${d ? L('밝은 화면으로 바꾸기', '明るい画面にする') : L('어두운 화면으로 바꾸기', '暗い画面にする')}" title="${d ? L('밝은 화면', '明るい画面') : L('어두운 화면', '暗い画面')}">${ic(d ? 'sun' : 'moon')}</button>`;
+}
+// 휴대폰 설정이 바뀌면(자동일 때만) 버튼 모양을 다시 그려요
+if (SYS_DARK && SYS_DARK.addEventListener)
+  SYS_DARK.addEventListener('change', () => {
+    if (THEME === 'auto' && typeof render === 'function') render();
+  });
 function lsSet(k, v) {
   try {
     localStorage.setItem(k, JSON.stringify(v));
@@ -271,7 +303,8 @@ const S = {
   hintOff: lsGet('fk-hint-off', false),
   photoBroken: false,
   areaBroken: {},
-  face: lsGet('fk-face', false)
+  face: lsGet('fk-face', false),
+  wish: [] // 가고 싶은 곳 (wish.js 에서 불러와요)
 };
 // 새 여행 만들기 기본값 (시간·숙소)
 function defaultDraft() {
@@ -337,6 +370,11 @@ function mvListSwap(el, html, typing) {
 // 알림: 새 알림이 나오면 앞의 알림은 내려가며 사라지고, 4.2초 뒤 저절로 사라질 때도 부드럽게 (motion.js)
 // 타이머는 자기 알림만 치워요 (나중에 나온 알림을 지우지 않게)
 function toast(msg, undo) {
+  // 화면이 바뀌는 애니메이션 중이면 새 화면이 그려진 뒤에 보여요 (안 그러면 예전 화면과 같이 사라져요)
+  if (VT.pending) {
+    VT.after.push(() => toast(msg, undo));
+    return;
+  }
   clearTimeout(S.toastT);
   const w = document.getElementById('toasts');
   if (!w) return;
@@ -356,6 +394,7 @@ function appbar({ back, title, right = '', sub = '' }) {
     ${title ? `<div class="ab-t">${title}${sub ? `<small>${sub}</small>` : ''}</div>` : '<span class="ab-sp"></span>'}<div class="ab-r">${langBtn()}${right}</div></header>`;
 }
 // 새 여행 만들기 단계 표시줄
+// 1 날짜·숙소 → 2 어떻게 짤까요 → 3 동네 고르기 / 가고 싶은 곳 → (계획)
 function progress(n) {
   return `<div class="prog" role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="${n}" aria-label="3단계 중 ${n}단계">${[1, 2, 3].map(i => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</div>`;
 }
@@ -472,7 +511,7 @@ function datesV() {
       ${airNoteV()}
     </section>
   </main>
-  <div class="cta"><button class="btn pri big" data-act="toAreas" ${D.start && D.end ? '' : 'disabled'}>다음 · 가고 싶은 곳 고르기</button></div>`
+  <div class="cta"><button class="btn pri big" data-act="toHow" ${D.start && D.end ? '' : 'disabled'}>${L('다음 · 짜는 방법 고르기', '次へ · 作り方を選ぶ')}</button></div>`
   );
 }
 
@@ -496,9 +535,7 @@ function draftCaps() {
 // 동네 고르기 카드
 function areaCard(a) {
   const on = S.draft.areas.includes(a.id),
-    // 가고 싶은 곳에 이미 담은 장소는 빼고 세요
-    wished = new Set(wishAll().filter(w => w.k === 's').map(w => w.id)),
-    n = SPOTS.filter(s => s.a === a.id && !wished.has(s.id)).length,
+    n = SPOTS.filter(s => s.a === a.id).length,
     tm = a.min + 2 * accessMin(a.z);
   return `<button class="acard${on ? ' on' : ''}" data-act="toggleArea" data-id="${a.id}" aria-pressed="${on}">
     <span class="ac-k">${on ? ic('check') : ''}</span>
@@ -517,12 +554,7 @@ function areasV() {
   const D = S.draft,
     cap = draftCaps(),
     pct = cap.total ? Math.round((cap.need / cap.total) * 100) : 0;
-  const wn = wishAll().length;
-  const msg = D.mode === 'manual'
-    ? L('직접 계획 · 빈 일정표를 만들어요', '自分で計画 · 空の予定表を作ります')
-    : !D.areas.length && wn
-    ? L(`가고 싶은 곳 ${wn}곳으로 짜요`, `行きたい所${wn}か所で組みます`)
-    : !D.areas.length
+  const msg = !D.areas.length
     ? '지도나 아래 카드에서 골라 주세요'
     : cap.trips > cap.N
       ? '당일치기는 하루에 한 곳만 넣을 수 있어요'
@@ -537,8 +569,8 @@ function areasV() {
     ['당일치기 (지도 밖)', 'trip']
   ];
   return (
-    appbar({ back: 'toDates', title: '가고 싶은 곳', sub: `${mds(D.start)} – ${mds(D.end)} · ${nights(cap.N)}` }) +
-    progress(2) +
+    appbar({ back: 'toHow', title: L('가고 싶은 동네', '行きたいエリア'), sub: `${mds(D.start)} – ${mds(D.end)} · ${nights(cap.N)}` }) +
+    progress(3) +
     `<main class="scr flow">
     <section class="map-card">
       <div class="rmap" id="rmap"></div>
@@ -554,13 +586,12 @@ function areasV() {
             .join('')}</div>`
       )
       .join('')}
-    ${wishDraftV()}
   </main>
   <div class="cta">
     <div class="meter"><div class="m-t"><b>${D.areas.length}곳 선택</b><span class="${pct > 100 || cap.trips > cap.N ? 'warn-t' : ''}">${msg}</span></div>
     ${D.areas.length ? `<div class="selchips">${D.areas.map(id => `<button class="selchip" data-act="toggleArea" data-id="${id}" aria-label="${esc(L(`${AREA[id].n} 빼기`, `${AREA_JA[id] || AREA[id].n}を外す`))}">${esc(shortArea(L(AREA[id].n, AREA_JA[id] || AREA[id].n)))}<i aria-hidden="true">×</i></button>`).join('')}</div>` : ''}
     <div class="bar"><i style="width:${Math.min(100, pct)}%" class="${pct > 100 ? 'over' : ''}"></i></div></div>
-    <button class="btn pri big" data-act="generate" ${D.areas.length || D.mode === 'manual' || wn ? '' : 'disabled'}>${D.mode === 'manual' ? L('빈 일정표 만들기', '空の予定表を作る') : '세부 계획 만들기'}</button>
+    <button class="btn pri big" data-act="generate" ${D.areas.length ? '' : 'disabled'}>세부 계획 만들기</button>
   </div>`
   );
 }
@@ -573,6 +604,10 @@ function anchorLabel(an, isEnd) {
   if (isEnd) return `숙소 도착 · ${esc(hotelLabelT(nightHotel(p, di)))}`;
   const moving = di < p.days.length - 1 && !sameHotel(nightHotel(p, di - 1), nightHotel(p, di));
   return `${moving ? L('체크아웃하고 출발', 'チェックアウトして出発') : '숙소에서 출발'} · ${esc(hotelLabelT(nightHotel(p, di - 1)))}`;
+}
+// 이동 방법 아래 작은 설명. 「택시」처럼 이름을 그대로 되풀이하면 안 보여요
+function optLabel(o) {
+  return !o.label || o.label === MODE[o.mode].n ? '' : o.label;
 }
 // 이동 수단 이름 (일본어 화면이면 일본어로)
 function modeNm(m) {
@@ -601,7 +636,7 @@ function legRow(leg, li) {
   return `<li class="leg m-${leg.mode}" style="--m:${MODE[leg.mode].color}"><span class="rail"></span>
     <button class="lchip" data-act="leg" data-li="${li}" aria-label="이동 방법 바꾸기: ${MODE[leg.mode].n} ${leg.min}분 ${ft}">
       ${modeIc(leg.mode, 'sm')}<span class="lc-m"><b>${MODE[leg.mode].n} ${leg.min}분</b>${ft ? `<em>${ft}</em>` : ''}${leg.chosen ? '<i class="mine">직접 고름</i>' : ''}${liveLegTag(leg)}${svcLegTag(leg)}</span>
-      <span class="lc-l${sw ? ' warn' : ''}">${esc(sw || (leg.mode === 'walk' ? dist(leg.km) : leg.label))}</span>${ic('next', 'chev')}
+      <span class="lc-l${sw ? ' warn' : ''}">${esc(sw || (leg.mode === 'walk' ? dist(leg.km) : optLabel(leg)))}</span>${ic('next', 'chev')}
     </button></li>`;
 }
 // ★ 일정 카드 한 장 (펼치면 시간·순서·메모 등)
@@ -690,6 +725,7 @@ function bannerV() {
     bar = liveBar(S.plan, S.di);
   if (!b) return bar;
   if (b.sync) return bar + liveBannerV(b);
+  if (b.wish) return bar + wishBannerV(b.wish);
   const r = b.res,
     L = [];
   if (r.added && r.added.length)
@@ -751,18 +787,19 @@ function schedTab() {
     <p class="sub">시간이 모자라거나 직접 뺀 곳이에요. 원하는 날에 다시 넣을 수 있어요.</p>
     <ul>${p.parked.map(x => `<li><span class="pk-t"><b>${esc(itemName(p, x))}</b><small>${esc(x.reason)}${x.fromDay != null ? ` · 원래 ${x.fromDay + 1}일차` : ''}</small></span><button class="btn soft sm" data-act="unpark" data-uid="${x.uid}">${S.di + 1}일차에 넣기</button><button class="ib sm" data-act="delParked" data-uid="${x.uid}" aria-label="${esc(itemName(p, x))} 삭제">${ic('trash')}</button></li>`).join('')}</ul></details>`
     : '';
-  return `<section class="daycard">
+  // 가고 싶은 곳으로 짠 결과 알림은 맨 위에
+  const wishTop = !!(S.banner && S.banner.wish);
+  return `${wishTop ? bannerV() : ''}<section class="daycard">
       <div class="dc-h"><div><h2>${S.di + 1}일차</h2><small>${md(day.date)} · ${(day.areas || []).map(a => AREA[a].n).join(' · ') || '자유 일정'}</small></div>
       <button class="dc-re" data-act="replanDay" aria-label="이 날 다시 짜기">${ic('shuffle')}<span>다시 짜기</span></button></div>
       ${dayHotelRow(p, S.di)}
       <div class="stats"><div><small>출발</small><b>${fmt(c.start)}</b></div><div><small>마무리</small><b class="${c.over > 0 ? 'bad-t' : ''}">${fmt(c.endArr)}</b></div><div><small>걷기</small><b>${c.walkKm.toFixed(1)}km</b></div><button data-act="tab" data-t="fare"><small>교통비</small><b>${df.approx ? '약 ' : ''}${yen(df.raw)}</b></button></div>
     </section>
     ${S.hintOff ? '' : `<div class="hint">${ic('walk')}<span>이동 칸을 누르면 <b>지하철·택시 요금</b>을 비교해 바꿀 수 있어요. 걷기로 바꾸면 길 위 맛집·명소를 추천하고 이후 일정을 다시 짜요.</span><button class="ib xs" data-act="hideHint" aria-label="안내 닫기">${ic('close')}</button></div>`}
-    ${bannerV()}
+    ${wishTop ? '' : bannerV()}
     ${tl}
     ${status}
     <div class="day-act"><button class="btn soft wide" data-act="addOpen">${ic('plus')}장소 추가</button></div>
-    ${wishPlanV(p)}
     ${parked}
     <p class="fine">이동 시간·요금·영업시간은 대략적인 값이에요. 방문 전에 확인하세요.</p>`;
 }
@@ -971,7 +1008,7 @@ function legSheet(sh) {
         return `<button class="opt${on ? ' on' : ''}${o.isOff ? ' off' : ''}" data-act="legMode" data-mode="${o.id}" aria-pressed="${on}" ${o.isOff ? 'disabled' : ''}>
         ${modeIc(o.mode)}<span class="ob"><span class="o1"><b>${MODE[o.mode].n}</b>${badges}</span>
         <span class="o2"><b>${o.min}분</b><em>${ft}</em></span>
-        <span class="ol">${esc(o.label)}</span>
+        ${optLabel(o) ? `<span class="ol">${esc(optLabel(o))}</span>` : ''}
         ${o.steps && o.steps.length ? `<ol class="osteps">${o.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : ''}
         ${
           o.isOff
@@ -1077,7 +1114,18 @@ function render() {
     shEl = document.querySelector('.sheet:not(.sh-ghost)'),
     shY = shEl ? shEl.scrollTop : 0;
   if (typeof motionBefore === 'function') motionBefore();
-  const v = S.view === 'home' ? homeV() : S.view === 'dates' ? datesV() : S.view === 'areas' ? areasV() : planV();
+  const v =
+    S.view === 'home'
+      ? homeV()
+      : S.view === 'dates'
+        ? datesV()
+        : S.view === 'how'
+          ? howV()
+          : S.view === 'wplan'
+            ? wplanV()
+            : S.view === 'areas'
+              ? areasV()
+              : planV();
   $app.innerHTML = `<div class="shell v-${S.view}">${v}${sheetV()}<div class="toasts" id="toasts" aria-live="polite"></div></div>`;
   document.body.classList.toggle('locked', !!S.sheet);
   const sh = document.querySelector('.sheet:not(.sh-ghost)');
@@ -1098,12 +1146,63 @@ function fitCta() {
   if (cta && scr) scr.style.paddingBottom = cta.offsetHeight + 24 + 'px';
 }
 window.addEventListener('resize', fitCta);
-// 다른 화면으로 가기 (home·dates·areas·plan)
+// ---- 화면이 바뀔 때 애니메이션 (살짝 떠오르기) ----
+// 브라우저의 화면 전환 기능(View Transitions)으로 예전 화면은 빨리 사라지고 새 화면이 살짝 떠오르며 나타나요.
+// 앞으로 갈 때(새 여행 → 날짜 → 짜는 방법 → 동네 → 계획)는 아래에서, 뒤로 갈 때는 위에서 10px.
+// 위쪽 줄(appbar)·단계 표시(prog)·아래 버튼(cta)·아래 메뉴는 제자리에 있고 내용만 바뀌어요.
+// 기능이 없는 브라우저·「동작 줄이기」 설정이면 그냥 바로 바뀌어요. 모양·빠르기: style.css 「화면 바뀔 때 애니메이션」
+const VT = { pending: false, after: [] };
+const VIEW_ORDER = { home: 0, dates: 1, how: 2, areas: 3, wplan: 3, plan: 4 };
+function vtRun(dir, paint) {
+  // 화면 전환 효과는 motion.js 가 맡아요(render 앞뒤 motionBefore/motionAfter). 두 효과가 겹쳐 두 번 움직이지 않게 여기선 바로 그려요
+  if (typeof motionBefore === 'function') {
+    paint();
+    return;
+  }
+  const r = document.documentElement,
+    calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!document.startViewTransition || calm || VT.pending) {
+    paint();
+    return;
+  }
+  const done = () => {
+    VT.pending = false;
+    const q = VT.after.splice(0);
+    q.forEach(f => f());
+  };
+  try {
+    r.dataset.vdir = dir;
+    VT.pending = true;
+    const vt = document.startViewTransition(() => {
+      try {
+        paint();
+      } finally {
+        done();
+      }
+    });
+    // 빠르게 연달아 누르면 앞 전환은 건너뛰어요. 그때 나는 알림은 무시해요
+    [vt.ready, vt.updateCallbackDone].forEach(pr => pr && pr.catch(() => {}));
+    vt.finished.catch(() => {}).finally(() => {
+      if (r.dataset.vdir === dir) delete r.dataset.vdir;
+      if (VT.pending) done();
+    });
+  } catch (e) {
+    VT.pending = false;
+    paint();
+    done();
+  }
+}
+// 다른 화면으로 가기 (home·dates·how·areas·wplan·plan)
 function go(view) {
+  const from = S.view;
   S.view = view;
   S.sheet = null;
-  render();
-  window.scrollTo(0, 0);
+  const paint = () => {
+    render();
+    window.scrollTo(0, 0);
+  };
+  if (from === view) paint();
+  else vtRun((VIEW_ORDER[view] ?? 0) >= (VIEW_ORDER[from] ?? 0) ? 'fwd' : 'back', paint);
 }
 
 // 「저장하지 않고 나갈까요?」에서 고른 뒤 원래 가려던 곳으로 (새 여행 등)
@@ -1165,13 +1264,7 @@ const A = {
       A.goHome();
       return;
     }
-    S.sheet = { type: 'pmode' };
-    render();
-  },
-  // 방식 고른 뒤 새 여행 1단계(달력)로
-  newPlanGo(d) {
     S.draft = defaultDraft();
-    S.draft.mode = d.m === 'manual' ? 'manual' : 'auto';
     S.mv = null;
     go('dates');
   },
@@ -1225,7 +1318,7 @@ const A = {
   },
   generate() {
     const D = S.draft;
-    S.plan = (D.mode === 'manual' ? createPlanManual : createPlanWish)(
+    S.plan = createPlan(
       {
         start: D.start,
         end: D.end,
@@ -1246,11 +1339,7 @@ const A = {
     S.undo = [];
     S.banner = null;
     go('plan');
-    toast(
-      D.mode === 'manual'
-        ? L('빈 일정표를 만들었어요. 「장소 추가」로 직접 채워 보세요.', '空の予定表を作りました。「場所を追加」で自分で入れてください。')
-        : '일정을 만들었어요. 마음에 들면 저장하세요.'
-    );
+    toast('일정을 만들었어요. 마음에 들면 저장하세요.');
   },
   openPlan(d) {
     const p = S.plans.find(x => x.id === d.id);
@@ -1320,10 +1409,15 @@ const A = {
     toast('계획을 삭제했어요.');
   },
   tab(d) {
+    const same = S.tab === d.t;
     S.tab = d.t;
     S.sel = null;
-    render();
-    window.scrollTo(0, 0);
+    const paint = () => {
+      render();
+      window.scrollTo(0, 0);
+    };
+    if (same) paint();
+    else vtRun('tab', paint);
   },
   day(d) {
     S.di = Number(d.i);

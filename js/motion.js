@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------- 설정값 점검 (가장 먼저)
 // config.js 가 예전 것이거나 값이 비었거나 잘못돼도(빈 값·NaN·음수·글자) 움직임이 앱을 멈추지 않게 기본값으로 채워요.
 // 0 처럼 「일부러 넣은 올바른 값」은 그대로 둬요. 무엇을 고쳤는지는 MV_CFG_ISSUES 에 남겨요 (dev/motion-check.html 에서 보여요)
-const MOTION_VERSION = '2026.11.26-4';
+const MOTION_VERSION = '2026.11.26-5';
 const MV_DEFAULTS = {
   foldMs: 950, foldStagger: 80, foldAngle: 72, softMs: 450, softShift: 14, photoWait: 1200,
   pageMs: 300, pageShift: 24, tabMs: 260, tabShift: 18, subMs: 240, subShift: 12,
@@ -277,7 +277,7 @@ if (MQ_REDUCE.addEventListener) MQ_REDUCE.addEventListener('change', introFinish
 //   sheet : 열기 / 닫기 / 상세로 들어가기 / 이전으로 돌아오기 / 같은 종류 다른 내용 / 시트 안 탭
 // 빠르게 여러 번 누르면 진행 중인 효과는 바로 정리하고 마지막 목적지만 보여 줘요
 const MV = { last: null, plan: null, anims: [], ghosts: [], timers: [], live: null, opener: null, tok: 0, gate: null, temp: [], log: [], lastError: null };
-const MV_HOME = ['home', 'prep', 'areas', 'trips'],
+const MV_HOME = ['home', 'trips', 'areas', 'prep'], // 아래 메뉴 순서와 같게 (오른쪽 칸으로 가면 오른쪽에서 들어와요)
   MV_PLAN = ['sched', 'map', 'guide', 'fare'],
   MV_SEG = ['city', 'outer', 'trip', 'wish'];
 // 시트 안에서 「다른 내용」으로 보는 값 (검색어·입력값·체크 목록은 넣지 않아요)
@@ -318,8 +318,11 @@ function mvState() {
     const c = (S.draft && S.draft.cal) || '';
     st.sub = 'cal:' + c;
     st.so = Number(String(c).replace(/\D/g, '').slice(0, 6)) || 0;
-  } else if (v === 'areas') {
-    st.page = 'areas';
+  } else if (v === 'how') {
+    st.page = 'how'; // 새 여행: 자동으로 짤지 직접 짤지 고르는 단계
+    st.ord = 10.5;
+  } else if (v === 'areas' || v === 'wplan') {
+    st.page = v; // wplan: 가고 싶은 곳으로 계획 짜기 (wish.js)
     st.ord = 11;
   } else {
     const t = S.tab || 'sched',

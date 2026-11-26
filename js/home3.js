@@ -4,7 +4,7 @@
 // - 계획이 있을 때: 제목을 「福岡 후쿠오카」 한 줄로 줄이고 카드 2장 (옆으로 넘기기)
 //     여행 중(오늘이 여행 날): 「지금 이동」(지금 있는 곳 → 다음 장소, 탈 역·방면·다음 차) / 「오늘 일정」
 //     여행 전: 「다가오는 여행」(D-day, 날짜별 바로가기) / 「첫날 일정」
-// - 아래 메뉴: 홈 · 여행 준비 · ＋새 여행 · 동네 · 내 여행 (S.htab)
+// - 아래 메뉴: 홈 · 내 여행 · 동네 · 여행 준비 (S.htab)
 // 다크 모드에서는 그림이 밤 풍경으로 바뀌어요 (style.css 의 --h3-* 색)
 // ======================================================================
 
@@ -220,13 +220,25 @@ function h3Plan() {
   return sortedPlans().find(p => planStatus(p).k !== 'past') || null;
 }
 
-// ---- 아래 4칸 메뉴 (위쪽에 줄무늬 한 줄) ----
+// ---- 탭 넘어갈 때 애니메이션 (살짝 떠오르기) ----
+// 브라우저의 화면 전환 기능(View Transitions)으로 예전 화면은 빨리 사라지고 새 화면이 10px 아래에서 올라와요.
+// 아래 메뉴는 따로 떼어 두어서 움직이지 않아요. 기능이 없는 브라우저·「동작 줄이기」 설정이면 그냥 바로 바뀌어요.
+// 빠르기·높이는 style.css 의 「탭 넘어갈 때 애니메이션」에서 고쳐요
+// set: 상태 바꾸기(바로 해요 · 뒤로가기 계산이 바로 새 탭을 봐요), paint: 화면 다시 그리기(애니메이션 안에서 해요)
+function tabSwitch(next, set, paint) {
+  const anim = (S.htab || 'home') !== next && S.view === 'home';
+  set();
+  if (anim) vtRun('tab', paint);
+  else paint();
+}
+
+// ---- 아래 4칸 메뉴 ----
 function h3NavV(on) {
   const t = on || S.htab || 'home',
     it = (k, i, l) =>
       `<button class="h3-ni${t === k ? ' on' : ''}" data-act="htab" data-t="${k}"${t === k ? ' aria-current="page"' : ''}>${ic(i)}<span>${l}</span></button>`;
   return `<nav class="h3-nav" aria-label="${L('메인 메뉴', 'メインメニュー')}">
-    ${it('home', 'home', L('홈', 'ホーム'))}${it('prep', 'plane', L('여행 준비', '旅の準備'))}${it('areas', 'map', L('동네', 'エリア'))}${it('trips', 'list', L('내 여행', 'マイ旅行'))}
+    ${it('home', 'home', L('홈', 'ホーム'))}${it('trips', 'list', L('내 여행', 'マイ旅行'))}${it('areas', 'map', L('동네', 'エリア'))}${it('prep', 'plane', L('여행 준비', '旅の準備'))}
   </nav>`;
 }
 
@@ -235,7 +247,7 @@ function h3NavV(on) {
 // 「지금 이동 / 오늘 일정」(여행 전이면 「다가오는 여행 / 첫날 일정」) 카드가 나오고 제목은 한 줄로 줄어요
 function h3HomeV() {
   const p = h3Plan();
-  const top = `<header class="h3-top"><span class="h3-logo" data-notr${p ? '' : ' hidden'}><span class="j" lang="ja">福岡</span><b>${L('후쿠오카', 'ふくおか')}</b></span><span class="h3-tools">${langBtn(true)}${themeBtn()}</span></header>`;
+  const top = `<header class="h3-top"><span class="h3-logo" data-notr${p ? '' : ' hidden'}><span class="j" lang="ja">福岡</span><b>${L('후쿠오카', 'ふくおか')}</b></span><span class="h3-topr">${themeBtn(true)}${langBtn(true)}</span></header>`;
   const hero = `<section class="h3-p1">
       <div class="h3-hero" data-notr>
         <div class="j" lang="ja"><span>福</span><span>岡</span><i class="h3-seal" aria-hidden="true">旅</i></div>
@@ -464,8 +476,8 @@ function h3BandSVG() {
 </svg>`;
 }
 function h3BandV(t, s, extra = '') {
-  return `<header class="h3-band">${h3BandSVG()}<div class="h3-slot"></div><span class="h3-bshade"></span>
-    <div class="h3-bt"><h1>${t}</h1>${s ? `<p>${s}</p>` : ''}</div><span class="h3-bl">${langBtn(true)}</span>${extra}</header>`;
+  return `<header class="h3-band${extra ? ' has-btn' : ''}">${h3BandSVG()}<div class="h3-slot"></div><span class="h3-bshade"></span>
+    <div class="h3-bt"><h1>${t}</h1>${s ? `<p>${s}</p>` : ''}</div><span class="h3-bl">${themeBtn(true)}${langBtn(true)}</span>${extra}</header>`;
 }
 
 // 여행 준비 탭
@@ -489,8 +501,7 @@ function h3AreasV() {
     segs = [
       ['city', L('시내', '市内')],
       ['outer', L('근교', '近郊')],
-      ['trip', L('당일치기', '日帰り')],
-      ['wish', L('가고 싶은 곳', '行きたい所')]
+      ['trip', L('당일치기', '日帰り')]
     ];
   const list = seg === 'wish' ? [] : AREAS.filter(a => (a.kind || 'city') === seg);
   const card = a => {
@@ -504,18 +515,17 @@ function h3AreasV() {
       <span class="h3-ab"><b>${a.n}</b><small>${esc(a.sub)}</small><em>${span} · ${L(`${n}곳`, `${n}か所`)}</em></span>
     </button>`;
   };
-  return `${h3BandV(
-    L('동네', 'エリア'),
-    L(`후쿠오카 동네 ${AREAS.length}곳 · 눌러서 명소 보기`, `福岡のエリア${AREAS.length}か所 · タップで見どころ`),
-    `<button class="h3-addp" data-act="wAddOpen">${ic('plus')}<span>${L('직접 장소 추가', '場所を追加')}</span></button>`
-  )}
-  <main class="h3-page">
-    <div class="h3-seg n4" role="tablist">${segs
+  // 사진 오른쪽 「＋ 직접 장소 추가」, 탭 맨 끝 「가고 싶은 곳」 (wish.js)
+  const addBtn = `<button class="h3-bandbtn" data-act="wishAdd">${ic('plus')}${L('직접 장소 추가', '場所を追加')}</button>`;
+  // 폭이 좁으면 앞의 「후쿠오카」를 숨겨서 한 줄에 맞춰요 (style.css 의 .h3-band.has-btn .bopt)
+  return `${h3BandV(L('동네', 'エリア'), L(`<span class="bopt">후쿠오카 </span>동네 ${AREAS.length}곳 · 눌러서 명소 보기`, `<span class="bopt">福岡の</span>エリア${AREAS.length}か所 · タップで見どころ`), addBtn)}
+  <main class="h3-page${seg === 'wish' ? ' w-page' : ''}">
+    <div class="h3-seg w4" role="tablist">${segs
       .map(([k, t]) => {
-        const n = k === 'wish' ? wishAll().length : AREAS.filter(a => (a.kind || 'city') === k).length;
+        const n = AREAS.filter(a => (a.kind || 'city') === k).length;
         return `<button role="tab" aria-selected="${seg === k}" class="${seg === k ? 'on' : ''}" data-act="aseg" data-k="${k}">${t} ${n}</button>`;
       })
-      .join('')}</div>
+      .join('')}<button role="tab" aria-selected="${seg === 'wish'}" class="${seg === 'wish' ? 'on' : ''}" data-act="aseg" data-k="wish">${L('가고 싶은 곳', '行きたい所')} ${S.wish.length}</button></div>
     ${seg === 'wish' ? wishTabV() : `<div class="h3-alist">${list.map(card).join('')}</div>`}
   </main>`;
 }
@@ -637,11 +647,18 @@ Object.assign(A, {
       h3GoPage(0);
       return;
     }
-    S.htab = d.t;
-    S.h3p2 = false;
-    S.sheet = null;
-    render();
-    window.scrollTo(0, 0);
+    tabSwitch(
+      d.t,
+      () => {
+        S.htab = d.t;
+        S.h3p2 = false;
+        S.sheet = null;
+      },
+      () => {
+        render();
+        window.scrollTo(0, 0);
+      }
+    );
   },
   h3Down() {
     h3GoPage(1);

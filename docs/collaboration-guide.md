@@ -17,20 +17,20 @@ js/
   spot_info.js          장소 상세 설명(한·일), 팁, 입장료
   engine.js             일정 만들기, 하루 계산, 이동 방법, 교통비·패스, 다시 짜기
   i18n.js               한국어·일본어 전환, 번역 사전(const JA)
-  ui.js                 공통 상태(S), 동작 목록(A), render(), 저장(store), 새 여행 1·2단계, 일정·지도·교통비 탭, 이벤트 연결
+  ui.js                 공통 상태(S), 동작 목록(A), render(), 저장(store), 밝은/어두운 화면(applyTheme·themeBtn), 새 여행 단계, 일정·지도·교통비 탭, 이벤트 연결
   home.js               홈 화면, 여행 준비 시트, 시트 목록(SHEETS), L() 함수, 계획 공유·가져오기, 장소 정보
   stays.js              날짜별 숙소, 숙소 위치 고르기(지도·검색), MapLibre 불러오기
   alt.js                근처 다른 식당
   parked.js             보류함에서 다시 넣기
   custom.js             직접 일정 넣기 + 위치 정하기
   drag.js               일정 끌어서 순서 바꾸기
-  nav.js                휴대폰 뒤로가기
+  nav.js                휴대폰 뒤로가기 (한 단계씩 · 홈에서는 두 번 눌러야 닫혀요)
   guide.js              길안내 탭, 일본어로 보여주기 카드
   here.js               지금 위치(GPS)에서 길찾기
   live.js               현재 시각에 맞춰 남은 일정 조정
-  home3.js              새 홈 화면 (모모치 바다 그림, 아래 5칸 메뉴: 홈·여행 준비·새 여행·동네·내 여행)
+  home3.js              새 홈 화면 (사진 배경, 아래 4칸 메뉴: 홈·내 여행·동네·여행 준비)
   motion.js             첫 화면 등장 효과(3D 펼침/부드럽게), 화면·탭·일차 전환, 시트 열기·닫기·상세 이동, 펼치기·접기, 알림·배너·조건부 칸 등장/퇴장
-  wish.js               가고 싶은 곳(☆) 모으기, 직접 장소 추가, 라이트·다크 테마 버튼, 새 계획 방식(자동/직접) 시트
+  wish.js               가고 싶은 곳(☆) 모으기, 직접 장소 추가, 새 여행 「어떻게 짤까요?」(how)·「가고 싶은 곳으로 짜기」(wplan) 화면
   maps.js               지역 지도, 일정 지도, 걷기 추천 지도
   bootstrap.js          모든 파일이 준비된 뒤 첫 실행 (가장 마지막)
 dev/
@@ -38,6 +38,9 @@ dev/
   motion-check.html     개발용: 동작 줄이기 여부·파일 버전·실제 쓰는 움직임 값·최근 전환·오류 확인
 docs/
   collaboration-guide.md  이 문서
+tools/
+  check.js              개발용: 일정 계산 점검 (node tools/check.js · 앱 화면에는 안 나와요)
+photos/ icons/ manifest.webmanifest   상단·동네 사진, 앱 아이콘, 홈 화면 설치 정보
 ```
 
 > 원래 README.md 는 받지 못해서 새로 만들거나 바꾸지 않았어요. 저장소에 README.md 가 있다면 그대로 두면 돼요.
