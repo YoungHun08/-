@@ -9030,3 +9030,15 @@ html[data-vdir='back']::view-transition-new(root) {
 /* 사라지는 중인 칸·알림: 눌리지 않게 */
 .mv-out, .toast.mv-gone { pointer-events: none !important; }
 .toasts .toast { animation: none; }
+
+/* ---- 표지 사진 바뀜 (home3.js 의 H3_STEP · H3_FADE 와 같은 값) ----
+   새 사진이 앞 사진 위로 2.4초 동안 천천히 겹쳐 나타나요. 앞 사진은 그동안 그대로 있어서 사이로 바탕이 비치지 않아요.
+   흐림(blur)·확대가 섞인 등장은 큰 사진에서 프레임이 끊겨서 빼고, 투명도와 아주 느린 움직임(transform)만 써요 */
+.h3-slide { transition: none; filter: saturate(1.08) contrast(1.06); backface-visibility: hidden; }
+.h3-slide.leave { opacity: 1; filter: saturate(1.08) contrast(1.06); }
+.h3-slide.show.enter { animation: h3xf 2.4s cubic-bezier(.45, 0, .25, 1) both, var(--kb) 11s linear both; }
+@keyframes h3xf { from { opacity: 0; } to { opacity: 1; } }
+.h3-bars i.run b { animation-duration: 8s; }
+@media (prefers-reduced-motion: reduce) {
+  .h3-slide.show.enter { animation: none !important; }
+}
