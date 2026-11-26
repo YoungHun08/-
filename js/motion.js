@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------- 설정값 점검 (가장 먼저)
 // config.js 가 예전 것이거나 값이 비었거나 잘못돼도(빈 값·NaN·음수·글자) 움직임이 앱을 멈추지 않게 기본값으로 채워요.
 // 0 처럼 「일부러 넣은 올바른 값」은 그대로 둬요. 무엇을 고쳤는지는 MV_CFG_ISSUES 에 남겨요 (dev/motion-check.html 에서 보여요)
-const MOTION_VERSION = '2026.11.26-7';
+const MOTION_VERSION = '2026.11.26-8';
 const MV_DEFAULTS = {
   foldMs: 950, foldStagger: 80, foldAngle: 72, softMs: 450, softShift: 14, photoWait: 1200,
   pageMs: 300, pageShift: 24, tabMs: 260, tabShift: 18, subMs: 240, subShift: 12,

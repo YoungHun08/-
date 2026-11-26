@@ -57,7 +57,9 @@ function h3Bg() {
   return `${h3Scene()}<span class="h3-paper"></span><div class="h3-slot"></div>`;
 }
 let H3SHOW = null;
-const H3_STEP = 7000;
+// 표지 사진: H3_STEP 마다 다음 사진으로, H3_FADE 동안 천천히 겹쳐 바뀌어요 (style.css 끝 「표지 사진 바뀜」과 같은 값)
+const H3_STEP = 8000,
+  H3_FADE = 2400;
 function h3ShowMake(sc) {
   const list = HERO_PHOTOS[sc] || HERO_PHOTOS.day,
     n = list.length,
@@ -121,32 +123,54 @@ function h3ShowMake(sc) {
       if (!el.isConnected || document.hidden) return;
       const s = slides();
       if (s.length < 2 || !R.loaded) return;
+      if (R.busy) return;
       // 아직 다 못 받은 사진은 건너뛰어요 (빈 화면이 끼지 않게)
       for (let k = 1; k < s.length; k++) {
-        const j = (R.i + k) % s.length;
-        if (s[j].complete && s[j].naturalWidth) {
-          R.i = j;
-          h3ShowGo(s[j]);
+        const j = (R.i + k) % s.length,
+          img = s[j];
+        if (img.complete && img.naturalWidth) {
+          // 바꾸기 전에 사진을 미리 풀어(디코딩) 둬요. 숨은 사진은 처음 보일 때 풀리느라 화면이 잠깐 멈췄어요(버벅임)
+          R.busy = true;
+          const go = () => {
+            R.busy = false;
+            if (!el.isConnected || H3SHOW !== R || !img.isConnected) return;
+            R.i = j;
+            h3ShowGo(img);
+          };
+          (img.decode ? img.decode() : Promise.resolve()).then(go, go);
           return;
         }
       }
     }, H3_STEP);
   return R;
 }
-// 다음 사진: 흐릿하게 크게 → 또렷하게 들어오고, 앞 사진은 그 뒤에 내려가요. 진행 막대·설명도 함께
+// 다음 사진: 앞 사진 위로 천천히 겹쳐 나타나요(H3_FADE). 앞 사진은 그동안 그대로 있다가, 다 덮인 뒤에 치워요
+// (흐림 효과는 큰 사진에서 버벅여서 쓰지 않아요). 진행 막대·설명도 함께
 function h3ShowGo(next, first) {
   const R = H3SHOW;
   if (!R || !next) return;
-  if (!first) R.el.classList.remove('still');
   const prev = R.el.querySelector('.h3-slide.show:not(.leave)');
   if (prev === next) return;
+  // 멈춰 있던 표지(still: 다시 그린 뒤·등장 효과 뒤)에서 넘어갈 때, 앞 사진은 지금 모습 그대로 두고 새 사진만 움직여요
+  // (still 을 풀면 앞 사진의 움직임이 처음부터 다시 시작돼 살짝 튀었어요)
+  if (!first && R.el.classList.contains('still')) {
+    if (prev) Object.assign(prev.style, { animation: 'none', transform: getComputedStyle(prev).transform });
+    R.el.classList.remove('still');
+  }
   next.classList.remove('kb', 'leave', 'enter');
+  next.style.removeProperty('animation');
+  next.style.removeProperty('transform');
   void next.offsetWidth;
   next.classList.add('show', 'kb', 'top', 'enter');
   if (prev) {
     prev.classList.remove('top');
     prev.classList.add('leave');
-    setTimeout(() => prev.classList.remove('show', 'kb', 'leave', 'enter'), 1600);
+    setTimeout(() => {
+      if (prev.classList.contains('top')) return;
+      prev.classList.remove('show', 'kb', 'leave', 'enter');
+      prev.style.removeProperty('animation');
+      prev.style.removeProperty('transform');
+    }, H3_FADE + 300);
   }
   // 진행 막대
   const idx = [...R.el.querySelectorAll('.h3-slide')].indexOf(next);
@@ -163,20 +187,45 @@ function h3Caption(img, anim) {
   const R = H3SHOW;
   if (!R || !img) return;
   const cap = R.el.querySelector('.h3-cap'),
-    t = R.el.querySelector('.h3-cap-t');
-  t.textContent = LANG === 'ja' ? img.dataset.ja : img.dataset.ko;
+    t = R.el.querySelector('.h3-cap-t'),
+    txt = LANG === 'ja' ? img.dataset.ja : img.dataset.ko;
   // 첫 화면 등장 효과 중에는 사진 층이 가려져 있어요. 그동안 설명이 혼자 나타나 버리면 끝날 때 툭 튀어나오니,
   // 사진이 실제로 드러날 때(h3ShowReveal) 나타나게 미뤄요
   if (typeof introRunning === 'function' && introRunning()) {
+    t.textContent = txt;
+    R.capTok = (R.capTok || 0) + 1;
     cap.classList.remove('in');
     R.capWait = true;
     return;
   }
-  if (anim) {
-    cap.classList.remove('in');
-    void cap.offsetWidth;
-  }
+  if (anim && cap.classList.contains('in')) return h3CapSwap(t, txt);
+  t.textContent = txt;
   cap.classList.add('in');
+}
+// 사진이 바뀔 때 설명: 알약은 그 자리에 두고 글자만 살짝 바꿔요 (사라졌다 다시 나타나며 깜빡이지 않게)
+// 새 사진이 반쯤 보일 때쯤 글자가 바뀌고, 알약 너비는 부드럽게 맞춰져요
+function h3CapSwap(t, txt) {
+  const R = H3SHOW,
+    tok = (R.capTok = (R.capTok || 0) + 1);
+  if (!t.animate || (typeof motionReduced === 'function' && motionReduced())) {
+    t.textContent = txt;
+    return;
+  }
+  const C = getComputedStyle(t).color,
+    T = 'rgba(255, 255, 255, 0)';
+  setTimeout(() => {
+    if (tok !== R.capTok || !t.isConnected) return;
+    const out = t.animate([{ color: C }, { color: T }], { duration: 260, easing: 'ease-in', fill: 'forwards' });
+    out.onfinish = () => {
+      if (tok !== R.capTok) return out.cancel();
+      const w0 = t.offsetWidth;
+      t.textContent = txt;
+      const w1 = t.offsetWidth;
+      t.animate([{ color: T }, { color: C }], { duration: 480, easing: 'ease-out' });
+      if (Math.abs(w1 - w0) > 1) t.animate([{ width: w0 + 'px' }, { width: w1 + 'px' }], { duration: 520, easing: 'cubic-bezier(.4, 0, .2, 1)' });
+      out.cancel();
+    };
+  }, H3_FADE * 0.3);
 }
 function h3ShowReveal() {
   const R = H3SHOW;
