@@ -8903,11 +8903,6 @@ html[data-vdir='back']::view-transition-new(root) {
 .h3-hero { margin-top: clamp(4px, 3vh, 30px); padding-left: 6px; text-shadow: 0 2px 14px rgba(8, 14, 34, .35); }
 .h3-hero .j { position: relative; display: inline-flex; align-items: flex-start; font-weight: 300; font-size: min(25vw, 13vh, 108px); letter-spacing: .02em; line-height: .95; }
 .h3-hero .j span { display: inline-block; }
-.h3-seal {
-  align-self: flex-start; display: grid; place-items: center; margin: .5em 0 0 .45em;
-  width: 1.5em; height: 1.5em; border-radius: .18em; font-size: .2em; font-style: normal; font-weight: 600; line-height: 1; letter-spacing: 0;
-  background: var(--h3-red); color: #fff; text-shadow: none;
-}
 .h3-hero h1 { margin: .32em 0 0; font-size: min(9.4vw, 4.8vh, 40px); font-weight: 800; letter-spacing: -.01em; line-height: 1.05; }
 .h3-hero .en { display: flex; align-items: center; gap: 12px; margin-top: 14px; font-size: 11.5px; font-weight: 700; letter-spacing: .58em; }
 .h3-hero .en::before { content: ''; flex: none; width: 26px; height: 2px; border-radius: 2px; background: var(--h3-red); }

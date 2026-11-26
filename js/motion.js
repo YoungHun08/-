@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------- 설정값 점검 (가장 먼저)
 // config.js 가 예전 것이거나 값이 비었거나 잘못돼도(빈 값·NaN·음수·글자) 움직임이 앱을 멈추지 않게 기본값으로 채워요.
 // 0 처럼 「일부러 넣은 올바른 값」은 그대로 둬요. 무엇을 고쳤는지는 MV_CFG_ISSUES 에 남겨요 (dev/motion-check.html 에서 보여요)
-const MOTION_VERSION = '2026.11.26-5';
+const MOTION_VERSION = '2026.11.26-7';
 const MV_DEFAULTS = {
   foldMs: 950, foldStagger: 80, foldAngle: 72, softMs: 450, softShift: 14, photoWait: 1200,
   pageMs: 300, pageShift: 24, tabMs: 260, tabShift: 18, subMs: 240, subShift: 12,
@@ -1000,6 +1000,8 @@ const MV_NODIFF = 'svg,canvas,iframe,input,select,textarea,.maplibregl-map,.h3-b
 const MV_SWAP = '.sc-code,.sc-ja,.xlabel,.hp-msg,.note,.fd-tx,.q,.desc,.sp-st,.recs';
 // 반드시 효과가 있어야 하는 칸 (많이 바뀌는 경우에도 따로 나타나고 사라져요)
 const MV_MUST = '.banner,.note,.hp-msg,.hp-res,.here-loc,.here-opts,.selchips,.card.parked,.wh-pin,.sh-foot,.recs,.alts,.osteps,.gsteps';
+// 사라질 때 잔상을 남기지 않는 칸
+const MV_NOEXIT = '.selchip';
 // 칸의 정체: 태그 + 맨 앞 이름(class) + 버튼 동작·대상. 뒤에 붙는 상태 이름(on, s, e …)은 보지 않아요
 function mvKeyOf(el) {
   const c = [...el.classList].find(x => !MV_STATE_CLS.test(x)) || '',
@@ -1139,6 +1141,8 @@ function mvPresOut(r, R) {
   const node = r.o.el,
     h = r.o.h;
   if (R || !h || !r.parent.isConnected) return;
+  // 줄 바꿈 칩(고른 동네 ×)은 빠지면 옆 칩이 바로 그 자리로 와요. 잔상을 남기면 옆 칩과 겹쳐 보여서 바로 없애요
+  if (node.matches && node.matches(MV_NOEXIT)) return;
   // 가로 줄·격자 안이거나 큰 칸이면: 레이아웃을 밀지 않도록 원래 자리 위에 떠 있는 장식 층으로 흐려지게
   if (h > 360 || mvRowParent(r.parent)) return mvPresOutOverlay(r);
   if (r.ref && r.ref.parentElement !== r.parent) r.ref = null;
@@ -1175,13 +1179,20 @@ function mvPresOutOverlay(r) {
   chain.forEach(c => {
     const d = document.createElement('div');
     d.className = c;
-    d.style.cssText = 'position:static;margin:0;padding:0;min-height:0;height:auto;max-width:none;background:none;border:0;box-shadow:none;display:block';
+    // 부모 이름을 그대로 붙이면 그 부모의 transform·filter 때문에 고정 위치(fixed)의 기준이 바뀌어 엉뚱한 자리(왼쪽 끝)에 보였어요. 그런 속성은 꺼요
+    d.style.cssText =
+      'position:static;margin:0;padding:0;min-height:0;height:auto;max-width:none;background:none;border:0;box-shadow:none;display:block;transform:none;filter:none;backdrop-filter:none;-webkit-backdrop-filter:none;perspective:none;contain:none;will-change:auto';
     host.appendChild(d);
     host = d;
   });
   mvInertCopy(node);
   Object.assign(node.style, { position: 'fixed', left: rect.left + 'px', top: rect.top + 'px', width: rect.width + 'px', height: rect.height + 'px', margin: '0' });
   host.appendChild(node);
+  // 그래도 기준이 어긋났으면(다른 CSS 규칙 등) 실제로 놓인 자리를 재서 원래 자리로 맞춰요
+  const got = node.getBoundingClientRect(),
+    dx = rect.left - got.left,
+    dy = rect.top - got.top;
+  if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) Object.assign(node.style, { left: rect.left + dx + 'px', top: rect.top + dy + 'px' });
   const a = mvAnim(node, [{ opacity: 1 }, { opacity: 0 }], MOTION.noteMs, { easing: MOTION.easeOut, fill: 'forwards' });
   const kill = () => {
     g.remove();
