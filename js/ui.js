@@ -237,7 +237,11 @@ const store = {
 // 홈 아래 「저장 위치」 문구 고치기
 function updateStoreNote() {
   const el = document.getElementById('storeNote');
-  if (el) el.innerHTML = storeNote();
+  if (!el) return;
+  const h = storeNote();
+  if (el.innerHTML === h) return;
+  el.innerHTML = h;
+  if (typeof mvAnim === 'function' && !motionReduced()) mvAnim(el, [{ opacity: 0.25 }, { opacity: 1 }], MOTION.noteMs); // 문구가 바뀔 때 살짝
 }
 // 홈 아래 「저장 위치」 문구
 function storeNote() {
@@ -323,14 +327,20 @@ function dirty() {
   }
 }
 // 화면 아래 잠깐 뜨는 알림
+// 알림: 새 알림이 나오면 앞의 알림은 내려가며 사라지고, 4.2초 뒤 저절로 사라질 때도 부드럽게 (motion.js)
+// 타이머는 자기 알림만 치워요 (나중에 나온 알림을 지우지 않게)
 function toast(msg, undo) {
   clearTimeout(S.toastT);
   const w = document.getElementById('toasts');
   if (!w) return;
-  w.innerHTML = `<div class="toast" role="status"><span>${esc(msg)}</span>${undo ? '<button data-act="undo">되돌리기</button>' : ''}</div>`;
-  S.toastT = setTimeout(() => {
-    w.innerHTML = '';
-  }, 4200);
+  w.querySelectorAll('.toast:not(.mv-gone)').forEach(o => (typeof mvToastOut === 'function' ? mvToastOut(o) : o.remove()));
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.setAttribute('role', 'status');
+  el.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button data-act="undo">되돌리기</button>' : ''}`;
+  w.appendChild(el);
+  if (typeof mvToastIn === 'function') mvToastIn(el);
+  S.toastT = setTimeout(() => (typeof mvToastOut === 'function' ? mvToastOut(el) : el.remove()), 4200);
 }
 
 // ---- 공통 조각 ----

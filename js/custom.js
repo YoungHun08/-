@@ -226,7 +226,8 @@ $app.addEventListener('change', e => {
   t.dataset.touched = '1';
   const box = document.getElementById(t.dataset.pre + 'PinBox');
   if (!box) return;
-  box.hidden = t.value !== 'pin';
+  if (typeof mvShow === 'function') mvShow(box, t.value === 'pin');
+  else box.hidden = t.value !== 'pin';
   if (t.value === 'pin') document.getElementById(t.dataset.pre + 'Pin').focus();
 });
 // 이름에 「호텔·숙소」가 들어가면 위치를 숙소로 먼저 골라 둬요 (직접 고른 뒤에는 건드리지 않아요)

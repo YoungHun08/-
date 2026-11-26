@@ -148,8 +148,20 @@ const MV_HOME = ['home', 'prep', 'areas', 'trips'],
   MV_PLAN = ['sched', 'map', 'guide', 'fare'],
   MV_SEG = ['city', 'outer', 'trip', 'wish'];
 // 시트 안에서 「다른 내용」으로 보는 값 (검색어·입력값·체크 목록은 넣지 않아요)
-const MV_SHEET_ID = ['id', 'uid', 'li', 'ctx', 'k'],
-  MV_SHEET_IN = ['cat', 'tab', 'mode', 'i', 'o', 'h', 'm', 'to'];
+const MV_SHEET_ID = ['id', 'uid', 'li', 'ctx', 'k', 'title'],
+  MV_SHEET_IN = ['cat', 'tab', 'mode', 'i', 'o', 'h', 'm', 'to', 'pick'];
+// 비교용 글자: 객체를 그냥 String() 하면 모두 "[object Object]" 가 돼서 바뀐 걸 못 알아채요
+function mvVal(v) {
+  if (v == null) return '';
+  if (typeof v !== 'object') return String(v);
+  if (v.id != null) return 'id:' + v.id;
+  if (v.uid != null) return 'uid:' + v.uid;
+  try {
+    return JSON.stringify(v).slice(0, 160);
+  } catch (e) {
+    return '?';
+  }
+}
 
 function mvReduce() {
   return motionReduced();
@@ -189,8 +201,8 @@ function mvState() {
   const sh = S.sheet;
   if (sh) {
     st.sh = sh.type;
-    st.sid = sh.type + '|' + MV_SHEET_ID.map(k => (sh[k] == null ? '' : String(sh[k]))).join('|');
-    st.sin = MV_SHEET_IN.map(k => (sh[k] == null ? '' : String(sh[k]))).join('|');
+    st.sid = sh.type + '|' + MV_SHEET_ID.map(k => mvVal(sh[k])).join('|');
+    st.sin = MV_SHEET_IN.map(k => mvVal(sh[k])).join('|');
     st.sio = Number(sh.i) || 0;
     st.depth = sh.back ? 1 : 0;
   }
@@ -227,7 +239,16 @@ function mvClassify(a, b) {
 
 // ---- 도우미 ----
 function mvAnim(el, frames, ms, opt = {}) {
-  if (!el || !el.animate) return null;
+  if (!el) return null;
+  if (!el.animate) {
+    // Web Animations 를 못 쓰는 브라우저: 들어올 때만 CSS 로 짧게 흐려졌다 나타나기
+    if (frames[0] && frames[0].opacity === 0) {
+      el.classList.remove('mv-fb');
+      void el.offsetWidth;
+      el.classList.add('mv-fb');
+    }
+    return null;
+  }
   const a = el.animate(frames, { duration: ms, easing: opt.easing || MOTION.ease, fill: opt.fill || 'backwards', delay: opt.delay || 0 });
   MV.anims.push(a);
   const drop = () => {
@@ -266,7 +287,7 @@ function mvSig(el, depth) {
   return { h: mvHash(el.outerHTML), c: depth > 0 ? [...el.children].map(c => mvSig(c, depth - 1)) : null };
 }
 // 움직이면 안 되는 것: 탭 줄·일차 버튼 줄·입력칸 등 (눌러서 바뀌는 표시만 바뀌어요)
-const MV_SKIP = '[role=tablist],.days,.ptabs,.h3-seg,.seg,.tabs,.handle,.sh-x,input,select,textarea,.cal-h';
+const MV_SKIP = '[role=tablist],.days,.ptabs,.h3-seg,.seg,.tabs,.chips-sel,.xpick,.handle,.sh-x,input,select,textarea,.cal-h';
 function mvChanged(old, el, depth, out) {
   if (!old || !el) return out;
   if (mvHash(el.outerHTML) === old.h) return out;
@@ -344,7 +365,12 @@ function motionBefore() {
   MV.next = cur;
   const busy = t.page || t.sub || t.sel || (t.sheet && t.sheet !== 'close');
   if (busy || t.sheet === 'close') mvCancel();
-  if (mvReduce()) return; // 동작 줄이기: 기억할 것 없음 (짧게 흐려지기만)
+  // 알림(토스트)은 화면을 다시 그려도 사라지지 않게 데려가요
+  MV.toasts = [...document.querySelectorAll('#toasts > .toast')];
+  // 같은 화면·같은 창에서 일부만 바뀌는 경우: 새로 생기거나 없어지는 칸을 찾으려고 지금 모양을 기억
+  const plain = !t.page && !t.sub && !t.sel && !t.sheet && !INTRO.run;
+  MV.pres = plain ? mvPresSnap() : null;
+  if (mvReduce()) return; // 동작 줄이기: 위치 기억은 필요 없음 (짧게 흐려지기만)
   const old = document.querySelector('#app > .shell');
   if (!old) return;
   // 큰 화면 이동: 사라질 칸의 자리·스크롤을 기억해 두었다가 장식 층으로 잠깐 남겨요
@@ -412,6 +438,14 @@ function motionAfter() {
   }
   const R = mvReduce(),
     now = performance.now();
+  // 알림 다시 붙이기
+  if (MV.toasts && MV.toasts.length) {
+    const w = document.getElementById('toasts');
+    if (w) MV.toasts.forEach(x => w.appendChild(x));
+  }
+  MV.toasts = null;
+  if (MV.pres) mvPresDiff(MV.pres, R);
+  MV.pres = null;
 
   if (t.page) mvPage(t, R);
   else if (MV.live && !t.sub && !t.sheet && now - MV.live.t0 < MV.live.ms) {
@@ -637,3 +671,229 @@ document.addEventListener(
 
 // 동작 줄이기로 바뀌면 진행 중인 효과를 모두 정리
 if (MQ_REDUCE.addEventListener) MQ_REDUCE.addEventListener('change', () => mvCancel());
+
+
+// ---------------------------------------------------------------- 나타나고 사라지는 칸 (같은 화면·같은 창 안)
+// 결과 배너, 검색 결과·오류 안내, 메모·좌표칸, 추가 옵션, 공유 코드처럼 조건에 따라 생기고 없어지는 칸을
+// 화면을 다시 그리기 전후 모양으로 비교해서 「새로 생긴 칸」은 높이+흐림으로 나타나고, 「없어진 칸」은 접히며 사라져요
+// 글자만 바뀌는 칸(입력 중인 글자, 숫자)은 건드리지 않아요. 순서만 바뀐 칸(일정 끌어 옮기기)도 그대로예요
+const MV_STATE_CLS = /^(on|sel|active|open|show|dis|done|ok|bad|warn|cur|now|ready|still|hid|off|err|busy|picked|checked|enter|top|leave|kb\d|in|out|lit|hot|me|first|last|sh-in|sh-ghost|mv-fb|mv-out|dragging|drop|over|ph|has-ph|wide|end)$/;
+const MV_NODIFF = 'svg,canvas,iframe,input,select,textarea,.maplibregl-map,.h3-bg,.h3-show,.toasts,.h3-fold,.mv-out,[data-mvskip]';
+// 글자가 바뀌면 살짝 바꿔 보여 주는 칸 (공유 코드·안내 문구 등)
+const MV_SWAP = '.sc-code,.sc-ja,.xlabel,.hp-msg,.note,.fd-tx,.q,.desc,.sp-st,.recs';
+// 칸의 정체: 태그 + 맨 앞 이름(class) + 버튼 동작·대상. 뒤에 붙는 상태 이름(on, s, e …)은 보지 않아요
+function mvKeyOf(el) {
+  const c = [...el.classList].find(x => !MV_STATE_CLS.test(x)) || '',
+    d = el.dataset || {};
+  return el.tagName + '.' + c + '|' + (d.act || '') + '|' + (d.id || d.uid || d.li || d.k || d.v || d.i || '');
+}
+function mvPresSnap() {
+  const root = document.querySelector('#app > .shell');
+  if (!root) return null;
+  let n = 0;
+  const walk = (el, depth) => {
+    if (++n > 5000) throw 0;
+    const o = { el, k: mvKeyOf(el), h: el.offsetHeight, kids: null, txt: null };
+    if (el.matches(MV_SWAP)) o.txt = el.textContent;
+    if (depth < 14 && !el.matches(MV_NODIFF)) o.kids = [...el.children].filter(c => !c.classList.contains('mv-out')).map(c => walk(c, depth + 1));
+    return o;
+  };
+  try {
+    return walk(root, 0);
+  } catch (e) {
+    return null; // 너무 큰 화면은 비교하지 않아요
+  }
+}
+// 두 목록 맞추기 (가장 긴 공통 순서)
+function mvLCS(a, b) {
+  const n = a.length,
+    m = b.length;
+  if (n * m > 40000) return null;
+  const L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = a[i] === b[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const pairs = [];
+  let i = 0,
+    j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) pairs.push([i++, j++]);
+    else if (L[i + 1][j] >= L[i][j + 1]) i++;
+    else j++;
+  }
+  return pairs;
+}
+function mvPresDiff(old, R) {
+  const root = document.querySelector('#app > .shell');
+  if (!old || !root || mvKeyOf(root) !== old.k) return;
+  const ins = [],
+    rem = [],
+    swp = [];
+  const walk = (o, el) => {
+    if (o.txt != null && el.textContent !== o.txt) swp.push(el);
+    if (!o.kids || el.matches(MV_NODIFF)) return;
+    const nk = [...el.children],
+      pairs = mvLCS(
+        o.kids.map(x => x.k),
+        nk.map(mvKeyOf)
+      );
+    if (!pairs) return;
+    const mo = new Set(pairs.map(p => p[0])),
+      mn = new Set(pairs.map(p => p[1]));
+    nk.forEach((c, j) => mn.has(j) || ins.push(c));
+    o.kids.forEach((c, i) => {
+      if (mo.has(i)) return;
+      // 다음에 오는 짝지어진 칸 앞에 다시 끼워 접히게
+      let ref = null;
+      for (const p of pairs)
+        if (p[0] > i) {
+          ref = nk[p[1]];
+          break;
+        }
+      rem.push({ o: c, parent: el, ref });
+    });
+    pairs.forEach(([i, j]) => walk(o.kids[i], nk[j]));
+  };
+  walk(old, root);
+  // 순서만 바뀐 칸은 빼요
+  const ik = new Set(ins.map(mvKeyOf)),
+    rk = new Set(rem.map(r => r.o.k)),
+    moved = k => k.split('|')[2] && ik.has(k) && rk.has(k);
+  const I = ins.filter(e => !moved(mvKeyOf(e)) && e.namespaceURI !== 'http://www.w3.org/2000/svg' && mvBlock(e)),
+    X = rem.filter(r => !moved(r.o.k));
+  if (I.length + X.length > 40) return; // 한꺼번에 많이 바뀌면(목록 전체 교체 등) 따로 움직이지 않아요
+  I.forEach(e => mvPresIn(e, R));
+  X.forEach(r => mvPresOut(r, R));
+  swp.filter(e => !I.some(x => x.contains(e))).forEach(e => mvAnim(e, [{ opacity: 0.25 }, { opacity: 1 }], R ? 120 : MOTION.subMs));
+}
+// 줄 안에 놓인 작은 버튼·배지는 높이를 접지 않고 흐려지기만
+function mvSmall(el, cs) {
+  if (/inline/.test(cs.display) || el.offsetWidth < 90) return true;
+  const p = el.parentElement && getComputedStyle(el.parentElement);
+  return !!p && (p.display.includes('grid') || (p.display.includes('flex') && p.flexDirection.startsWith('row')));
+}
+// 가로로 늘어선 줄·격자 안(달력, 칩 줄)에는 사라지는 칸을 끼워 넣지 않아요 (옆 칸이 밀리지 않게)
+function mvRowParent(p) {
+  const cs = getComputedStyle(p);
+  return cs.display.includes('grid') || (cs.display.includes('flex') && cs.flexDirection.startsWith('row')) || /inline/.test(cs.display);
+}
+function mvBlock(el) {
+  const d = getComputedStyle(el).display;
+  return d !== 'inline' && d !== 'contents' && d !== 'none' && !d.startsWith('table-');
+}
+// 새로 생긴 칸: 높이 0 → 원래 높이, 흐림 → 또렷
+function mvPresIn(el, R) {
+  const cs = getComputedStyle(el),
+    pos = cs.position;
+  if (R) return mvAnim(el, [{ opacity: 0 }, { opacity: 1 }], 120);
+  if (pos === 'fixed' || pos === 'absolute') return mvAnim(el, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], MOTION.noteMs);
+  const h = el.offsetHeight;
+  if (!h || h > 360 || mvSmall(el, cs)) return mvAnim(el, [{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], MOTION.panelMs);
+  mvCollapse(el, cs, h, true);
+}
+// 높이 접기·펼치기 공통 (안쪽 여백·바깥 여백도 함께)
+function mvCollapse(el, cs, h, open, done) {
+  const full = { height: h + 'px', paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, marginTop: cs.marginTop, marginBottom: cs.marginBottom, opacity: 1 },
+    zero = { height: '0px', paddingTop: '0px', paddingBottom: '0px', marginTop: '0px', marginBottom: '0px', opacity: 0 };
+  const keep = [el.style.overflow, el.style.boxSizing];
+  el.style.overflow = 'hidden';
+  el.style.boxSizing = 'border-box';
+  const a = mvAnim(el, open ? [zero, full] : [full, zero], MOTION.panelMs, { easing: open ? MOTION.ease : MOTION.easeOut, fill: open ? 'backwards' : 'forwards' });
+  const end = () => {
+    el.style.overflow = keep[0];
+    el.style.boxSizing = keep[1];
+    if (done) done();
+  };
+  if (a) {
+    a.addEventListener('finish', end);
+    a.addEventListener('cancel', end);
+  } else end();
+  return a;
+}
+// 없어진 칸: 그 자리에 잠깐 남아(눌리지 않음) 접히며 사라져요
+function mvPresOut(r, R) {
+  const node = r.o.el,
+    h = r.o.h;
+  if (R || !h || h > 360 || !r.parent.isConnected || mvRowParent(r.parent)) return;
+  if (r.ref && r.ref.parentElement !== r.parent) r.ref = null;
+  mvInertCopy(node);
+  node.classList.add('mv-out');
+  node.setAttribute('aria-hidden', 'true');
+  node.inert = true;
+  r.parent.insertBefore(node, r.ref);
+  const cs = getComputedStyle(node),
+    pos = cs.position;
+  const g = { kind: 'out', el: node };
+  MV.ghosts.push(g);
+  const kill = () => {
+    node.remove();
+    MV.ghosts = MV.ghosts.filter(x => x !== g);
+  };
+  if (pos === 'fixed' || pos === 'absolute' || mvSmall(node, cs)) {
+    const a = mvAnim(node, [{ opacity: 1 }, { opacity: 0, transform: pos === 'fixed' || pos === 'absolute' ? 'translateY(8px)' : 'none' }], MOTION.noteMs, { easing: MOTION.easeOut, fill: 'forwards' });
+    if (a) a.addEventListener('finish', kill);
+    else kill();
+  } else if (!mvCollapse(node, cs, h, false, kill)) kill();
+  mvLater(kill, MOTION.panelMs + 400);
+}
+
+// ---------------------------------------------------------------- 알림(토스트)
+// 나타날 때 아래에서 살짝 올라오고, 자동으로 사라질 때·다른 알림으로 바뀔 때 내려가며 사라져요
+function mvToastIn(el) {
+  if (mvReduce()) return mvAnim(el, [{ opacity: 0 }, { opacity: 1 }], 120);
+  mvAnim(el, [{ opacity: 0, transform: 'translateY(12px) scale(.98)' }, { opacity: 1, transform: 'none' }], MOTION.noteMs);
+}
+function mvToastOut(el) {
+  if (!el || !el.isConnected || el.classList.contains('mv-gone')) return;
+  el.classList.add('mv-gone');
+  el.setAttribute('aria-hidden', 'true');
+  el.inert = true;
+  const gone = () => el.remove();
+  if (mvReduce() || !el.animate) return gone();
+  const a = el.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(10px)' }], { duration: MOTION.noteMs, easing: MOTION.easeOut, fill: 'forwards' });
+  a.onfinish = gone;
+  a.oncancel = gone;
+  setTimeout(gone, MOTION.noteMs + 300);
+}
+
+// ---------------------------------------------------------------- hidden 으로 켜고 끄는 칸
+// el.hidden = … 대신 mvShow(el, 보일지) 를 쓰면 높이와 흐림이 부드럽게 바뀌어요
+function mvShow(el, show) {
+  if (!el) return;
+  if (el._mvs) el._mvs.cancel();
+  el._mvs = null;
+  if (show === !el.hidden) return;
+  const R = mvReduce();
+  if (show) {
+    el.hidden = false;
+    if (R) return;
+    const cs = getComputedStyle(el),
+      h = el.offsetHeight;
+    if (cs.position === 'absolute' || cs.position === 'fixed' || !h || mvSmall(el, cs)) el._mvs = mvAnim(el, [{ opacity: 0 }, { opacity: 1 }], MOTION.noteMs);
+    else el._mvs = mvCollapse(el, cs, h, true);
+  } else {
+    if (R || !el.animate) {
+      el.hidden = true;
+      return;
+    }
+    const cs = getComputedStyle(el),
+      h = el.offsetHeight;
+    const hide = () => {
+      el.hidden = true;
+      el._mvs = null;
+    };
+    if (cs.position === 'absolute' || cs.position === 'fixed' || mvSmall(el, cs)) {
+      const a = mvAnim(el, [{ opacity: 1 }, { opacity: 0 }], MOTION.noteMs, { fill: 'forwards' });
+      el._mvs = a;
+      if (a) {
+        a.addEventListener('finish', () => {
+          hide();
+          a.cancel();
+        });
+      } else hide();
+    } else {
+      el._mvs = mvCollapse(el, cs, h, false, () => {
+        if (el._mvs) hide();
+        el.getAnimations().forEach(x => x.cancel());
+      });
+    }
+  }
+}

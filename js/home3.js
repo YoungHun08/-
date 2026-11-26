@@ -605,8 +605,9 @@ function h3Paint(n) {
   const tb = document.querySelector('.h3-tabs');
   if (!tb) return;
   tb.querySelector('.h3-tc').textContent = n ? tb.dataset.l1 : tb.dataset.l0;
-  tb.querySelector('.h3-tl').hidden = !n;
-  tb.querySelector('.h3-tr').hidden = !!n;
+  const sh = typeof mvShow === 'function' ? mvShow : (e, v) => (e.hidden = !v);
+  sh(tb.querySelector('.h3-tl'), !!n);
+  sh(tb.querySelector('.h3-tr'), !n);
   document.querySelectorAll('.h3-dots i').forEach((d, i) => d.classList.toggle('on', i === n));
 }
 

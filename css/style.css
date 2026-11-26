@@ -8552,3 +8552,9 @@ body {
 .h3-show.now { transition: none; }
 /* 펼침 조각 안의 사진 (진짜 사진과 같은 자리·크기) */
 .h3-fimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); filter: saturate(1.08) contrast(1.06); }
+
+/* Web Animations 를 못 쓰는 오래된 브라우저용: 짧게 흐려졌다 나타나기 */
+.mv-fb { animation: h3op 200ms ease-out; }
+/* 사라지는 중인 칸·알림: 눌리지 않게 */
+.mv-out, .toast.mv-gone { pointer-events: none !important; }
+.toasts .toast { animation: none; }
