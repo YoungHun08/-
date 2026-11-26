@@ -250,7 +250,7 @@ function h3HomeV() {
   const top = `<header class="h3-top"><span class="h3-logo" data-notr${p ? '' : ' hidden'}><span class="j" lang="ja">福岡</span><b>${L('후쿠오카', 'ふくおか')}</b></span><span class="h3-topr">${themeBtn(true)}${langBtn(true)}</span></header>`;
   const hero = `<section class="h3-p1">
       <div class="h3-hero" data-notr>
-        <div class="j" lang="ja"><span>福</span><span>岡</span><i class="h3-seal" aria-hidden="true">旅</i></div>
+        <div class="j" lang="ja"><span>福</span><span>岡</span></div>
         <h1>${L('후쿠오카', 'ふくおか')}</h1>
         <div class="en">FUKUOKA</div>
         <p lang="ja">海と屋台と、ラーメンの街。<br>アジアの玄関口へようこそ。</p>
