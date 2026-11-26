@@ -165,6 +165,13 @@ function h3Caption(img, anim) {
   const cap = R.el.querySelector('.h3-cap'),
     t = R.el.querySelector('.h3-cap-t');
   t.textContent = LANG === 'ja' ? img.dataset.ja : img.dataset.ko;
+  // 첫 화면 등장 효과 중에는 사진 층이 가려져 있어요. 그동안 설명이 혼자 나타나 버리면 끝날 때 툭 튀어나오니,
+  // 사진이 실제로 드러날 때(h3ShowReveal) 나타나게 미뤄요
+  if (typeof introRunning === 'function' && introRunning()) {
+    cap.classList.remove('in');
+    R.capWait = true;
+    return;
+  }
   if (anim) {
     cap.classList.remove('in');
     void cap.offsetWidth;
@@ -176,6 +183,11 @@ function h3ShowReveal() {
   if (!R || !R.loaded) return;
   if (typeof introRunning === 'function' && introRunning()) return; // 등장 효과가 끝나면 motion.js 가 다시 불러요
   R.el.classList.add('ready');
+  if (R.capWait) {
+    R.capWait = false;
+    const cap = R.el.querySelector('.h3-cap');
+    if (cap) cap.classList.add('in'); // 사진이 보인 뒤 살짝 늦게 나타나요 (CSS: .5s 뒤 .6s 동안)
+  }
 }
 function h3ShowDrop() {
   if (!H3SHOW) return;
@@ -566,7 +578,8 @@ function h3Wire() {
       dim = root.querySelector('.h3-dim');
     const paint = () => {
       const f = Math.min(1, pages.scrollTop / Math.max(1, pages.clientHeight));
-      if (hero) hero.style.opacity = String(Math.max(0, 1 - f * 1.8));
+      // 맨 위(f=0)일 땐 글자에 직접 값을 안 써요. 직접 쓴 값(opacity:1)이 첫 화면 대기 중 숨김(.intro-wait)을 이겨서 제목이 잠깐 비쳤어요
+      if (hero) hero.style.opacity = f > 0 ? String(Math.max(0, 1 - f * 1.8)) : '';
       if (dim) dim.style.opacity = String(f * 0.5);
       if (logo && !logo.hidden) logo.style.opacity = String(Math.max(0, f * 2 - 0.8));
       const on = f > 0.5;

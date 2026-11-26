@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------- 설정값 점검 (가장 먼저)
 // config.js 가 예전 것이거나 값이 비었거나 잘못돼도(빈 값·NaN·음수·글자) 움직임이 앱을 멈추지 않게 기본값으로 채워요.
 // 0 처럼 「일부러 넣은 올바른 값」은 그대로 둬요. 무엇을 고쳤는지는 MV_CFG_ISSUES 에 남겨요 (dev/motion-check.html 에서 보여요)
-const MOTION_VERSION = '2026.11.26-2';
+const MOTION_VERSION = '2026.11.26-4';
 const MV_DEFAULTS = {
   foldMs: 950, foldStagger: 80, foldAngle: 72, softMs: 450, softShift: 14, photoWait: 1200,
   pageMs: 300, pageShift: 24, tabMs: 260, tabShift: 18, subMs: 240, subShift: 12,
@@ -119,6 +119,14 @@ function introStart() {
     mode = MV_INTRO === 'soft' ? (R ? 'soft-r' : 'soft') : R ? 'none' : 'fold3d';
   INTRO.run = true;
   INTRO.mode = mode;
+  // 첫 그리기 때 사진 설명이 이미 켜졌을 수 있어요. 사진 층이 드러날 때(h3ShowReveal) 다시 켜지게 꺼 둬요
+  if (typeof H3SHOW !== 'undefined' && H3SHOW) {
+    const cap = H3SHOW.el.querySelector('.h3-cap.in');
+    if (cap) {
+      cap.classList.remove('in');
+      H3SHOW.capWait = true;
+    }
+  }
   INTRO.wait = true;
   INTRO.t0 = performance.now();
   const tok = ++INTRO.token;
@@ -135,22 +143,79 @@ function introPhoto() {
   if (INTRO.run && INTRO.wait) introGo();
 }
 function introGo() {
-  if (!INTRO.run || !INTRO.wait) return;
-  INTRO.wait = false;
+  if (!INTRO.run || !INTRO.wait || INTRO.preparing) return;
   clearTimeout(INTRO.timer);
-  INTRO.t0 = performance.now();
-  const tok = ++INTRO.token,
+  const tok = INTRO.token,
     show = typeof H3SHOW !== 'undefined' && H3SHOW && H3SHOW.loaded ? H3SHOW : null;
-  // 사진이 있으면 바로 그 사진으로 (흐림 효과 없이 지금 모습 그대로, 서서히 나타나지 않고 바로)
-  if (show) show.el.classList.add('ready', 'now', 'still');
-  const cur = show && show.el.querySelector('.h3-slide.show');
-  if (INTRO.mode === 'none') return introFinish(); // 동작 줄이기 + 3D: 사진이 준비되면 완성 화면을 바로
-  if (INTRO.mode === 'fold3d') INTRO.fold = introFoldMake(cur && cur.naturalWidth ? cur.currentSrc || cur.src : '');
-  introApply();
-  const total = INTRO.mode === 'fold3d' ? MOTION.foldMs + 2 * MOTION.foldStagger : INTRO.mode === 'soft' ? MOTION.softMs + 240 : 300;
-  INTRO.timer = setTimeout(() => {
-    if (tok === INTRO.token) introFinish();
-  }, total + 60);
+  // 펼침에 쓸 사진 = 실제로 보이게 될 사진(새로 들어오는 .show). 바뀌는 중인 이전 사진(.leave)은 고르지 않아요
+  const cur = show && show.el.querySelector('.h3-slide.show:not(.leave)');
+  const photo = cur && cur.naturalWidth ? cur.currentSrc || cur.src : '';
+  const fold = INTRO.mode === 'fold3d' ? introFoldMake(photo) : null;
+  // 사진은 「받아짐」과 「화면에 그릴 준비(디코딩)」가 달라요. 숨겨진 사진은 디코딩이 미뤄져서,
+  // 나중에 드러날 때 몇 프레임 비어 보이며 아래 그림이 비쳤어요. 시작 전에 실제 사진과 펼침 조각 사진을 미리 풀어 둬요 (최대 250ms)
+  const imgs = [photo ? cur : null, ...(fold ? fold.querySelectorAll('img') : [])].filter(Boolean);
+  INTRO.preparing = true;
+  const decoded = Promise.all(imgs.map(i => (i.decode ? i.decode().catch(() => {}) : null)));
+  Promise.race([decoded, new Promise(r => setTimeout(r, 250))]).then(() => {
+    INTRO.preparing = false;
+    if (!INTRO.run || !INTRO.wait || tok !== INTRO.token) return; // 그 사이 끝났거나(버튼·탭 숨김 등) 바뀌었으면 시작하지 않아요
+    INTRO.wait = false;
+    INTRO.t0 = performance.now();
+    const tk = ++INTRO.token;
+    if (show) {
+      introSnapSlides(show.el);
+      show.el.classList.add('ready', 'now', 'still');
+    }
+    if (INTRO.mode === 'none') return introFinish(); // 동작 줄이기 + 3D: 사진을 미리 풀어 둔 뒤 완성 화면을 바로 (그림이 먼저 비치지 않게)
+    INTRO.fold = fold;
+    introApply();
+    const total = INTRO.mode === 'fold3d' ? MOTION.foldMs + 2 * MOTION.foldStagger : INTRO.mode === 'soft' ? MOTION.softMs + 240 : 300;
+    INTRO.timer = setTimeout(() => {
+      if (tk === INTRO.token) introEnd();
+    }, total + 60);
+  });
+}
+// 기다리는 동안(사진 층이 가려진 채) 다른 사진이 먼저 와서 사진이 바뀌기 시작했으면, 그 바뀜(1.4초 겹침)이 아직 진행 중이에요.
+// 그대로 드러내면 반쯤 투명한 사진 사이로 그림이 비치다 사진이 차오르니, 드러내기 직전에 바뀜을 끝 모습으로 맞춰요
+function introSnapSlides(el) {
+  const slides = el.querySelectorAll('.h3-slide');
+  slides.forEach(i => (i.style.transition = 'none'));
+  void el.offsetWidth;
+  requestAnimationFrame(() => slides.forEach(i => i.style.removeProperty('transition')));
+}
+// 자연스럽게 끝날 때: 다 펼쳐진 조각이 화면을 덮고 있는 동안 실제 배경을 먼저 보이게 하고(그려질 시간 2프레임),
+// 그다음 조각을 치워요. 그래서 조각이 사라지는 순간 아래가 비거나 다른 그림이 비치지 않아요
+function introEnd() {
+  if (!INTRO.run) return;
+  if (!INTRO.fold) return introFinish();
+  INTRO.unfold = true;
+  document.querySelectorAll('.h3-bg.folding').forEach(b => b.classList.remove('folding'));
+  const tk = INTRO.token, f = INTRO.fold;
+  const done = () => tk === INTRO.token && introFinish();
+  // 펼친 조각(입체 층)은 실제 사진보다 아주 살짝 흐리게 그려져요. 한 번에 바꾸면 '툭' 선명해지니 0.18초 동안 겹쳐 바꿔요
+  requestAnimationFrame(() => {
+    if (tk !== INTRO.token) return;
+    f.style.transition = 'opacity .18s linear';
+    f.style.opacity = '0';
+  });
+  setTimeout(done, 220); // 프레임이 멈춰도(탭 숨김 등) 끝나게
+}
+// 그림(SVG) 펼침일 때: 조각 안 구름·물결의 반복 움직임을 실제 배경과 같은 시점에 맞춰요 (조각이 사라질 때 물결이 튀지 않게)
+function introSyncSvg(fold, bg) {
+  const real = bg && bg.querySelector(':scope > .h3-svg');
+  if (!real || !real.getAnimations) return;
+  const rEls = [...real.querySelectorAll('*')];
+  fold.querySelectorAll('.h3-svg').forEach(svg => {
+    [...svg.querySelectorAll('*')].forEach((fe, i) => {
+      const re = rEls[i];
+      if (!re) return;
+      const ra = re.getAnimations();
+      fe.getAnimations().forEach((fa, j) => {
+        const r = ra.find(x => x.animationName && x.animationName === fa.animationName) || ra[j];
+        if (r && r.currentTime != null) fa.currentTime = r.currentTime;
+      });
+    });
+  });
 }
 // 지금 화면에 등장 효과를 붙여요. 등장 중에 화면이 다시 그려져도(저장된 계획을 늦게 불러온 경우 등) 이어서 진행돼요
 function introApply() {
@@ -165,8 +230,11 @@ function introApply() {
   root.classList.add('intro-' + INTRO.mode);
   root.style.setProperty('--it', -Math.round(performance.now() - INTRO.t0) + 'ms');
   if (INTRO.fold && bg) {
-    bg.classList.add('folding');
-    bg.appendChild(INTRO.fold);
+    if (!INTRO.unfold) bg.classList.add('folding'); // 끝나는 중이면 실제 배경은 계속 보이게
+    if (INTRO.fold.parentElement !== bg) bg.appendChild(INTRO.fold);
+    try {
+      introSyncSvg(INTRO.fold, bg);
+    } catch (e) {}
   }
 }
 // 바로 끝내기 (여러 번 불러도 괜찮아요). 남은 장식은 모두 치우고, 기다리던 사진이 있으면 이제 보여 줘요
@@ -179,6 +247,8 @@ function introFinish() {
   if (INTRO.fold) INTRO.fold.remove();
   INTRO.fold = null;
   INTRO.wait = false;
+  INTRO.unfold = false;
+  INTRO.preparing = false;
   document.querySelectorAll('.h3.intro-fold3d, .h3.intro-soft, .h3.intro-soft-r, .h3.intro-wait').forEach(r => {
     r.classList.remove('intro-fold3d', 'intro-soft', 'intro-soft-r', 'intro-wait', 'intro-none');
     r.style.removeProperty('--it');
